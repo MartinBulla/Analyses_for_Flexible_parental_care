@@ -41,14 +41,16 @@
 	
 	{# define working and output directories
 	    # metadata
-		  wd="C:/Users/mbulla/Documents/Dropbox/Science/Projects/MS/Bip_to_uni/Data/"	
+		  wd="C:/Users/mbulla/Documents/Dropbox/Science/Projects/MS/Bip_to_uni/Analyses/Data/"	
 		# SQLite database
 		  wd2="C:/Users/mbulla/Documents/ownCloud/BIPtoUNIP/"
 		# nest files
 		  wd3="C:/Users/mbulla/Documents/ownCloud/BIPtoUNIP/nest_files/"
 		  #wd3="C:/Users/mbulla/Documents/Dropbox/Science/Projects/MS/Bip_to_uni/Data/nest_files/"
-		# define output folder
+		# define output folder for actograms
 		  outdir="C:/Users/mbulla/Documents/ownCloud/BIPtoUNIP/actos/"
+		# define output folder for figures
+		  out_="C:/Users/mbulla/Documents/Dropbox/Science/Projects/MS/Bip_to_uni/figs/"
 	}
 
 	{# establish database connections
@@ -1846,9 +1848,15 @@
 			
 			h$inc_per_sp=ip$inc_period[match(h$sp,ip$sp)]
 			h$prop_ip=h$day_j/h$inc_per_sp
+			
+			se$inc_start=s$inc_start[match(paste(se$year,se$nest),paste(s$year,s$nest))]
+			se$day_j=as.numeric(format(se$day ,"%j")) - as.numeric(format(as.Date(trunc(se$inc_start, "day")),"%j"))+1
+			
+			se$inc_per_sp=ip$inc_period[match(se$sp,ip$sp)]
+			se$prop_ip=se$day_j/se$inc_per_sp
 	}
 		
-	save(d,h,file=paste(wd,'for_analyses.RData',sep="")) # d - per day aggregates, h per hour aggregates
+	save(d,h,se,file=paste(wd,'for_analyses.RData',sep="")) # d - per day aggregates, h per hour aggregates, se - start and end of unip incubation
 	}
 	{# check whether number of 5s readings per day is not higher than it should be - 60*60*24/5
 		load(paste(wd,'for_analyses.RData',sep="")) # d - per day aggregates, h per hour aggregates
@@ -1897,28 +1905,8 @@
 
 {# RESULTS
   {# Abundance of uniparental incubation
-	{# number of species with uniparental incubation from number of species studied
-		# uniparental found in 
-				n=readWorksheetFromFile(paste(wd,'nests.xls', sep=""), sheet='original')
-				n=n[!n$sp%in%c('rnph','pesa'),]
-				length(unique(n$sp))
-						
-		# studied species
-				nn=readWorksheetFromFile(paste(wd,'populations.xls', sep=""), sheet='populations')
-				nn=nn[!nn$sp%in%c('rnph','pesa'),]
-				length(unique(nn$sp))
-	}
-	{# number of uniparental nests per species	
-		load(paste(wd,'for_analyses.RData',sep="")) 
-		d_=d[!d$sp%in%c('rnph','pesa') & d$type=='uni',]
-		length(unique(d_$nest)) # overall number of nests
-		dd=ddply(d_,.(sp,nest), summarise,nn=1)
-		ddply(dd,.(sp), summarise,nn=sum(nn)) # numer of nests per species
-	}
-	
-	{# day in incubation period when the uniparental incubation started and for how long it lasted
-		{# run first
-		     n =read.csv(paste(wd,'nests.csv', sep=""), stringsAsFactors=FALSE)
+	{# run first
+		    n =read.csv(paste(wd,'nests.csv', sep=""), stringsAsFactors=FALSE)
 				n$end=as.POSIXct(n$end)
 				n$start=as.POSIXct(n$start)
 				n=n[!n$sp%in%c('pesa','rnph'),]
@@ -1937,7 +1925,183 @@
 				n$prop_ip=n$day_j/n$inc_per_sp
 				n$uni_last=as.numeric(difftime(n$end, n$start, units='hours'))
 				n_=n[n$uni_last>=2*n$bout,]
+				
+				{# species
+				sp =read.csv(paste(wd,'species.csv', sep=""), stringsAsFactors=FALSE)
+				}
 		}	
+	{# number of species with uniparental incubation from number of species studied
+		# uniparental found in 
+				length(unique(n_$sp))
+						
+		# studied species
+				nn=readWorksheetFromFile(paste(wd,'populations.xls', sep=""), sheet='populations')
+				nn=nn[!nn$sp%in%c('rnph','pesa'),]
+				length(unique(nn$sp))
+	}
+	{# number of uniparental nests per species	
+	  {# results within text	
+		length(unique(n_$nest)) # overall number of nests
+		summary(factor(n_$sex)) # uniparental females and males
+		dd=ddply(n_,.(sp,nest), summarise,nn=1)
+		ddply(dd,.(sp), summarise,nn=sum(nn)) # numer of nests per species
+		
+		dd=ddply(n_,.(sp,nest,sex), summarise,nn=1)
+		ddply(dd,.(sp,sex), summarise,nn=sum(nn)) # numer of nests per species and sex
+		}
+	  {# Figure 1a
+		sp_=sp[!is.na(sp$order),]
+		sp_$order=-sp_$order
+		sp_=sp_[order(sp_$order),]
+		
+		n_$species=sp_$species[match(n_$sp,sp_$sp)]
+		n_$order=sp_$order[match(n_$sp,sp_$sp)]
+		n_$sex=factor(n_$sex, levels=c('m','f'))
+		counts=table(n_$sex,n_$order)
+		
+		# par(mfrow=c(1,3),mar=c(0.0,0,0,0.4),oma = c(1.8, 1.8, 0.2, 0.5),ps=12, mgp=c(1.2,0.35,0), las=1, cex=1, col.axis="grey30",font.main = 1, col.lab="grey30", col.main="grey30", fg="grey70") # 0.6 makes font 7pt, 0.7 8pt
+		 #dev.new(width=3.5*0.75,height=1.85)
+		 png(paste(out_,"Figure_1.png", sep=""), width=3.5*0.75,height=1.85,units="in",res=600)
+		 par(mar=c(0.0,0,0,0.4),oma = c(2.1, 5, 0.2, 0.5),ps=12, mgp=c(1.2,0.35,0), las=1, cex=1, col.axis="grey30",font.main = 1, col.lab="grey30", col.main="grey30", fg="grey70",
+		 cex.lab=0.6,cex.main=0.7, cex.axis=0.5, tcl=-0.1,bty="n",xpd=TRUE) # 0.6 makes font 7pt, 0.7 8pt
+				#par(ps=12,	cex.lab=0.6,cex.main=0.7, cex.axis=0.5, tcl=-0.15,bty="n",xpd=TRUE)
+				
+		 barplot(counts, beside=TRUE, horiz=TRUE,
+						names.arg=sp_$species,
+						xlab="Cases of uniparental incubation [count]", 
+						col=c(male_col,female_col), 
+						#legend = rownames(counts),args.legend = list(bty='n', legend=c('\u2642','\u2640')),
+						xaxt='n'
+						)
+											
+					axis(1, at=seq(0,30,by=5),labels=c(0,'',10,'',20,"",30),cex.axis=0.5,mgp=c(0,-0.2,0))
+						mtext('Cases of uniparental incubation\n[count]',side=1,line=1, cex=0.6, las=1, col='grey30')
+						
+					text(y=22.5,x=28, labels='\u2640', col='#FCB42C', cex=0.6)
+					text(y=23,x=30, labels='\u2642', col='#535F7C', cex=0.6)
+					
+						#axis(2, at=seq(0,1,by=0.25), labels=c('0.0','','0.5','','1.0'))
+					mtext('a',side=3,line=-.35, cex=0.6,  col='grey30', outer=TRUE, adj=0.95)
+		 dev.off()				
+		}
+	  {# Figure 1b 
+		 {# run first	
+			# create dummy values for species missing nests for one sex
+				n1=n_[n_$sp=='blgo',][1,]
+				n1$sex='f'
+				n1$prop_ip=-50
+				n2=n_[n_$sp=='dunl',][1,]
+				n2$sex='f'
+				n2$prop_ip=-50
+				n3=n_[n_$sp=='lbdo',][1,]
+				n3$sex='f'
+				n3$prop_ip=-50
+				n4=n_[n_$sp=='reds',][1,]
+				n4$sex='f'
+				n4$prop_ip=-50
+				n_=rbind(n_,n1,n2,n3,n4)
+				
+		sp_=sp[!is.na(sp$order),]
+		sp_$order=-sp_$order
+		sp_=sp_[order(sp_$order),]
+		
+		n_$species=sp_$species[match(n_$sp,sp_$sp)]
+		n_$order=sp_$order[match(n_$sp,sp_$sp)]
+		n_$sex=factor(n_$sex, levels=c('m','f'))
+			n_$order=ifelse(n_$sex=='m', 2*n_$order-0.4, 2*n_$order+0.4)
+			unique(n_$order)[order(unique(n_$order))]
+			n_$prop_ip_=n_$prop_ip*100
+		n_$col_=ifelse(n_$sex=='f',female_col,male_col)
+		table(n_$sex,n_$sp)
+					
+		
+			}
+		 {# points	
+		   #dev.new(width=3.5*0.75,height=1.85)
+		    png(paste(out_,"Figure_1b.png", sep=""), width=3.5*0.75,height=1.85,units="in",res=600)
+			par(mar=c(0.0,0,0,0.4),oma = c(2.1, 0.5, 0.2, 5),ps=12, mgp=c(1.2,0.35,0), las=1, cex=1, col.axis="grey30",font.main = 1, col.lab="grey30", col.main="grey30", fg="grey70", cex.lab=0.6,cex.main=0.7, cex.axis=0.5, tcl=-0.1,bty="n",xpd=TRUE)
+			#ggplot(n_,aes(x=species, y=prop_ip*100, fill=sex))+geom_boxplot() +coord_flip()+coord_cartesian(ylim = c(0, 160))
+			#ggplot(n_,aes(x=species, y=prop_ip*100, col=sex))+geom_point(position = position_jitter(w = 0.3, h = 0.3)) +coord_flip()+coord_cartesian(ylim = c(0, 160))
+			plot(jitter(n_$order)~n_$prop_ip_,xlim=c(0,160), ylim=c(-16.5,-1), 
+						xaxt='n',yaxt='n',
+						#xlab="Cases of uniparental incubation [count]", 
+						pch = 21,cex=0.5, col="gray63",bg=adjustcolor(n_$col_, alpha.f = 0.6)
+							)
+									
+					axis(1, at=seq(0,160,by=20),labels=c(0,"",40,"",80,"",120,"",160),cex.axis=0.5,mgp=c(0,-0.2,0))
+						mtext("Start of uniparental incubation\n[% of species' incubation period]",side=1,line=1, cex=0.6, las=1, col='grey30')
+					
+					axis(2, at=seq(-16,-2,2), labels=FALSE)
+					abline(h=seq(-16,-2,2), par(xpd=FALSE), col="grey90")
+						#mtext('Nest attendance',side=2,line=1, cex=0.6, las=3, col='grey30')
+					#text(y=23,x=28, labels='\u2640', col='#FCB42C', cex=0.6)
+					#text(y=23.5,x=30, labels='\u2642', col='#535F7C', cex=0.6)
+					mtext('b',side=3,line=-.35, cex=0.6,  col='grey30', outer=TRUE, adj=0.95)	
+		 dev.off()				
+		}
+		 {# points and boxplot
+				
+		n_$species=sp_$species[match(n_$sp,sp_$sp)]
+		n_$order=sp_$order[match(n_$sp,sp_$sp)]
+		n_$sex=factor(n_$sex, levels=c('m','f'))
+		n_$col_=ifelse(n_$sex=='f',female_col,male_col)
+		table(n_$sex,n_$sp)
+					
+		 #dev.new(width=3.5*0.75,height=1.85)
+		 png(paste(out_,"Figure_1b_boxplot.png", sep=""), width=3.5*0.75,height=1.85,units="in",res=600)
+		 par(mar=c(0.0,0,0,0.4),oma = c(2.1, 0.5, 0.2, 5),ps=12, mgp=c(1.2,0.35,0), las=1, cex=1, col.axis="grey30",font.main = 1, col.lab="grey30", col.main="grey30", fg="grey70", cex.lab=0.6,cex.main=0.7, cex.axis=0.5, tcl=-0.1,bty="n",xpd=TRUE)
+			at_=c(seq(1,15,by=2)+0.15, seq(2,16,2)-0.15)
+			at_=at_[order(at_)]
+			#ggplot(n_,aes(x=species, y=prop_ip*100, fill=sex))+geom_boxplot() +coord_flip()+coord_cartesian(ylim = c(0, 160))
+			#ggplot(n_,aes(x=species, y=prop_ip*100, col=sex))+geom_point(position = position_jitter(w = 0.3, h = 0.3)) +coord_flip()+coord_cartesian(ylim = c(0, 160))
+			boxplot(n_$prop_ip*100~n_$sex*n_$order, horizontal=TRUE,
+						ylim=c(0,160),
+						xaxt='n',yaxt='n',
+						#xlab="Cases of uniparental incubation [count]", 
+						at=at_,#seq(1,16,1),
+						outcex=0.5, outpch=20,boxwex=0.5,whisklty=1,staplelty=0,#medlwd=1, 
+						lwd = 0.25, 
+						#outcol="darkgrey",boxcol='darkgrey',whiskcol='darkgrey',staplecol='darkgrey',medcol='darkgrey',
+						#col=c(male_col,female_col)
+						outcol="white",boxcol='white',whiskcol='white',staplecol='white',medcol='white'
+								
+						#legend = rownames(counts),args.legend = list(bty='n', legend=c('\u2642','\u2640')),
+							)
+			stripchart(n_$prop_ip*100~n_$sex*n_$order, vertical = FALSE, method = "jitter",jitter=0.05, add = TRUE, 
+										at=at_,
+										pch = 21,cex=0.5, 
+										col="gray63",
+										#bg=adjustcolor(c(male_col,female_col), alpha.f = 0.4)
+										#bg=c(male_col,female_col)
+										bg=adjustcolor("gray63", alpha.f = 0.4)
+										)
+										
+			boxplot(n_$prop_ip*100~n_$sex*n_$order,horizontal=TRUE,
+										#ylab = NULL,
+										xaxt='n', yaxt='n',
+										ylim=c(0,160),
+										at=at_, 
+										outcex=0.5, outpch=20,boxwex=0.5,whisklty=1,staplelty=0,#
+										lwd = 0.5,
+										border=c(male_col,female_col),
+										col = adjustcolor("white", alpha.f = 0), # trick for PNGs, to show what is underneath the boxplot else can be taken out
+										#outcol="darkgrey",boxcol='darkgrey',whiskcol='darkgrey',staplecol='darkgrey',medcol='darkgrey', 
+										#par(bty='l'),
+										add=TRUE
+										)					
+					
+					
+											
+					axis(1, at=seq(0,160,by=20),labels=c(0,"",40,"",80,"",120,"",160),cex.axis=0.5,mgp=c(0,-0.2,0))
+						mtext("Start of uniparental incubation\n[% of species' incubation period]",side=1,line=1, cex=0.6, las=1, col='grey30')
+					
+					axis(2, at=seq(1.5,16,2), labels=FALSE)
+					mtext('b',side=3,line=-.35, cex=0.6,  col='grey30', outer=TRUE, adj=0.95)
+		 dev.off()				
+		}
+	  }
+	
+	{# day in incubation period when the uniparental incubation started and for how long it lasted
 		{# started
 			summary(n_$prop_ip) # distribution of start of uniparental incubation
 			nrow(n_) # number of cases
