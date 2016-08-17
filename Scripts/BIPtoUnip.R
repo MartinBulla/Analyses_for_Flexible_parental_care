@@ -1774,9 +1774,7 @@
 	lday=list()
 	lhour=list()
 	lmin_max=list()
-	lday_all=list()
-	lhour_all=list()
-	lmin_max_all=list()
+	
 	for (i in (1:nrow(nests_))) {
 					nest=nests_$nest[i]
 					yr= nests_$year[i]
@@ -1830,82 +1828,12 @@
 								}
 								
 					}else{print(paste(nest, i, 'no data',sep=" "))}
-					  
-					  
-					{# define uniparental and biparental periods (no = not used) withoug limiting 6h prior to hatching or 24 prior to hatched or out of nest
-				   if(!a$sp[1]%in%c('pesa','rnph')){
-					tst=ifelse(nests_$state[nests_$nest==nest]=='s',6, ifelse(nests_$state[nests_$nest==nest]%in%c('h','l'),24,0)) # if start of hatching then end -6h, if hatching or left nest that -24h, else 0
-					tst2=ifelse(nests_$circumstances[nests_$nest==nest]%in%c('bpd','catching','removal','temporal'),nests_$bout[nests_$nest==nest],0) # start of uniparental after median bout of the species
-					if(nests_$one_since[i]=='always'){ # for nests that were uniparental ever since we have recorded 
-										a$type=ifelse(a$datetime_>=nests_$start[nests_$nest==nest & nests_$year==yr] & a$datetime_<nests_$end[nests_$nest==nest & nests_$year==yr],'uni','no') 
-													}
-					if(nests_$one_since[i]=='unknown'){ # for nests that were uniparental ever since we have recorded 
-										a$type=ifelse(a$datetime_>=nests_$start[nests_$nest==nest & nests_$year==yr] & a$datetime_<nests_$end[nests_$nest==nest & nests_$year==yr],'uni',
-										ifelse(a$datetime_>=nests_$on[nests_$nest==nest & nests_$year==yr]+60*60*2 & a$datetime_<nests_$start[nests_$nest==nest & nests_$year==yr],'bip','no')) 
-													}
-					if(!nests_$one_since[i]%in%c('unknown','always')){
-									a$type=ifelse(a$datetime_>=nests_$on[nests_$nest==nest & nests_$year==yr]+60*60*2 & a$datetime_<nests_$one_since[nests_$nest==nest & nests_$year==yr],'bip', # biparental incubation from 2 hours after equipment was placed until a parent deserted (after catching or naturally)
-												ifelse(a$datetime_>=nests_$start[nests_$nest==nest & nests_$year==yr]+tst2*60*60 & a$datetime_<nests_$end[nests_$nest==nest & nests_$year==yr],'uni', # uniparental incubation from the time the widowed bird arrived to the nest until the end of incubation
-												'no'))			
-													}
-				   
-					if(nrow(a[a$type=='uni',])>0){
-							if(as.numeric(difftime(max(a$datetime_[a$type=='uni']),min(a$datetime_[a$type=='uni']),units='hours'))<=2*nests_$bout[nests_$nest==nest]){a$type[a$type=='uni']='no'} # excludes nests with unip inc shorter than 2 med bouts of population
-								}
-				   
-				    if(length(nests$circumstances[which(nests$nest==nest & nests$circumstances=='temporal')])==1){ # for nests witho temporal desertion present 
-										a$type=ifelse(a$datetime_>=nests$start[nests$nest==nest & nests$year==yr & nests$circumstances=='temporal']+tst2*60*60 & a$datetime_<nests$end[nests$nest==nest & nests$year==yr & nests$circumstances=='temporal'],'uni',a$type) 
-										}
-					a$type=ifelse(a$datetime_<inc_start,'no',a$type)
-					
-					 tstu=nrow(a[a$type=='uni',])
-					 tstb=nrow(a[a$type=='bip',])
-					
-					  if(tstu>0 | tstb>0 & tstu>0){
-							a$datetime_=as.POSIXct(a$datetime_)
-							a$day = as.Date(trunc(a$datetime_, "day"))
-							a$time_ = as.numeric(difftime(a$datetime_, trunc(a$datetime_,"day"), units = "hours"))
-							a$hour=sub("\\..*$", "", a$time_)
-							a$n=1
-									
-							if(tstu>0 & tstb>0){
-								u=ddply(a[a$type=='uni',],.(act_ID,sys,sp,site,year,t_method,nest,day, type), summarise, att=mean(inc),n=sum(n))
-								b=ddply(a[a$type=='bip',],.(act_ID,sys,sp,site,year,t_method,nest,day, type), summarise, att=mean(inc),n=sum(n))
-								aa=rbind(b,u)
-								lday_all[[i]]=aa[order(aa$day,aa$type),]
-								
-								u=ddply(a[a$type=='uni',],.(act_ID,sys,sp,site,year,t_method,nest,day,hour, type), summarise, att=mean(inc),n=sum(n))
-								b=ddply(a[a$type=='bip',],.(act_ID,sys,sp,site,year,t_method,nest,day,hour, type), summarise, att=mean(inc),n=sum(n))
-								aa=rbind(b,u)
-								lhour_all[[i]]=aa[order(aa$day,aa$hour,aa$type),]
-								
-								lmin_max_all[[i]]=ddply(a[a$type=='uni',],.(act_ID,sys,sp,site,year,nest,type), summarise, uni_start=min(datetime_), uni_end=max(datetime_))
-								
-								print(paste(nest, i, 'bu',sep=" "))
-								}
-							if(tstu>0 & tstb==0){
-								lday_all[[i]]=ddply(a[a$type=='uni',],.(act_ID,sys,sp,site,year,t_method,nest,day, type), summarise, att=mean(inc),n=sum(n))
-								lhour_all[[i]]=ddply(a[a$type=='uni',],.(act_ID,sys,sp,site,year,t_method,nest,day,hour,type), summarise, att=mean(inc),n=sum(n))
-								lmin_max_all[[i]]=ddply(a[a$type=='uni',],.(act_ID,sys,sp,site,year,nest,type), summarise, uni_start=min(datetime_), uni_end=max(datetime_))
-								print(paste(nest, i, 'u',sep=" "))	
-								}
-								
-					}else{print(paste(nest, i, 'no data',sep=" "))}
-					  
-					}
-					
-				}
-				
-						
 					}	
 					
 	d=do.call(rbind,lday)
 	h=do.call(rbind,lhour)
 	se=do.call(rbind,lmin_max)
-	da=do.call(rbind,lday_all)
-	ha=do.call(rbind,lhour_all)
-	sea=do.call(rbind,lmin_max_all)
-	
+		
 	{# add day in incubation + create proportion of species incubation period
 			d$inc_start=s$inc_start[match(paste(d$year,d$nest),paste(s$year,s$nest))]
 			d$day_j=as.numeric(format(d$day ,"%j")) - as.numeric(format(as.Date(trunc(d$inc_start, "day")),"%j"))+1
@@ -2049,13 +1977,7 @@
 	 
    
    }
-	h_=h[!h$sp%in%c('rnph','pesa') & h$type=='uni',]
-	
-	dd=ddply(h_,.(sp,nest), summarise,uni_start=min(prop_ip), uni_end=)
-	summary(dd)
-	dd[dd$uni_start>1,] # s807 started uniparental incubation earlier (based on our visits), but we are missing the incubation record of it)
-	nrow(dd)
-  }   
+  
 	
 	table(d$sp, freq(d$nest)
 	
