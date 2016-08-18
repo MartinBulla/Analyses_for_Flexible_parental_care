@@ -1089,102 +1089,6 @@
 
 	}
 
-{# only plots
-		{# biparental only plot
-				for (i in (1:nrow(nests_))) {
-					nest=nests_$nest[i]
-					yr= nests_$year[i]
-					act_ID=nests_$act_ID[i]
-					inc_start=s$inc_start[s$nest==nest & s$year==yr]
-					ip_=ip$inc_period[ip$sp==nests_$sp[i]]
-					print(paste(nest, i,sep=" "))				
-								# get raw incubation data and prepare them for plotting
-									#aa=read.table(paste(wd3,nest,".txt",sep=""), sep=",", header=TRUE,stringsAsFactors=FALSE)
-								# get raw incubation data and prepare them for plotting
-									conLite = dbConnect(dbDriver("SQLite"),dbname = db)
-									dfr_=dbq(conLite,paste("SELECT*FROM", act_ID))
-									dbDisconnect(conLite)
-							
-								dfr_=aa[which(!is.na(aa$datetime_)),]
-								dfr=dfr_
-								
-								# define captions and nest location
-									figCap_=data.frame(scinam=sp$scinam[match(dfr$sp[1], sp$sp)], species=sp$species[match(dfr$sp[1], sp$sp)], year=dfr$year[1],nest=dfr$nest[1],site=dfr$site[1], ID=dfr$act_ID[i],stringsAsFactors=FALSE)
-									figCap=figCap_
-								
-									latlon_=data.frame(lat=nests_$lat[nests_$nest==nest],lon=nests_$lon[nests_$nest==nest],stringsAsFactors=FALSE) # for the map
-									latlon=latlon_
-								
-								# generate actograms
-									RFID.temperature_actogram(dfr=dfr_,type="PNG", UTC=FALSE) #type="SAVE")# 
-					print(paste(nest, i,sep=" "))	
-			}
-				}
-		{# RNPH only plot
-				for (i in (1:nrow(nests_))) {
-					nest=nests_$nest[i]
-					yr= nests_$year[i]
-					act_ID=nests_$act_ID[i]
-					inc_start=s$inc_start[s$nest==nest & s$year==yr]
-					ip_=ip$inc_period[ip$sp==nests_$sp[i]]
-					
-					print(paste(nest, i,sep=" "))				
-					# get raw incubation data and prepare them for plotting
-						#aa=read.table(paste(wd3,nest,".txt",sep=""), sep=",", header=TRUE,stringsAsFactors=FALSE)
-					# get raw incubation data and prepare them for plotting
-									conLite = dbConnect(dbDriver("SQLite"),dbname = db)
-									dfr_=dbq(conLite,paste("SELECT*FROM", act_ID))
-									dfr_=aa[which(!is.na(aa$datetime_)),]
-									#dfr_$datetime_=as.POSIXct(dfr_$datetime_)
-									dfr=dfr_
-									
-								# define captions and nest location
-									figCap_=data.frame(scinam=sp$scinam[match(dfr$sp[1], sp$sp)], species=sp$species[match(dfr$sp[1], sp$sp)], year=dfr$year[1],nest=dfr$nest[1],site=dfr$site[1], ID=dfr$act_ID[i],stringsAsFactors=FALSE)
-									figCap=figCap_
-								
-									latlon_=data.frame(lat=nests_$lat[nests_$nest==nest],lon=nests_$lon[nests_$nest==nest],stringsAsFactors=FALSE) # for the map
-									latlon=latlon_
-								
-								# generate actograms
-									RFID.temperature_actogram(dfr=dfr_,type="PNG", UTC=TRUE, UTC_met=FALSE) #type="SAVE")# 
-					print(paste(nest, i,sep=" "))	
-						}
-				}
-		{# PESA only plot
-				for (i in (1:nrow(nests_))) {
-					nest=nests_$nest[i]
-					yr= nests_$year[i]
-					act_ID=nests_$act_ID[i]
-					tag_ID= birds$tag_ID[birds$nest==nest & birds$year_==yr]
-					bird_ID=birds$bird_ID[birds$nest==nest & birds$year_==yr]
-					
-					inc_start=s$inc_start[s$nest==nest & s$year==yr]
-					ip_=ip$inc_period[ip$sp==nests_$sp[i]]
-					# get raw incubation data and prepare them for plotting
-						#aa=read.table(paste(wd3,yr,nest,".txt",sep=""), sep=",", header=TRUE,stringsAsFactors=FALSE)
-					# get raw incubation data and prepare them for plotting
-									conLite = dbConnect(dbDriver("SQLite"),dbname = db)
-									dfr_=dbq(conLite,paste("SELECT*FROM", act_ID))
-									dfr_=aa[which(!is.na(aa$datetime_)),]
-									#dfr_$datetime_=as.POSIXct(dfr_$datetime_)
-									dfr=dfr_
-									
-					# define captions and nest location
-						figCap_=data.frame(scinam=sp$scinam[match(dfr$sp[1], sp$sp)], species=sp$species[match(dfr$sp[1], sp$sp)], year=dfr$year[1],nest=dfr$nest[1],site=dfr$site[1], ID=dfr$act_ID[i],stringsAsFactors=FALSE)
-						figCap=figCap_
-								
-						latlon_=data.frame(lat=nests_$lat[i],lon=nests_$lon[i],stringsAsFactors=FALSE) # for the map
-						latlon=latlon_
-								
-					# generate actograms
-						RFID.temperature_actogram(dfr=dfr_,type="PNG", UTC=TRUE, UTC_met=FALSE,min_=-.05, max_=0.22, signal=TRUE,day=FALSE) #type="SAVE")# 	
-					print(paste(nest, i,sep=" "))	
-						}
-		}
-			
-
-}
-
 {# DONE METADATA PREPARATION 			
 {# create datafile with on_nest and off_nest - DONE
 		# load metadata
@@ -1673,5 +1577,5 @@ load(paste(wd,'pesa_nests.RData',sep=""))
 				writeWorksheetToFile(s,file=paste(wd,'nests.xls',sep=""),sheet='nest_states_lon_time')
 			}
 		}
- } 		
+} 		
 
