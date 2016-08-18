@@ -35,7 +35,7 @@
 		 #      tf = paste0(outdir,'/',dfr$nest[1], ".pdf")
 		  #     pdf(tf, paper = "a4", width = 8, height = 11.6929134)
 			#}
-			if(UTC==TRUE){dfr$datetime_=as.POSIXct(dfr$datetime_, tz="UTC")+(nests_$local_plus[i]*60*60))}# adjusts to longitudinal time if aksed for
+			if(UTC==TRUE){dfr$datetime_=as.POSIXct(dfr$datetime_, tz="UTC")+(nests_$local_plus[i]*60*60)}# adjusts to longitudinal time if aksed for
 			 dfr$datetime_=as.POSIXct(dfr$datetime_, tz="UTC")
 			 dfr$day = as.Date(trunc(dfr$datetime_, "day"))
 			 dfr$time = as.numeric(difftime(dfr$datetime_, trunc(dfr$datetime_,"day"), units = "hours"))
