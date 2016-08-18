@@ -255,7 +255,7 @@
 						latlon=latlon_
 								
 					# generate actograms
-						RFID.temperature_actogram(dfr=dfr_,type="PNG", UTC=TRUE, UTC_met=FALSE,day=FALSE) #type="SAVE")# 		
+						RFID.temperature_actogram(dfr=dfr_,type="PNG", UTC=FALSE, UTC_met=FALSE,day=FALSE) #type="SAVE")# 		
 					
 			}
 			print(paste(nest, i,sep=" "))
@@ -425,7 +425,7 @@
 						latlon=latlon_
 								
 					# generate actograms
-						RFID.temperature_actogram(dfr=dfr_,type="PNG", UTC=TRUE, UTC_met=FALSE,min_=-.05, max_=0.22, signal=TRUE,day=FALSE) #type="SAVE")# 		
+						RFID.temperature_actogram(dfr=dfr_,type="PNG", UTC=FALSE, UTC_met=FALSE,min_=-.05, max_=0.22, signal=TRUE,day=FALSE) #type="SAVE")# 		
 					
 				}
 			}	
@@ -922,7 +922,7 @@
 					a$year=nests_$year[i]
 					a$site=nests_$site[i]
 					a$who=tolower(a$who)
-					a$datetime_z=a$datetime_
+					a$datetime_z=a$datetime_ # datetime_z is local time
 					a$datetime_=  as.character(as.POSIXct(a$datetime_z)+ (nests_$local_plus[i]*60*60)) # bring to longitudanal time
 						birds_=birds[paste(birds$year_, birds$nest)==paste( nests_$year[i], nests_$nest[i]),]
 					
@@ -967,7 +967,7 @@
 									inc_start=s$inc_start[s$nest==nest & s$year==yr]
 									ip_=ip$inc_period[ip$sp==nests_$sp[i]]
 								# generate actograms
-									RFID.temperature_actogram(dfr=dfr_,type="PNG", UTC=TRUE,UTC_met=TRUE,day=FALSE) #type="SAVE")# 
+									RFID.temperature_actogram(dfr=dfr_,type="PNG", UTC_met=TRUE,day=FALSE) #type="SAVE")# 
 				}
 				print(paste(nest, i,sep=" "))
 				}
@@ -1184,169 +1184,6 @@
 			
 
 }
-
-{# create datasets
-	{# load metadata
-		{# nests to extract the data for
-				nests =read.csv(paste(wd,'nests.csv', sep=""), stringsAsFactors=FALSE)
-				nests$on=as.POSIXct(nests$on)
-				nests$off=as.POSIXct(nests$off)
-				nests$end=as.POSIXct(nests$end)
-				nests$start=as.POSIXct(nests$start)
-				nests_=nests[which(nests$circumstances!='temporal'),]
-				#p=readWorksheetFromFile(paste(wd,'populations.xls', sep=""), sheet='populations')
-				#nests_$bout=p$bout[match(paste(nests_$site,nests_$sp), paste(p$site_abbreviation, p$sp))]
-		}
-		{# incubation start
-				s=read.csv(paste(wd,'inc_start.csv', sep=""), stringsAsFactors=FALSE)
-				s$inc_start=as.POSIXct(s$inc_start,tz='UTC')			
-		}
-		{# incubation period
-			 ip=read.csv(paste(wd,'inc_period.csv', sep=""), stringsAsFactors=FALSE)
-		}
-		{# end states
-			 n=read.csv(paste(wd,'end_states.csv', sep=""), stringsAsFactors=FALSE)
-			 n$datetime_=as.POSIXct(n$datetime_, tz="UTC")
-		}
-		{# birds
-				birds=read.csv(paste(wd,'birds.csv', sep=""), stringsAsFactors=FALSE)
-				birds=birds[which(!is.na(birds$tag_ID)),]	
-		}			
-		{# species
-				sp =read.csv(paste(wd,'species.csv', sep=""), stringsAsFactors=FALSE)
-		}
-	}
-	
-	{# created data for analyses
-	lday=list()
-	lhour=list()
-	lmin_max=list()
-	
-	for (i in (1:nrow(nests_))) {
-					nest=nests_$nest[i]
-					yr= nests_$year[i]
-					act_ID=nests_$act_ID[i]
-					inc_start=s$inc_start[s$nest==nest & s$year==yr]
-					ip_=ip$inc_period[ip$sp==nests_$sp[i]]
-					print(paste(nest, i,sep=" "))
-					
-					
-					# get raw incubation data and prepare them for plotting
-						#aa=read.table(paste(wd3,nest,".txt",sep=""), sep=",", header=TRUE,stringsAsFactors=FALSE)
-					# get raw incubation data and prepare them for plotting
-						conLite = dbConnect(dbDriver("SQLite"),dbname = db)
-						a=dbq(conLite,paste("SELECT*FROM", act_ID))
-						dbDisconnect(conLite)
-						
-						if(a$sp[1]!='pesa'){a=a[which(!is.na(a$t_nest)),]}
-						
-						#a=a[which(!duplicated(a$datetime_)),] ############### REMOVE LATER
-					# nest attendance by by day and hour			
-					  tstu=nrow(a[a$type=='uni',])
-					  tstb=nrow(a[a$type=='bip',])
-					
-					  if(tstu>0 | tstb>0 & tstu>0){
-							a$datetime_=as.POSIXct(a$datetime_)
-							a$day = as.Date(trunc(a$datetime_, "day"))
-							a$time_ = as.numeric(difftime(a$datetime_, trunc(a$datetime_,"day"), units = "hours"))
-							a$hour=sub("\\..*$", "", a$time_)
-							a$n=1
-									
-							if(tstu>0 & tstb>0){
-								u=ddply(a[a$type=='uni',],.(act_ID,sys,sp,site,year,t_method,nest,day, type), summarise, att=mean(inc),n=sum(n))
-								b=ddply(a[a$type=='bip',],.(act_ID,sys,sp,site,year,t_method,nest,day, type), summarise, att=mean(inc),n=sum(n))
-								aa=rbind(b,u)
-								lday[[i]]=aa[order(aa$day,aa$type),]
-								
-								u=ddply(a[a$type=='uni',],.(act_ID,sys,sp,site,year,t_method,nest,day,hour, type), summarise, att=mean(inc),n=sum(n))
-								b=ddply(a[a$type=='bip',],.(act_ID,sys,sp,site,year,t_method,nest,day,hour, type), summarise, att=mean(inc),n=sum(n))
-								aa=rbind(b,u)
-								lhour[[i]]=aa[order(aa$day,aa$hour,aa$type),]
-														
-								lmin_max[[i]]=ddply(a[a$type=='uni',],.(act_ID,sys,sp,site,year,nest,type), summarise, uni_start=min(datetime_), uni_end=max(datetime_))
-								
-								print(paste(nest, i, 'bu',sep=" "))
-								}
-							if(tstu>0 & tstb==0){
-								lday[[i]]=ddply(a[a$type=='uni',],.(act_ID,sys,sp,site,year,t_method,nest,day, type), summarise, att=mean(inc),n=sum(n))
-								lhour[[i]]=ddply(a[a$type=='uni',],.(act_ID,sys,sp,site,year,t_method,nest,day,hour,type), summarise, att=mean(inc),n=sum(n))
-								lmin_max[[i]]=ddply(a[a$type=='uni',],.(act_ID,sys,sp,site,year,nest,type), summarise, uni_start=min(datetime_), uni_end=max(datetime_))
-								print(paste(nest, i, 'u',sep=" "))	
-								}
-								
-					}else{print(paste(nest, i, 'no data',sep=" "))}
-					}	
-					
-	d=do.call(rbind,lday)
-	h=do.call(rbind,lhour)
-	se=do.call(rbind,lmin_max)
-		
-	{# add day in incubation + create proportion of species incubation period
-			d$inc_start=s$inc_start[match(paste(d$year,d$nest),paste(s$year,s$nest))]
-			d$day_j=as.numeric(format(d$day ,"%j")) - as.numeric(format(as.Date(trunc(d$inc_start, "day")),"%j"))+1
-				d[d$day_j<1,]# exclude data that are from day before the incubation actually started
-			d$inc_per_sp=ip$inc_period[match(d$sp,ip$sp)]
-			d$prop_ip=d$day_j/d$inc_per_sp
-			
-			h$inc_start=s$inc_start[match(paste(h$year,h$nest),paste(s$year,s$nest))]
-			h$day_j=as.numeric(format(h$day ,"%j")) - as.numeric(format(as.Date(trunc(h$inc_start, "day")),"%j"))+1
-			
-			h$inc_per_sp=ip$inc_period[match(h$sp,ip$sp)]
-			h$prop_ip=h$day_j/h$inc_per_sp
-			
-			se$inc_start=s$inc_start[match(paste(se$year,se$nest),paste(s$year,s$nest))]
-			se$day_j=as.numeric(format(se$day ,"%j")) - as.numeric(format(as.Date(trunc(se$inc_start, "day")),"%j"))+1
-			
-			se$inc_per_sp=ip$inc_period[match(se$sp,ip$sp)]
-			se$prop_ip=se$day_j/se$inc_per_sp
-	}
-		
-	save(d,h,se,file=paste(wd,'for_analyses.RData',sep="")) # d - per day aggregates, h per hour aggregates, se - start and end of unip incubation
-	}
-	{# check whether number of 5s readings per day is not higher than it should be - 60*60*24/5
-		load(paste(wd,'for_analyses.RData',sep="")) # d - per day aggregates, h per hour aggregates
-		densityplot(~d$n)
-		
-		nrow(d[d$n>60*60*24/5 & !d$sp%in%c('pesa'),]) # ok
-		nrow(d[d$n>60*60*24/4 & d$sp%in%c('pesa'),]) # pesa ok
-			#nrow(d$nest[d$n>60*60*24/5 & !d$sp%in%c('pesa')])
-			#unique(d$t_method[d$n>60*60*24/5 & !d$sp%in%c('pesa')])
-			#head(d[d$n>60*60*24/5 & !d$sp%in%c('pesa'),],n=10)
-			#d[d$n>60*60*24/5 & !d$sp%in%c('pesa') & d$t_method=='msr',]
-			#head(d, n=10)
-		unique(d$sp[which(d$n>60*60*24/5)])
-		unique(d$sp)
-		
-		
-	
-		if(nest%in%c("a301","a302","b501","s111","s409","s502","s506","s602","s610","s627","s807","w801")){
-		
-					nest=nests_$nest[i]
-					yr= nests_$year[i]
-					act_ID=nests_$act_ID[i]
-					inc_start=s$inc_start[s$nest==nest & s$year==yr]
-					ip_=ip$inc_period[ip$sp==nests_$sp[i]]
-					print(paste(nest, i,sep=" "))
-					
-					
-					# get raw incubation data and prepare them for plotting
-						#aa=read.table(paste(wd3,nest,".txt",sep=""), sep=",", header=TRUE,stringsAsFactors=FALSE)
-					# get raw incubation data and prepare them for plotting
-						conLite = dbConnect(dbDriver("SQLite"),dbname = db)
-						a=dbq(conLite,paste("SELECT*FROM", act_ID))
-						dbDisconnect(conLite)
-					
-						aa=
-						a$datetime_=as.POSIXct(a$datetime_)
-						a$datetime_after=c(a$datetime_[-1], a$datetime_[nrow(a)]+5)	
-						a$dif=as.character(difftime(a$datetime_after,a$datetime_, 'secs'))
-						head(a[a$dif!=5,])
-						nrow(a[a$dif!=5,])
-						}
-}
-  
-}
-
 
 {# DONE METADATA PREPARATION 			
 {# create datafile with on_nest and off_nest - DONE
@@ -1642,7 +1479,8 @@
 	}
 }
 
-{# old pesa
+{# PESA 
+	{# old pesa
 load(paste(wd,'pesa_nests.RData',sep=""))
 			nests_$on=NA
 			nests_$off=NA
@@ -1685,6 +1523,78 @@ load(paste(wd,'pesa_nests.RData',sep=""))
 			
 				nests_$end[nests_$nest=='p202']='2008-06-28 11:00:00'
 
+
+}
+	{# DONE getting the CV a new	
+		tr=dbq(con,"SELECT tag_ID,ss_base from loggersatbarrow.ground_interaction_tags")
+		
+		my.rollapply <- function(vec, width, FUN) 
+			sapply(seq_along(vec), 
+           function(i) if (i < width) NA else FUN(vec[i:(i-width+1)]))
+		 
+		tr$ss_base_a=abs(tr$ss_base)
+		tr=ddply(tr, .(tag_ID), transform, sd_=my.rollapply(ss_base_a, 10, sd), mean_=my.rollapply(ss_base_a, 10, mean))
+		head(tr)
+		tr[1:20,]
+		tr$cv=tr$sd_/tr$mean_
+		
+			save(tr,file=paste(wd2,'ground_tags_for_tr_estimation.Rdata',sep=""))
+		densityplot(~sqrt(tr$cv))
+		quantile(tr$cv, 0.99,na.rm = TRUE)
+		quantile(tr$cv, 0.95,na.rm = TRUE)
+		quantile(sqrt(tr$cv), 0.99,na.rm = TRUE)
+	}
+	{# getting the tagged birds
+		p=dbq(con,"SELECT DISTINCT tag_ID , x.ID, x.sex from loggersatbarrow.cv_inttags i
+					LEFT JOIN (SELECT radioFR, s.sex, c.ID from PESAatBARROW.CAPTURES c
+						LEFT JOIN (SELECT ID, sex from PESAatBARROW.sex) s 
+							on c.ID=s.ID) x
+								on i.tag_ID=x.radioFR
+								where tagType=1")
+		
+			save(p,file=paste(wd,'pesas.RData',sep=""))
+			load(file=paste(wd,'pesas.RData',sep=""))
+		
+			nrow(p)
+			nrow(p[p$sex==2,])
+			length(unique(p$tag_ID))
+			p[p$tag_ID%in%p$tag_ID[duplicated(p$tag_ID)],]
+			#303 233113126   2 2008
+			#303 250103959   2 2009
+			
+			f=p[p$sex==2,]
+			nests=dbq(con,"SELECT 'barr' site, c.year_, coalesce(c.nest, n.nest) as nest, radioFr as tag_ID , ID as bird_ID, 'f' sex, coalesce(c.released_date_time, c.start_capture_date_time,c.caught_date_time) datetime_, coalesce(n.latit,c.latit) lat, coalesce( n.longit,c.longit) lon from PESAatBARROW.CAPTURES c
+						LEFT JOIN (SELECT nest, id_female, year_,latit, longit from PESAatBARROW.NESTS) n
+								on  c.ID=n.id_female and
+									 c.year_=n.year_
+									 where c.year_>2007 and c.year_<2010 and radioFr is not null")
+			
+			
+			#nests$temp[is.na(nests$nest)]= ifelse(nchar(nests$temp[is.na(nests$nest)])
+			#nests$nest[is.na(nests$nest)]=paste('P0', nests$temp[is.na(nests$nest)],sep="")
+			
+			nests_=nests[nests$tag_ID%in%f$tag_ID,]
+			nests_=nests_[order(nests_$year_,nests_$tag_ID),]
+			nests_=nests_[which(!(nests_$bird_ID==250103911 & nests_$datetime_=='2009-06-15 14:10:00')),]
+			nests_=nests_[which(!(nests_$bird_ID==233113136 & nests_$datetime_=='2008-06-18 12:58:00')),]
+			nests_=nests_[which(!(nests_$bird_ID==233113109)),]
+			nests_=nests_[which(!(nests_$bird_ID==233113130)),]
+			nests_=nests_[which(!(nests_$bird_ID==250103915)),]
+			
+			#nests_[nests_$bird_ID%in%nests_$bird_ID[duplicated(nests_$bird_ID)],]
+			#nests_[which(nests_$bird_ID=='233113110'),] # no nest
+			
+			save(nests_,file=paste(wd,'pesa_nests.RData',sep=""))
+	}
+	{# nest states
+		nn=dbq(con, "select year_, nest, laying_date, found_date_time, nest_state_date, nest_state, hatching_date_time from PESAatBARROW.NESTS where nest in ('p304','p302','p202','p101','p801','p301','p205','p802','p301','p202','p201','p309','p203')")
+		nn$nn=tolower(paste(nn$year_,nn$nest, sep='_'))
+		nn=nn[which(nn$nn%in%nests_$nest),]
+		nn=nn[order(nn$nn),]
+		writeWorksheetToFile(nn,file=paste(wd,'nests_pesa.xls',sep=""),sheet='end_states')
+		writeWorksheetToFile(nests_,file=paste(wd,'nests_pesa.xls',sep=""),sheet='lat_long')
+	}
+	
 
 }
 
