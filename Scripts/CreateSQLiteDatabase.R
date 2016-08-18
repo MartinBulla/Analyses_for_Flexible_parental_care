@@ -214,7 +214,7 @@
 					a$year=2015
 					a$site='chuk'
 					a$who='m'
-					a$signal=NA
+					a$cv=NA
 					a$sys='uniparental' # breeding system
 					a$act_ID=nests_$act_ID[nests_$nest==a$nest[1]]
 					a$t_method='MSR'
@@ -223,7 +223,7 @@
 					a$tag=NA
 					a$datetime_= as.character(a$datetime_)
 				}	
-				aa=a[,c('act_ID','sys','sp','site','year','t_method','nest','bird_ID','tag','who','datetime_',"disturb",'t_surface','t_nest',"signal",'inc','type' )] 
+				aa=a[,c('act_ID','sys','sp','site','year','t_method','nest','bird_ID','tag','who','datetime_',"disturb",'t_surface','t_nest',"cv",'inc','type' )] 
 				
 				nest=aa$nest[1]
 				yr=aa$year[1]
@@ -373,7 +373,7 @@
 				
 				# define incubation
 					#if((nest=='p101' & yr==2008) | (nest=='p202' & yr==2009)){a$inc=ifelse(a$cv<(tr_+0.009),1,0)}else{
-																								a$inc=ifelse(a$cv>tr_,0,1)
+					a$inc=ifelse(a$cv>tr_,0,1)
 					#																			}
 				
 				#a$inc=ifelse(a$cv<tr_,1,0) 
@@ -927,12 +927,12 @@
 						birds_=birds[paste(birds$year_, birds$nest)==paste( nests_$year[i], nests_$nest[i]),]
 					
 					a$bird_ID=birds_$bird_ID[match(a$who, birds_$sex)]
-					a$signal=NA
+					a$cv=NA
 					a$sys='biparental' # breeding system
 					a$act_ID=act_ID
 				}	
 				
-				aa=a[,c('act_ID','sys','sp','site','year','t_method','nest','bird_ID','tag','who','datetime_','disturb','t_surface','t_nest','signal','inc','type')] # state not used
+				aa=a[,c('act_ID','sys','sp','site','year','t_method','nest','bird_ID','tag','who','datetime_','disturb','t_surface','t_nest','cv','inc','type')] # state not used
 				#aa=a[,c('act_ID','sys','sp','site','year','t_method','nest','bird_ID','tag','who','datetime_z','datetime_','disturb','t_surface','t_nest','signal','inc','type')] # state not used
 							
 				{# load to database				
@@ -1087,7 +1087,7 @@
 			}
 	}
 
-	}
+}
 
 {# DONE METADATA PREPARATION 			
 {# create datafile with on_nest and off_nest - DONE
