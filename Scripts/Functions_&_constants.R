@@ -28,14 +28,14 @@
 				# inp = lenght of incubation period
 				# type = PNG -created, PDF - created, SAVE - also Rdata file saved
 				# min_/max_ - limits of y-axis in the panel
-				# UTC/UTC_met shall data and metadata be transformed
+				# UTC/UTC_met -  shall data and metadata be transformed to longitudinal time (yes = TRUE, no=FALSE) 
 				# signal - are data based on automated tracking?
 				
 		 #  if (type =='PDF') {
 		 #      tf = paste0(outdir,'/',dfr$nest[1], ".pdf")
 		  #     pdf(tf, paper = "a4", width = 8, height = 11.6929134)
 			#}
-			if(UTC==FALSE){dfr$datetime_=dfr$datetime_z}
+			if(UTC==TRUE){dfr$datetime_=as.POSIXct(dfr$datetime_, tz="UTC")+(nests_$local_plus[i]*60*60))}# adjusts to longitudinal time if aksed for
 			 dfr$datetime_=as.POSIXct(dfr$datetime_, tz="UTC")
 			 dfr$day = as.Date(trunc(dfr$datetime_, "day"))
 			 dfr$time = as.numeric(difftime(dfr$datetime_, trunc(dfr$datetime_,"day"), units = "hours"))
