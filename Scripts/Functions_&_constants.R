@@ -3,12 +3,15 @@
 	   sapply(c('ggplot2', 'ggthemes','raster'),
 			function(x) suppressPackageStartupMessages(require(x , character.only = TRUE, quietly = TRUE) ))
 	}
+	
 	{# define workingdirectory
 	     wd="C:/Users/mbulla/Documents/Dropbox/Science/Projects/MS/Bip_to_uni/Analyses/Data/"	
 	}
+	
 	{# define time 
 	  Sys.setenv(TZ="UTC")	
 	}
+	
 	{# define functions
 	  transpcol = function (col = "red", newalpha = 100, mcv = 255) 
 				{
@@ -16,9 +19,18 @@
 					rgb(mycol[1, ], mycol[2, ], mycol[3, ], alpha = newalpha, 
 						maxColorValue = mcv)
 				}
-	  RFID.temperature_actogram = function(dfr,figCap = figCap_,latlon = latlon_, inp=ip_, ins=inc_start,type = "PNG", min_=-3, max_=49, UTC=FALSE, UTC_met=FALSE, signal=FALSE, day=TRUE) {
+	  RFID.temperature_actogram = function(dfr,figCap = figCap_, latlon = latlon_, inp = ip_, ins = inc_start, type = "PNG", min_=-3, max_=49, UTC=FALSE, UTC_met=FALSE, signal=FALSE, day=TRUE) {
+				# dfr - data frame
+				# figCap - figure captions
+				# latlon - latitude longitude
 				# day - panel labels as day or as day of incubation period and inc constancy
+				# ins = start of incubation period
 				# inp = lenght of incubation period
+				# type = PNG -created, PDF - created, SAVE - also Rdata file saved
+				# min_/max_ - limits of y-axis in the panel
+				# UTC/UTC_met shall data and metadata be transformed
+				# signal - are data based on automated tracking?
+				
 		 #  if (type =='PDF') {
 		 #      tf = paste0(outdir,'/',dfr$nest[1], ".pdf")
 		  #     pdf(tf, paper = "a4", width = 8, height = 11.6929134)
@@ -490,6 +502,7 @@
 									}}
 				}	
 	}
+	
 	{# define constants
 			# raw female,male rfid readings and capture line height
 				fm=15
