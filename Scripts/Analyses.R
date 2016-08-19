@@ -897,8 +897,94 @@
   }	
 	
   {# Change in nest attendance
-
+		# run first
+		load(paste(wd,'for_analyses.RData',sep="")) 
+		
+		# uniparental nest attendance (rnph highre then pesa)
+		u=d[d$sp%in%c('rnph','pesa') & d$type=='uni', ]
+		u$sp=as.factor(u$sp)
+		densityplot(~u$att, groups=u$sp)
+		ggplot(u,aes(x=sp,y=att))+geom_boxplot()
+		ggplot(u,aes(x=prop_ip,y=att, fill=sp))+geom_point()+stat_smooth()
+		ggplot(u,aes(x=prop_ip,y=att, fill=sp))+geom_point()+stat_smooth(method='lm')
+		m=lmer(att~sp*scale(prop_ip)+(prop_ip|act_ID),u)
+		summary(m)
+		plot(allEffects(m))
+  
+		u=h[h$sp%in%c('rnph','pesa') & h$type=='uni', ]
+		u$sp=as.factor(u$sp)
+		u$hour=as.numeric(u$hour)
+		u$rad=as.numeric(u$hour)*pi/12
+				b$sin_=sin(b$rad)
+				b$cos_=cos(b$rad)
+		densityplot(~u$att, groups=u$sp)
+		ggplot(u,aes(x=sp,y=att))+geom_boxplot()
+		ggplot(u,aes(x=hour,y=att, fill=sp))+geom_point()+stat_smooth()
+	
+		m=lmer(att~sp*sin(rad)+sp*cos(rad)+(sin(rad)+cos(rad)|act_ID),u)
+		summary(m)
+		plot(allEffects(m))
+		
+		# unip between bip a unip
+		u=h[h$type=='uni', ]
+		u$sp=as.factor(u$sp)
+		u$sys=as.factor(u$sys)
+		u$hour=as.numeric(u$hour)
+		u$rad=as.numeric(u$hour)*pi/12
+				
+		densityplot(~u$att, groups=u$sp)
+		ggplot(u,aes(x=sp,y=att))+geom_boxplot()
+		ggplot(u,aes(x=hour,y=att, fill=sp))+geom_point()+stat_smooth()
+	
+		m=lmer(att~sys*sin(rad)+sys*cos(rad)+(sin(rad)+cos(rad)|sp)+(sin(rad)+cos(rad)|act_ID),u)
+		ms=lmer(att~sp*sin(rad)+sp*cos(rad)+(sin(rad)+cos(rad)|sp)+(sin(rad)+cos(rad)|act_ID),u)
+		summary(m)
+		plot(allEffects(ms))
+		
+		# biparental nest attendance 
+		u=d[!d$sp%in%c('rnph','pesa'), ]
+		u$sp=as.factor(u$sp)
+		u$type=as.factor(u$type)
+		ggplot(u,aes(x=sp,y=att, col=type))+geom_boxplot()
+		ggplot(u,aes(x=prop_ip,y=att,  col=type))+geom_point()+stat_smooth()
+		ggplot(u,aes(x=prop_ip,y=att, fill=type))+geom_point()+stat_smooth(method='lm')
+		m=lmer(att~type*scale(prop_ip)+(prop_ip|act_ID)+(prop_ip|sp),u)
+		summary(m)
+		plot(allEffects(m))
+		
+		u=h[!h$sp%in%c('rnph','pesa'), ]
+		u$sp=as.factor(u$sp)
+		u$type=as.factor(u$type)
+		u$sys=as.factor(u$sys)
+		u$hour=as.numeric(u$hour)
+		u$rad=as.numeric(u$hour)*pi/12
+				
+		densityplot(~u$att, groups=u$sp)
+		ggplot(u,aes(x=sp,y=att, fill=type))+geom_boxplot()
+		ggplot(u,aes(x=hour,y=att, fill=type))+geom_point()+stat_smooth()
+	
+		m=lmer(att~type*sin(rad)+type*cos(rad)+(sin(rad)+cos(rad)|sp)+(sin(rad)+cos(rad)|act_ID),u)
+	
+		summary(m)
+		plot(allEffects(ms))
+		
+		u=h
+		u$sp=as.factor(u$sp)
+		u$type=as.factor(u$type)
+		u$sys=as.factor(u$sys)
+		u$hour=as.numeric(u$hour)
+		u$sys_t=as.factor(interaction(u$sys,u$type))
+		u$sys_t2=as.factor(ifelse(u$sys=='uniparental', ifelse(u$sp=='rnph', 'uni_rnph','uni_pesa'), ifelse(u$type=='uni', 'bip_uni', 'bip_bip')))
+		u$rad=as.numeric(u$hour)*pi/12
+		m=lmer(att~sys_t*sin(rad)+sys_t*cos(rad)+(sin(rad)+cos(rad)|sp)+(sin(rad)+cos(rad)|act_ID),u)
+		m2=lmer(att~sys_t2*sin(rad)+sys_t2*cos(rad)+(sin(rad)+cos(rad)|sp)+(sin(rad)+cos(rad)|act_ID),u)
+		AICc(m)
+		AICc(m2)
+		summary(m)
+		plot(allEffects(m))
+		plot(allEffects(m2))
   }
+	
 		
 		{# LATER DELETE calculate same but using data from the database
 			load(paste(wd,'for_analyses.RData',sep="")) 
