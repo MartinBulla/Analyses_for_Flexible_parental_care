@@ -148,8 +148,9 @@
 			n_[n_$uni_last>10,]
 			densityplot(~n_$uni_last)
 		}
-		{# nests left because field work ended
-			length(n_$nest[n_$state=='w'])+ length(n_$nest[n_$state=='u'])-3 # 3 nests where uncertainty was about hatching, desertion or depredation
+		{# nests left because field work ended = 10
+			length(n_$nest[n_$state=='w'])+ length(n_$nest[n_$state=='u'])-3+1 # 3 nests with uncertainty was about hatching, desertion or depredation
+																			   # 1 nest with thee system taken off for over 10 days and then placed back again
 		}
 	}	 
 	
@@ -897,13 +898,54 @@
   }	
 	
   {# Change in nest attendance
-		# run first
-		load(paste(wd,'for_analyses.RData',sep="")) 
+		{# run first
+			load(paste(wd,'for_analyses.RData',sep="")) 
+			# limit to periods with at least 75% of uniparental or biparental incubation
+				d=d[which((d$sp=='pesa' & 0.75<(d$n/900))| (d$sp!='pesa' & 0.75<(d$n/720))),]
+				h=h[which((h$sp=='pesa' & 0.75<(h$n/900))| (h$sp!='pesa' & 0.75<(h$n/720))),]
+				
+			{# species
+				sp_ =read.csv(paste(wd,'species.csv', sep=""), stringsAsFactors=FALSE)
+				sp_$order=-sp_$order
+				sp_=sp_[order(sp_$order),]
 		
-		# uniparental nest attendance (rnph highre then pesa)
+				d$species=sp_$species[match(d$sp,sp_$sp)]
+				d$order=as.factor(sp_$order[match(d$sp,sp_$sp)])
+				
+				h$species=sp_$species[match(h$sp,sp_$sp)]
+				h$order=as.factor(sp_$order[match(h$sp,sp_$sp)])
+
+				}	
+		}
+		
+		{# Figure 4
+			# (a) 
+			ggplot(d,aes(x=order,y=att, col=type))+geom_boxplot()+
+													scale_x_discrete(labels=sp_$species)+
+													coord_flip()		
+			
+			ggplot(d,aes(x=order,y=att, col=type))+geom_boxplot()+
+													scale_x_discrete(labels=sp_$species)+
+													theme(axis.text.x=element_text(angle = 90, hjust = 1, vjust=0))
+													
+			ggplot(d,aes(x=prop_ip,y=att,  col=type, shape=sys))+geom_point()+stat_smooth()
+			ggplot(d,aes(x=prop_ip,y=att,  col=type, shape=sys))+geom_point(alpha=0.2)+stat_smooth(method='lm')+theme_bw()
+			u=d[!d$sp%in%c('rnph','pesa'), ]
+			u$type=as.factor(u$type)
+			m=lmer(att~type*scale(prop_ip)+(prop_ip|act_ID)+(prop_ip|sp),u)	
+			d$types=as.factor(ifelse(d$sys=='uniparental', 'unip_sp', ifelse(d$type=='bip', 'bip_sp_bip', 'bip_sp_uni')))
+			m=lmer(att~type*scale(prop_ip)+(prop_ip|act_ID)+(prop_ip|sp),u)	
+			
+			# TWEEK THIS MODEL
+			m=lmer(att~types*scale(prop_ip)+(prop_ip|act_ID)+(prop_ip|sp),d)	
+			plot(allEffects(m))	
+			summary(glht(m))
+		}	
+		
+		{# uniparental nest attendance (rnph highre then pesa)
 		u=d[d$sp%in%c('rnph','pesa') & d$type=='uni', ]
 		u$sp=as.factor(u$sp)
-		densityplot(~u$att, groups=u$sp)
+		densityplot(~u$att, groups=u$sp, auto.key=TRUE)
 		ggplot(u,aes(x=sp,y=att))+geom_boxplot()
 		ggplot(u,aes(x=prop_ip,y=att, fill=sp))+geom_point()+stat_smooth()
 		ggplot(u,aes(x=prop_ip,y=att, fill=sp))+geom_point()+stat_smooth(method='lm')
@@ -924,12 +966,16 @@
 		m=lmer(att~sp*sin(rad)+sp*cos(rad)+(sin(rad)+cos(rad)|act_ID),u)
 		summary(m)
 		plot(allEffects(m))
+		}
 		
-		# unip between bip a unip
+		{# unip between bip a unip
 		u=h[h$type=='uni', ]
+		
 		u$sp=as.factor(u$sp)
 		u$sys=as.factor(u$sys)
+		
 		u$hour=as.numeric(u$hour)
+		
 		u$rad=as.numeric(u$hour)*pi/12
 				
 		densityplot(~u$att, groups=u$sp)
@@ -940,8 +986,8 @@
 		ms=lmer(att~sp*sin(rad)+sp*cos(rad)+(sin(rad)+cos(rad)|sp)+(sin(rad)+cos(rad)|act_ID),u)
 		summary(m)
 		plot(allEffects(ms))
-		
-		# biparental nest attendance 
+		}
+		{# biparental nest attendance 
 		u=d[!d$sp%in%c('rnph','pesa'), ]
 		u$sp=as.factor(u$sp)
 		u$type=as.factor(u$type)
