@@ -905,6 +905,7 @@
 				d=ddply(d,.(act_ID,type), transform, start_j=day_j-min(day_j)+1)
 				h=h[which((h$sp=='pesa' & 0.75<(h$n/60))| (h$sp!='pesa' & 0.75<(h$n/720))),]
 				h=ddply(h,.(act_ID,type), transform, start_j=day_j-min(day_j)+1)
+				h$hour=as.numeric(h$hour)
 				
 			{# species
 				sp_ =read.csv(paste(wd,'species.csv', sep=""), stringsAsFactors=FALSE)
@@ -1060,19 +1061,29 @@
 		}
 		{# Supplementary Figure 2
 				{# species
-				sp_ =read.csv(paste(wd,'species.csv', sep=""), stringsAsFactors=FALSE)
-				#sp_$order=-sp_$order
-				sp_=sp_[order(sp_$order),]
-		
-				h$species=sp_$species[match(h$sp,sp_$sp)]
-				h$order=as.factor(sp_$order[match(h$sp,sp_$sp)])
+					sp_ =read.csv(paste(wd,'species.csv', sep=""), stringsAsFactors=FALSE)
+					#sp_$order=-sp_$order
+					sp_=sp_[order(sp_$order),]
+			
+					h$species=sp_$species[match(h$sp,sp_$sp)]
+					h$order=as.factor(sp_$order[match(h$sp,sp_$sp)])
 				}
+				{# add sex
+					n =read.csv(paste(wd,'nests.csv', sep=""), stringsAsFactors=FALSE)
+					n=n[!duplicated(n$act_ID),]
+					h$sex[h$type=='uni']=n$sex[match(h$act_ID[h$type=='uni'],n$act_ID)]
+					h$sex=factor(ifelse(is.na(h$sex),'biparental', ifelse(h$sex=='m', 'uniparental female', 'uniparental male')),levels=c('biparental','uniparental female', 'uniparental male'))#'uniparental \u2640', 'uniparental \u2642'))
+				}
+				
 				dev.new(width=7, height=6.5)
 				ggplot(h,aes(x=hour,y=att))+
-										geom_point(aes(fill=sys),shape=21,size=0.9,col='grey50')+#	#geom_point(aes(shape=sys),alpha=0.3,size=1)+
-										scale_fill_manual(name="Incubation system",values=alpha(c("grey40", "white"),.3))+
-										stat_smooth(aes(col=order, lty=type),method='loess', se=FALSE, lwd=1)+
-										scale_linetype_manual(name='Incubation type'))+#, values=c("solid", "dotted"))+
+										geom_point(aes(fill=sex),shape=21, size=0.75, col='grey80')+#	#geom_point(aes(shape=sys),alpha=0.3,size=1)+
+										
+										stat_smooth(aes(col=order, lwd=sex),method='loess', se=FALSE)+#, lwd=0.8)+
+										scale_size_manual(name='Incubation type', breaks=c('biparental','uniparental female', 'uniparental male'),values=c(0.3,0.7,0.7))+										
+										#scale_linetype_manual(name='Incubation type', breaks=c('biparental','uniparental female', 'uniparental male'),values=c("dashed","solid","solid"))+
+										scale_fill_manual(name="Incubation type",breaks=c('biparental','uniparental female', 'uniparental male'),values=alpha(c("#5eab2b","#FCB42C","#535F7C"),0.6))+
+										
 										scale_colour_discrete(name="Species", labels=sp_$species[order(sp_$order)])+		
 										facet_wrap(~act_ID, ncol=8)+#, scales="free_x")+
 										xlab("Species' incubation period [proportion]")+
@@ -1103,7 +1114,7 @@
 												legend.title=element_text(size=7, colour="grey30")
 													)
 		
-				ggsave(paste(out_,"Change_in_uniparental_nest_attendance_for_all_nests.png", sep=""),width=7, height=6.5, units='in',dpi=600)						
+				ggsave(paste(out_,"Supplementary_Figure_2.png", sep=""),width=7, height=6.5, units='in',dpi=600)						
 				}
 
 		}
