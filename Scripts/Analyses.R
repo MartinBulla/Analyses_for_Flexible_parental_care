@@ -902,7 +902,9 @@
 			load(paste(wd,'for_analyses.RData',sep="")) 
 			# limit to periods with at least 75% of uniparental or biparental incubation
 				d=d[which((d$sp=='pesa' & 0.75<(d$n/900))| (d$sp!='pesa' & 0.75<(d$n/720))),]
+				d=ddply(d,.(act_ID,type), transform, start_j=day_j-min(day_j)+1)
 				h=h[which((h$sp=='pesa' & 0.75<(h$n/900))| (h$sp!='pesa' & 0.75<(h$n/720))),]
+				h=ddply(h,.(act_ID,type), transform, start_j=day_j-min(day_j)+1)
 				
 			{# species
 				sp_ =read.csv(paste(wd,'species.csv', sep=""), stringsAsFactors=FALSE)
@@ -920,6 +922,19 @@
 		
 		{# Figure 4
 			# (a) 
+				{# species
+				sp_ =read.csv(paste(wd,'species.csv', sep=""), stringsAsFactors=FALSE)
+				sp_$order=-sp_$order
+				sp_=sp_[order(sp_$order),]
+		
+				d$species=sp_$species[match(d$sp,sp_$sp)]
+				d$order=as.factor(sp_$order[match(d$sp,sp_$sp)])
+				
+				h$species=sp_$species[match(h$sp,sp_$sp)]
+				h$order=as.factor(sp_$order[match(h$sp,sp_$sp)])
+
+				}	
+		
 			ggplot(d,aes(x=order,y=att, col=type))+geom_boxplot()+
 													scale_x_discrete(labels=sp_$species)+
 													coord_flip()		
@@ -930,13 +945,69 @@
 													
 			ggplot(d,aes(x=prop_ip,y=att,  col=type, shape=sys))+geom_point()+stat_smooth()
 			ggplot(d,aes(x=prop_ip,y=att,  col=type, shape=sys))+geom_point(alpha=0.2)+stat_smooth(method='lm')+theme_bw()
+			ggplot(d[d$type=='uni',],aes(x=prop_ip,y=att,  col=sp))+geom_point(alpha=0.2)+stat_smooth(method='lm', se=FALSE)+theme_bw()
+			ggplot(d[d$type=='uni',],aes(x=prop_ip,y=att,  col=act_ID))+geom_point(alpha=0.2)+stat_smooth(method='lm', se=FALSE)+theme_bw()
+			
+			
+				{# species
+				sp_ =read.csv(paste(wd,'species.csv', sep=""), stringsAsFactors=FALSE)
+				#sp_$order=-sp_$order
+				sp_=sp_[order(sp_$order),]
+		
+				d$species=sp_$species[match(d$sp,sp_$sp)]
+				d$order=as.factor(sp_$order[match(d$sp,sp_$sp)])
+				
+				h$species=sp_$species[match(h$sp,sp_$sp)]
+				h$order=as.factor(sp_$order[match(h$sp,sp_$sp)])
+
+				}	
+		
+			dev.new(width=7, height=6.5)
+			ggplot(d[d$type=='uni',],aes(x=prop_ip,y=att))+
+										geom_point(aes(fill=sys),shape=21,size=0.9,col='grey50')+#	#geom_point(aes(shape=sys),alpha=0.3,size=1)+
+										scale_fill_manual(name="Incubation system",values=alpha(c("grey40", "white"),.3))+
+										stat_smooth(aes(col=order),method='lm', se=FALSE, lwd=1)+
+										scale_colour_discrete(name="Species", labels=sp_$species[order(sp_$order)])+		
+										facet_wrap(~act_ID, ncol=8)+#, scales="free_x")+
+										xlab("Species' incubation period [proportion]")+
+										ylab("Nest attendance [proportion]")+
+										theme_light()+
+										theme(	
+												axis.line=element_line(colour="grey70", size=0.25),
+												panel.border=element_rect(colour="grey70", size=0.25),
+												panel.grid = element_blank(),
+								
+												axis.title=element_text(size=7, colour="grey30"),
+												axis.title.y = element_text(vjust=1.1),
+												axis.title.x = element_text(vjust=0.2),
+												axis.text=element_text(size=6),# margin=units(0.5,"mm")),
+												axis.ticks.length=unit(0.5,"mm"),
+												#axis.ticks.margin,
+												
+												strip.background = element_blank(),
+												strip.text.x = element_blank(),
+												#strip.background = element_blank(), 
+												#strip.text = element_blank(),
+												panel.margin = unit(1, "mm"),
+												#legend.position="none"
+												#legend.background=element_rect(colour="white"),
+												legend.key=element_blank(),
+												legend.key.size = unit(0.75, 'lines'),
+												legend.text=element_text(size=6, colour="grey30"),
+												legend.title=element_text(size=7, colour="grey30")
+													)
+		
+				ggsave(paste(out_,"Change_in_uniparental_nest_attendance_for_all_nests.png", sep=""),width=7, height=6.5, units='in',dpi=600)						
+
+										
 			u=d[!d$sp%in%c('rnph','pesa'), ]
 			u$type=as.factor(u$type)
 			m=lmer(att~type*scale(prop_ip)+(prop_ip|act_ID)+(prop_ip|sp),u)	
-			d$types=as.factor(ifelse(d$sys=='uniparental', 'unip_sp', ifelse(d$type=='bip', 'bip_sp_bip', 'bip_sp_uni')))
+			d$types=factor(ifelse(d$sys=='uniparental', 'unip_sp', ifelse(d$type=='bip', 'bip_sp_bip', 'bip_sp_uni')))#,levels=c('unip_sp','bip_sp_uni','bip_sp_bip'))
 			m=lmer(att~type*scale(prop_ip)+(prop_ip|act_ID)+(prop_ip|sp),u)	
 			
 			# TWEEK THIS MODEL
+			m0=lmer(att~types*scale(prop_ip)+(prop_ip|act_ID)+(prop_ip|sp),d)	
 			m=lmer(att~types*scale(prop_ip)+(prop_ip|act_ID)+(prop_ip|sp),d)	
 			plot(allEffects(m))	
 			summary(glht(m))
