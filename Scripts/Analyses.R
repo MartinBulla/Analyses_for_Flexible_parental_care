@@ -921,8 +921,9 @@
 				}	
 		}
 		
-		{# Figure 4
+		{# Figure 4 a
 			{# (a) 
+				length(unique(d$act_ID))
 				{# species
 				sp_ =read.csv(paste(wd,'species.csv', sep=""), stringsAsFactors=FALSE)
 				sp_$order=-sp_$order
@@ -1035,29 +1036,269 @@
 		
 				ggsave(paste(out_,"Change_in_uniparental_nest_attendance_for_all_nests.png", sep=""),width=7, height=6.5, units='in',dpi=600)						
 				}
-		{# Figure 4b - CREATE THE FIGURE FROM PREDICTIONS
+		{# Figure 4b
 			d$actID_type=interaction(d$act_ID,d$type)
 			d$sp_type=interaction(d$sp,d$type)
 			d$types=factor(ifelse(d$sys=='uniparental', 'unip_sp', ifelse(d$type=='bip', 'bip_sp_bip', 'bip_sp_uni')))#,levels=c('unip_sp','bip_sp_uni','bip_sp_bip'))
+			d$cols=factor(ifelse(d$sys=='uniparental', uni_col, ifelse(d$type=='bip',bip_bip_col, bip_uni_col)))#,levels=c('unip_sp','bip_sp_uni','bip_sp_bip'))
+			dd=d[d$sp!='pesa',]
 			m=lmer(att~scale(prop_ip)*types+(prop_ip|actID_type)+(prop_ip|sp_type),d, REML=FALSE)	
+			#ms=lmer(att~types+(prop_ip|actID_type)+(prop_ip|sp_type),d, REML=FALSE)	
 			#mp=lmer(att~poly(prop_ip,2)*types+(prop_ip|actID_type)+(prop_ip|sp_type),d, REML=FALSE)	
 			#m=lmer(att~scale(prop_ip)*types+(prop_ip|act_ID)+(prop_ip|sp),d)	
 			
 			plot(allEffects(m))	
 			summary(glht(m))
 			summary(m)
-		}	
-		{# Figure 6
+			{# run first - prepare predictions
+							m=lmer(att~scale(prop_ip)*types+(prop_ip|actID_type)+(prop_ip|sp_type),d, REML=FALSE)	
+							#summary(m)
+							#plot(allEffects(m))
+						
+							# simulation		
+								nsim <- 5000
+								bsim <- sim(m, n.sim=nsim)  
+								apply(bsim@fixef, 2, quantile, prob=c(0.025,0.975))	
+							
+							# coefficients
+								v <- apply(bsim@fixef, 2, quantile, prob=c(0.5))	
+							# predicted values		
+								newDa=data.frame(prop_ip=seq(min(d$prop_ip),max(d$prop_ip),length.out=200),
+												types='bip_sp_bip')
+								newDb=data.frame(prop_ip=seq(min(d$prop_ip),max(d$prop_ip),length.out=200),
+												types='bip_sp_uni')	
+								newDc=data.frame(prop_ip=seq(min(d$prop_ip),max(d$prop_ip),length.out=200),
+												types='unip_sp')
+								newD=rbind(newDa,newDb,newDc)			
+																
+							# exactly the model which was used has to be specified here 
+								X <- model.matrix(~ prop_ip*types,data=newD)	
+											
+							# calculate predicted values and creditability intervals
+								newD$pred <- X%*%v # #newD$fit_b <- plogis(X%*%v) # in case on binomial scaleback
+										predmatrix <- matrix(nrow=nrow(newD), ncol=nsim)
+										for(i in 1:nsim) predmatrix[,i] <- X%*%bsim@fixef[i,]
+										newD$lwr <- apply(predmatrix, 1, quantile, prob=0.025)
+										newD$upr <- apply(predmatrix, 1, quantile, prob=0.975)
+										#newD$other <- apply(predmatrix, 1, quantile, prob=0.5)
+										#newD=newD[order(newD$t_tundra),]
+								p=newD
+								pu=p[p$types=='unip_sp',]
+								pbb=p[p$types=='bip_sp_bip',]
+								pbu=p[p$types=='bip_sp_uni',]
+				}			
+			{# plot 
+				 #dev.new(width=3.5*0.5,height=1.85)
+					png(paste(out_,"Figure_4b.png", sep=""), width=3.5*0.5,height=1.85,units="in",res=600)
+						par(mar=c(0.0,0,0,0.4),oma = c(2.1, 2.1, 0.2, 0.2),ps=12, mgp=c(1.2,0.35,0), las=1, cex=1, col.axis="grey30",font.main = 1, col.lab="grey30", col.main="grey30", fg="grey70", cex.lab=0.6,cex.main=0.7, cex.axis=0.5, tcl=-0.1,bty="n",xpd=TRUE) #
+						plot(NA,pch=19,xlim=c(0,1.6), ylim=c(0,1), xlab=NA, ylab=NA, yaxt='n',xaxt='n', type='n')
+											
+							axis(1, at=seq(0,1.6,by=0.4),labels=seq(0,1.6,by=0.4),cex.axis=0.5,mgp=c(0,-0.20,0))
+								mtext("Species' incubation period\n[proportion]",side=1,line=1, cex=0.6, las=1, col='grey30')
+							
+							axis(2, at=seq(0,1,by=0.25), labels=TRUE)
+							mtext("Nest attendance [proportion]",side=2,line=1.3, cex=0.6, las=3, col='grey30')
+							#lines(c(0,0),c(0,16.5), lty=3, col="red")							
+						# data
+							points(d$att~d$prop_ip, col=adjustcolor(d$cols, alpha.f = 0.3), pch=20, cex=0.2)	
+							#points(inc$inc_eff~inc$bout_start_j_c, col=inc$col_,bg=adjustcolor(inc$col_, alpha.f = 0.4), pch=21, cex=0.5)	
+						
+						
+						# predictions
+							# uniparental species
+							polygon(c(pu$prop_ip, rev(pu$prop_ip)), c(pu$lwr, 
+								rev(pu$upr)), border=NA, col=adjustcolor(uni_col ,alpha.f = 0.2)) #0,0,0 black 0.5 is transparents RED
+							lines(pu$prop_ip, pu$pred, col=uni_col,lwd=1)
+							
+							# biparental species biparental incubation
+							polygon(c(pbb$prop_ip, rev(pbb$prop_ip)), c(pbb$lwr, 
+								rev(pbb$upr)), border=NA, col=adjustcolor(bip_bip_col ,alpha.f = 0.2)) #0,0,0 black 0.5 is transparents RED
+							lines(pbb$prop_ip, pbb$pred, col=bip_bip_col,lwd=1)
+							
+							# biparental species uniparental incubation
+							polygon(c(pbu$prop_ip, rev(pbu$prop_ip)), c(pbu$lwr, 
+								rev(pbu$upr)), border=NA, col=adjustcolor(bip_uni_col ,alpha.f = 0.2)) #0,0,0 black 0.5 is transparents RED
+							lines(pbu$prop_ip, pbu$pred, col=bip_uni_col,lwd=1)
+							
+																			
+					
+							text(x=0.2,y=0.13, labels='Biparental\nspecies\nbiparental\nincubation', col=bip_bip_col, cex=0.4)
+							text(x=0.8,y=0.13, labels='Biparental\nspecies\nuniparental\nincubation', col=bip_uni_col, cex=0.4)
+							text(x=1.4,y=0.13, labels='Uniparental\nspecies\nuniparental\nincubation', col=uni_col, cex=0.4)
+							
+													
+				dev.off()
+			}	
+			{# Supplementary Data Table 2
+				m=lmer(att~scale(prop_ip)*types+(prop_ip|actID_type)+(prop_ip|sp_type),d, REML=FALSE)	
+			 
+				pred=c('Intercept (bip_bip)','Incubation period', 'Type (bip_uni)','Type (uni)', 'Incubation period x bip_sp_uni', 'Incubation period x uni')
+						nsim <- 5000
+						bsim <- sim(m, n.sim=nsim)  
+				# Fixed effects
+					v <- apply(bsim@fixef, 2, quantile, prob=c(0.5))
+					ci=apply(bsim@fixef, 2, quantile, prob=c(0.025,0.975))	
+					oi=data.frame(model='1',type='fixed',effect=pred,estimate=v, lwr=ci[1,], upr=ci[2,])
+					rownames(oi) = NULL
+						oi$estimate_r=round(oi$estimate,2)
+						oi$lwr_r=round(oi$lwr,2)
+						oi$upr_r=round(oi$upr,2)
+						#oi$CI=paste("(", oi$lwr_r, "-", oi$upr_r, ")", sep = "", collapse = NULL)
+					oii=oi[c('model','type',"effect", "estimate_r","lwr_r",'upr_r')]	
+				# Random effects var*100
+					l=data.frame(summary(m)$varcor)
+					l=l[is.na(l$var2),]
+						ri=data.frame(model='1', type='random (var)',effect=l$grp, estimate_r=round(l$vcov*100,2), lwr_r=NA, upr_r=NA)
+					o1=rbind(oii,ri)
+				# create xlsx		
+						sname = tempfile(fileext='.xls')
+						wb = loadWorkbook(sname,create = TRUE)	
+						createSheet(wb, name = "output")
+						writeWorksheet(wb, o1, sheet = "output")
+						#createSheet(wb, name = "output_AIC")
+						#writeWorksheet(wb, rbind(o), sheet = "output_AIC")
+						saveWorkbook(wb)
+						shell(sname)
+			
+		}
+		}
+		{# Figure 4c
 			h$actID_type=interaction(h$act_ID,h$type)
 			h$sp_type=interaction(h$sp,h$type)
 			h$types=factor(ifelse(h$sys=='uniparental', 'unip_sp', ifelse(h$type=='bip', 'bip_sp_bip', 'bip_sp_uni')))
+			h$cols=factor(ifelse(h$sys=='uniparental', uni_col, ifelse(h$type=='bip', bip_bip_col, bip_uni_col)))
 			h$hour=as.numeric(h$hour)
 			h$rad=as.numeric(h$hour)*pi/12
+			h$sin_=sin(h$rad)
+			h$cos_=cos(h$rad)
 			
 			m=lmer(att~sin(rad)*types+cos(rad)*types+(sin(rad)+cos(rad)|actID_type)+(sin(rad)+cos(rad)|sp_type),data=h, REML=FALSE)	
 			plot(allEffects(m))	
 			summary(glht(m))
 			summary(m)
+			{# run first - prepare predictions
+							m=lmer(att~sin_*types+cos_*types+(sin(rad)+cos(rad)|actID_type)+(sin(rad)+cos(rad)|sp_type),data=h, REML=FALSE)	
+							#summary(m)
+							#plot(allEffects(m))
+						
+							# simulation		
+								nsim <- 5000
+								bsim <- sim(m, n.sim=nsim)  
+								apply(bsim@fixef, 2, quantile, prob=c(0.025,0.975))	
+							
+							# coefficients
+								v <- apply(bsim@fixef, 2, quantile, prob=c(0.5))	
+							# predicted values		
+								ll=list()
+								for(i in c('bip_sp_bip','bip_sp_uni','unip_sp')){
+									newD=data.frame(hour=seq(0,24,0.25))
+										newD$rad=2*pi*newD$hour / 24
+										newD$sin_=sin(newD$rad)
+										newD$cos_=cos(newD$rad)
+										newD$types=i
+										ll[[i]]=newD
+										}
+								newD=do.call(rbind,ll)		
+								
+							# exactly the model which was used has to be specified here 
+								X <- model.matrix(~ sin_*types+cos_*types,data=newD)	
+											
+							# calculate predicted values and creditability intervals
+								newD$pred <- X%*%v # #newD$fit_b <- plogis(X%*%v) # in case on binomial scaleback
+										predmatrix <- matrix(nrow=nrow(newD), ncol=nsim)
+										for(i in 1:nsim) predmatrix[,i] <- X%*%bsim@fixef[i,]
+										newD$lwr <- apply(predmatrix, 1, quantile, prob=0.025)
+										newD$upr <- apply(predmatrix, 1, quantile, prob=0.975)
+										#newD$other <- apply(predmatrix, 1, quantile, prob=0.5)
+										#newD=newD[order(newD$t_tundra),]
+								p=newD
+								pu=p[p$types=='unip_sp',]
+								pbb=p[p$types=='bip_sp_bip',]
+								pbu=p[p$types=='bip_sp_uni',]
+				}			
+			{# plot 
+				 #dev.new(width=3.5*0.5,height=1.85)
+						png(paste(out_,"Figure_4c.png", sep=""), width=3.5*0.5,height=1.85,units="in",res=600)
+						par(mar=c(0.0,0,0,0.4),oma = c(2.1, 2.1, 0.2, 0.2),ps=12, mgp=c(1.2,0.35,0), las=1, cex=1, col.axis="grey30",font.main = 1, col.lab="grey30", col.main="grey30", fg="grey70", cex.lab=0.6,cex.main=0.7, cex.axis=0.5, tcl=-0.1,bty="n",xpd=TRUE) #
+						plot(NA,pch=19,xlim=c(0,24), ylim=c(0,1), xlab=NA, ylab=NA, yaxt='n',xaxt='n', type='n')
+											
+							axis(1, at=seq(0,24,by=6),labels=seq(0,24,by=6),cex.axis=0.5,mgp=c(0,-0.20,0))
+								mtext("Time of day [hours]",side=1,line=1/2, cex=0.6, las=1, col='grey30')
+							
+							axis(2, at=seq(0,1,by=0.25), labels=TRUE)
+							mtext("Nest attendance [proportion]",side=2,line=1.3, cex=0.6, las=3, col='grey30')
+							#lines(c(0,0),c(0,16.5), lty=3, col="red")							
+						# data
+							# aggregate per hour, species and type of incubation		
+								h$nn=1
+								gg=ddply(h,.(sp,cols, types, hour), summarise,mean_=mean(att),se_=sd(att)/sqrt(length(att)),n=sum(nn))
+								gg=gg[order(gg$types),]							
+							#arrows(x0=gg$hour, y0=gg$mean_-gg$se_,x1=gg$hour,y1=gg$mean_+gg$se_,code = 0, col =col_p , angle = 90, length = .025, lwd=1, lty=1)
+							symbols(gg$hour,gg$mean_, circles=sqrt(gg$n/pi),inches=0.14/1.75,bg='white', add=TRUE) 
+							symbols(gg$hour,gg$mean_, circles=sqrt(gg$n/pi),inches=0.14/1.75,bg=adjustcolor(gg$cols,alpha.f = 0.2),add=TRUE, fg=col_p) #bg=alpha(col_p,0.1)
+							symbols(gg$hour,gg$mean_, circles=sqrt(gg$n/pi),inches=0.14/1.75,fg=adjustcolor(gg$cols,alpha.f = 0.2),add=TRUE), fg=col_p) #bg=alpha(col_p,0.1)
+								
+														#points(h$att~h$hour, col=adjustcolor(h$cols, alpha.f = 0.3), pch=20, cex=0.2)	
+							#points(inc$inc_eff~inc$bout_start_j_c, col=inc$col_,bg=adjustcolor(inc$col_, alpha.f = 0.4), pch=21, cex=0.5)	
+						
+						# predictions
+							# uniparental species
+							polygon(c(pu$hour, rev(pu$hour)), c(pu$lwr, 
+								rev(pu$upr)), border=NA, col=adjustcolor(uni_col ,alpha.f = 0.2)) #0,0,0 black 0.5 is transparents RED
+							lines(pu$hour, pu$pred, col=uni_col,lwd=1)
+							
+							# biparental species biparental incubation
+							polygon(c(pbb$hour, rev(pbb$hour)), c(pbb$lwr, 
+								rev(pbb$upr)), border=NA, col=adjustcolor(bip_bip_col ,alpha.f = 0.2)) #0,0,0 black 0.5 is transparents RED
+							lines(pbb$hour, pbb$pred, col=bip_bip_col,lwd=1)
+							
+							# biparental species uniparental incubation
+							polygon(c(pbu$hour, rev(pbu$hour)), c(pbu$lwr, 
+								rev(pbu$upr)), border=NA, col=adjustcolor(bip_uni_col ,alpha.f = 0.2)) #0,0,0 black 0.5 is transparents RED
+							lines(pbu$hour, pbu$pred, col=bip_uni_col,lwd=1)
+							
+																			
+					
+							text(x=0.2,y=0.13, labels='Biparental\nspecies\nbiparental\nincubation', col=bip_bip_col, cex=0.4)
+							text(x=0.8,y=0.13, labels='Biparental\nspecies\nuniparental\nincubation', col=bip_uni_col, cex=0.4)
+							text(x=1.4,y=0.13, labels='Uniparental\nspecies\nuniparental\nincubation', col=uni_col, cex=0.4)
+							
+													
+				dev.off()
+			}	
+			{# Supplementary Data Table 2
+				m=lmer(att~scale(prop_ip)*types+(prop_ip|actID_type)+(prop_ip|sp_type),d, REML=FALSE)	
+			 
+				pred=c('Intercept (bip_bip)','Incubation period', 'Type (bip_uni)','Type (uni)', 'Incubation period x bip_sp_uni', 'Incubation period x uni')
+						nsim <- 5000
+						bsim <- sim(m, n.sim=nsim)  
+				# Fixed effects
+					v <- apply(bsim@fixef, 2, quantile, prob=c(0.5))
+					ci=apply(bsim@fixef, 2, quantile, prob=c(0.025,0.975))	
+					oi=data.frame(model='1',type='fixed',effect=pred,estimate=v, lwr=ci[1,], upr=ci[2,])
+					rownames(oi) = NULL
+						oi$estimate_r=round(oi$estimate,2)
+						oi$lwr_r=round(oi$lwr,2)
+						oi$upr_r=round(oi$upr,2)
+						#oi$CI=paste("(", oi$lwr_r, "-", oi$upr_r, ")", sep = "", collapse = NULL)
+					oii=oi[c('model','type',"effect", "estimate_r","lwr_r",'upr_r')]	
+				# Random effects var*100
+					l=data.frame(summary(m)$varcor)
+					l=l[is.na(l$var2),]
+						ri=data.frame(model='1', type='random (var)',effect=l$grp, estimate_r=round(l$vcov*100,2), lwr_r=NA, upr_r=NA)
+					o1=rbind(oii,ri)
+				# create xlsx		
+						sname = tempfile(fileext='.xls')
+						wb = loadWorkbook(sname,create = TRUE)	
+						createSheet(wb, name = "output")
+						writeWorksheet(wb, o1, sheet = "output")
+						#createSheet(wb, name = "output_AIC")
+						#writeWorksheet(wb, rbind(o), sheet = "output_AIC")
+						saveWorkbook(wb)
+						shell(sname)
+			
+		}
+		
 		}
 		{# Supplementary Figure 2
 				{# species
@@ -1116,8 +1357,9 @@
 		
 				ggsave(paste(out_,"Supplementary_Figure_2.png", sep=""),width=7, height=6.5, units='in',dpi=600)						
 				}
-
+		{# Figure 5
 		}
+}
 }	
 			
 			
