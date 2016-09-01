@@ -1217,8 +1217,8 @@
 								pbu=p[p$types=='bip_sp_uni',]
 				}			
 			{# plot
-					dev.new(width=3.5,height=1.85)
-					#png(paste(out_,"Figure_4cd.png", sep=""), width=3.5,height=1.85,units="in",res=600)
+					#dev.new(width=3.5,height=1.85)
+					png(paste(out_,"Figure_4cd.png", sep=""), width=3.5,height=1.85,units="in",res=600)
 					{# (c) raw data
 						par(mfrow=c(1,2),mar=c(2.2,2.1,0.5,0.1),  mgp=c(1.2,0.35,0),oma = c(0, 0, 0, 1),ps=12, las=1, cex.lab=0.6,cex.main=0.7, cex.axis=0.5, tcl=-0.15,bty="n",xpd=TRUE, col.axis="grey30",font.main = 1, col.lab="grey30", col.main="grey30", fg="grey70") # 0.6 makes font 7pt, 0.7 8pt
 				
@@ -1229,6 +1229,9 @@
 							
 							axis(2, at=seq(0,1,by=0.25), labels=TRUE)
 							mtext("Nest attendance [proportion]",side=2,line=1.3, cex=0.6, las=3, col='grey30')
+							
+							mtext('c',side=3,line=-.7, cex=0.6,  col='grey30', outer=TRUE, adj=0.48)
+							
 							lines(c(0,24),c(0.19,0.19),, lty=3, col="grey80")							
 						# data
 							# aggregate per hour, species and type of incubation		
@@ -1246,7 +1249,7 @@
 								text(x=-2, y=0.105, pos=4, expression(italic('N')*' cases:'),cex=0.5,las=1,col='grey30') 
 								symbols(c(10,15,20),c(0.105,0.105,0.105),circles=sqrt(c(10,100,300)/pi),inches=0.14/1.75,bg=col_pb, fg=col_p,add=TRUE, xpd=TRUE) #bg=alpha(col_p,0.1)
 								#symbols(c(23,23,23),c(0.77,0.65,0.5),circles=sqrt(c(10,100,300)/pi),inches=0.14/1.75,bg=col_pb, fg=col_p,add=TRUE, xpd=TRUE) #bg=alpha(col_p,0.1)
-								text(c(10,15,20),c(0.02,0.02,0.02),labels=c(10,100,300), xpd=TRUE, cex=0.5,col='grey30') 
+								text(c(10,15,20),c(0.007,0.007,0.007),labels=c(10,100,300), xpd=TRUE, cex=0.5,col='grey30') 
 																					
 						
 						}
@@ -1256,7 +1259,7 @@
 											
 							axis(1, at=seq(0,24,by=6),labels=seq(0,24,by=6),cex.axis=0.5,mgp=c(0,-0.20,0))
 								mtext("Time of day [hours]",side=1,line=1/2, cex=0.6, las=1, col='grey30')
-							
+							mtext('d',side=3,line=-.7, cex=0.6,  col='grey30', outer=TRUE, adj=0.86)
 							#axis(2, at=seq(0,1,by=0.25), labels=TRUE)
 							#mtext("Nest attendance [proportion]",side=2,line=1.3, cex=0.6, las=3, col='grey30')
 						# predictions
@@ -1283,10 +1286,11 @@
 													
 				dev.off()
 			}	
-			{# Supplementary Data Table 2
-				m=lmer(att~scale(prop_ip)*types+(prop_ip|actID_type)+(prop_ip|sp_type),d, REML=FALSE)	
+		}	
+		{# Supplementary Data Table 3
+				m=lmer(att~sin(rad)+cos(rad) + types +sin(rad)*types+cos(rad)*types+(sin(rad)+cos(rad)|actID_type)+(sin(rad)+cos(rad)|sp_type),data=h, REML=FALSE)	
 			 
-				pred=c('Intercept (bip_bip)','Incubation period', 'Type (bip_uni)','Type (uni)', 'Incubation period x bip_sp_uni', 'Incubation period x uni')
+				pred=c('Intercept (bip_bip)','Sin', 'Cos','Type (bip_uni)','Type (uni)', 'Sin x bip_sp_uni', 'Sin x uni', 'Cos x bip_sp_uni', 'Cos x uni')
 						nsim <- 5000
 						bsim <- sim(m, n.sim=nsim)  
 				# Fixed effects
@@ -1316,7 +1320,6 @@
 			
 		}
 		
-		}
 		{# Supplementary Figure 2
 				{# species
 					sp_ =read.csv(paste(wd,'species.csv', sep=""), stringsAsFactors=FALSE)
@@ -1374,8 +1377,9 @@
 		
 				ggsave(paste(out_,"Supplementary_Figure_2.png", sep=""),width=7, height=6.5, units='in',dpi=600)						
 				}
-		{# Figure 5
+		{# Figure 5 TO DO
 		}
+		# check SEX differences in unip of bip
 }
 }	
 			
