@@ -1162,7 +1162,7 @@
 			
 		}
 		}
-		{# Figure 4c
+		{# Figure 4c-d
 			h$actID_type=interaction(h$act_ID,h$type)
 			h$sp_type=interaction(h$sp,h$type)
 			h$types=factor(ifelse(h$sys=='uniparental', 'unip_sp', ifelse(h$type=='bip', 'bip_sp_bip', 'bip_sp_uni')))
@@ -1216,10 +1216,12 @@
 								pbb=p[p$types=='bip_sp_bip',]
 								pbu=p[p$types=='bip_sp_uni',]
 				}			
-			{# plot 
-				 #dev.new(width=3.5*0.5,height=1.85)
-						png(paste(out_,"Figure_4c.png", sep=""), width=3.5*0.5,height=1.85,units="in",res=600)
-						par(mar=c(0.0,0,0,0.4),oma = c(2.1, 2.1, 0.2, 0.2),ps=12, mgp=c(1.2,0.35,0), las=1, cex=1, col.axis="grey30",font.main = 1, col.lab="grey30", col.main="grey30", fg="grey70", cex.lab=0.6,cex.main=0.7, cex.axis=0.5, tcl=-0.1,bty="n",xpd=TRUE) #
+			{# plot
+					dev.new(width=3.5,height=1.85)
+					#png(paste(out_,"Figure_4cd.png", sep=""), width=3.5,height=1.85,units="in",res=600)
+					{# (c) raw data
+						par(mfrow=c(1,2),mar=c(2.2,2.1,0.5,0.1),  mgp=c(1.2,0.35,0),oma = c(0, 0, 0, 1),ps=12, las=1, cex.lab=0.6,cex.main=0.7, cex.axis=0.5, tcl=-0.15,bty="n",xpd=TRUE, col.axis="grey30",font.main = 1, col.lab="grey30", col.main="grey30", fg="grey70") # 0.6 makes font 7pt, 0.7 8pt
+				
 						plot(NA,pch=19,xlim=c(0,24), ylim=c(0,1), xlab=NA, ylab=NA, yaxt='n',xaxt='n', type='n')
 											
 							axis(1, at=seq(0,24,by=6),labels=seq(0,24,by=6),cex.axis=0.5,mgp=c(0,-0.20,0))
@@ -1227,20 +1229,36 @@
 							
 							axis(2, at=seq(0,1,by=0.25), labels=TRUE)
 							mtext("Nest attendance [proportion]",side=2,line=1.3, cex=0.6, las=3, col='grey30')
-							#lines(c(0,0),c(0,16.5), lty=3, col="red")							
+							lines(c(0,24),c(0.19,0.19),, lty=3, col="grey80")							
 						# data
 							# aggregate per hour, species and type of incubation		
 								h$nn=1
 								gg=ddply(h,.(sp,cols, types, hour), summarise,mean_=mean(att),se_=sd(att)/sqrt(length(att)),n=sum(nn))
 								gg=gg[order(gg$types),]							
 							#arrows(x0=gg$hour, y0=gg$mean_-gg$se_,x1=gg$hour,y1=gg$mean_+gg$se_,code = 0, col =col_p , angle = 90, length = .025, lwd=1, lty=1)
-							symbols(gg$hour,gg$mean_, circles=sqrt(gg$n/pi),inches=0.14/1.75,bg='white', add=TRUE) 
+							#symbols(gg$hour,gg$mean_, circles=sqrt(gg$n/pi),inches=0.14/1.75,bg='white', add=TRUE) 
 							symbols(gg$hour,gg$mean_, circles=sqrt(gg$n/pi),inches=0.14/1.75,bg=adjustcolor(gg$cols,alpha.f = 0.2),add=TRUE, fg=col_p) #bg=alpha(col_p,0.1)
-							symbols(gg$hour,gg$mean_, circles=sqrt(gg$n/pi),inches=0.14/1.75,fg=adjustcolor(gg$cols,alpha.f = 0.2),add=TRUE), fg=col_p) #bg=alpha(col_p,0.1)
+							#symbols(gg$hour,gg$mean_, circles=sqrt(gg$n/pi),inches=0.14/1.75,fg=adjustcolor(gg$cols,alpha.f = 0.2),add=TRUE), fg=col_p) #bg=alpha(col_p,0.1)
 								
 														#points(h$att~h$hour, col=adjustcolor(h$cols, alpha.f = 0.3), pch=20, cex=0.2)	
 							#points(inc$inc_eff~inc$bout_start_j_c, col=inc$col_,bg=adjustcolor(inc$col_, alpha.f = 0.4), pch=21, cex=0.5)	
+							
+								text(x=-2, y=0.105, pos=4, expression(italic('N')*' cases:'),cex=0.5,las=1,col='grey30') 
+								symbols(c(10,15,20),c(0.105,0.105,0.105),circles=sqrt(c(10,100,300)/pi),inches=0.14/1.75,bg=col_pb, fg=col_p,add=TRUE, xpd=TRUE) #bg=alpha(col_p,0.1)
+								#symbols(c(23,23,23),c(0.77,0.65,0.5),circles=sqrt(c(10,100,300)/pi),inches=0.14/1.75,bg=col_pb, fg=col_p,add=TRUE, xpd=TRUE) #bg=alpha(col_p,0.1)
+								text(c(10,15,20),c(0.02,0.02,0.02),labels=c(10,100,300), xpd=TRUE, cex=0.5,col='grey30') 
+																					
 						
+						}
+					{# (d) 
+						par(mar=c(2.2,0.2,0.5,2))
+						plot(NA,pch=19,xlim=c(0,24), ylim=c(0,1), xlab=NA, ylab=NA, yaxt='n',xaxt='n', type='n')
+											
+							axis(1, at=seq(0,24,by=6),labels=seq(0,24,by=6),cex.axis=0.5,mgp=c(0,-0.20,0))
+								mtext("Time of day [hours]",side=1,line=1/2, cex=0.6, las=1, col='grey30')
+							
+							#axis(2, at=seq(0,1,by=0.25), labels=TRUE)
+							#mtext("Nest attendance [proportion]",side=2,line=1.3, cex=0.6, las=3, col='grey30')
 						# predictions
 							# uniparental species
 							polygon(c(pu$hour, rev(pu$hour)), c(pu$lwr, 
@@ -1256,13 +1274,12 @@
 							polygon(c(pbu$hour, rev(pbu$hour)), c(pbu$lwr, 
 								rev(pbu$upr)), border=NA, col=adjustcolor(bip_uni_col ,alpha.f = 0.2)) #0,0,0 black 0.5 is transparents RED
 							lines(pbu$hour, pbu$pred, col=bip_uni_col,lwd=1)
-							
-																			
-					
-							text(x=0.2,y=0.13, labels='Biparental\nspecies\nbiparental\nincubation', col=bip_bip_col, cex=0.4)
-							text(x=0.8,y=0.13, labels='Biparental\nspecies\nuniparental\nincubation', col=bip_uni_col, cex=0.4)
-							text(x=1.4,y=0.13, labels='Uniparental\nspecies\nuniparental\nincubation', col=uni_col, cex=0.4)
-							
+						}
+					{# legend
+							#text(x=0.2,y=0.13, labels='Biparental\nspecies\nbiparental\nincubation', col=bip_bip_col, cex=0.4)
+							#text(x=0.8,y=0.13, labels='Biparental\nspecies\nuniparental\nincubation', col=bip_uni_col, cex=0.4)
+							#text(x=1.4,y=0.13, labels='Uniparental\nspecies\nuniparental\nincubation', col=uni_col, cex=0.4)
+					}		
 													
 				dev.off()
 			}	
