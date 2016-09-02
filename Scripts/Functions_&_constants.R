@@ -541,37 +541,37 @@
 								strip.left1 = function(which.panel, ...) {
 										LAB = format(sl1[which.panel], "%b-%d")
 										grid.rect(gp = gpar(fill = "grey95", col=ln_col))
-										ltext(0.5, 0.5, cex = 0.6, LAB, col=wr_col)
+										ltext(0.5, 0.5, cex = 0.5, LAB, col=wr_col)
 										}
-								ylab_=list('Date',cex=0.7, col=wr_col, vjust=1, hjust=0.5)		
+								ylab_=list('Date',cex=0.6, col=wr_col, vjust=1, hjust=0.5)		
 										
 								}else if (day=='TRUEcons'){
 									strip.left1 = function(which.panel, ...) {
 										LAB = paste(format(sl1[which.panel], "%b-%d")," | ",round(sl2$const[which.panel]*100,0),"%",sep="")
 										grid.rect(gp = gpar(fill = sl2$col_[which.panel], col=ln_col))
-										ltext(0.5, 0.5, cex = 0.6, LAB, col=wr_col)
+										ltext(0.5, 0.5, cex = 0.5, LAB, col=wr_col)
 										}
-										ylab_=list('Date | Nest attendance [%]',cex=0.7, col=wr_col,  hjust=0.5)
+										ylab_=list('Date | Nest attendance [%]',cex=0.6, col=wr_col,  hjust=0.5)
 										
 									}else{
 									strip.left1 = function(which.panel, ...) {
 										LAB = sl2$day_inc_per[which.panel]
 										grid.rect(gp = gpar(fill = "grey95", col=ln_col))
-										ltext(0.5, 0.5, cex = 0.6, LAB, col=wr_col)
+										ltext(0.5, 0.5, cex = 0.5, LAB, col=wr_col)
 													} 									
-									ylab_=list('Day of incubation / incubation period; incubation constancy %',cex=0.7, col=wr_col, vjust=1, hjust=0.5)		
+									ylab_=list('Day of incubation / incubation period; incubation constancy %',cex=0.6, col=wr_col, vjust=1, hjust=0.5)		
 									}
 				 if(length(c(dfr$t_nest[!is.na(dfr$t_nest)],dfr$t_surface[!is.na(dfr$t_surface)]))>0){
-							scales1 = list(x = list(at=c(0,6,12,18,24),labels=c('00:00','06:00','12:00','18:00','24:00') , cex = 0.6, tck=0.4,
+							scales1 = list(x = list(at=c(0,6,12,18,24),labels=c('00:00','06:00','12:00','18:00','24:00') , cex = 0.5, tck=0.4,
 										limits = c(0,24),col=wr_col,col.line = ln_col, alternating=2), y = list(limits = c(min_, max_),at =c(max_*10/max_,max_*30/max_),draw=FALSE), col=wr_col,cex=0.5, tck=0.4,alternating=2, col.line=ln_col)
 																	
-							ylab_right=list('Temperature [°C]',cex=0.7, col=wr_col,vjust=-0.1)
+							ylab_right=list('Temperature [°C]',cex=0.6, col=wr_col,vjust=-0.1)
 												
 							}else{
-							 scales1 = list(x = list(at=c(0,6,12,18,24),labels=c('00:00','06:00','12:00','18:00','24:00') , cex = 0.6, tck=0.4,
+							 scales1 = list(x = list(at=c(0,6,12,18,24),labels=c('00:00','06:00','12:00','18:00','24:00') , cex = 0.5, tck=0.4,
 										limits = c(0,24),col=wr_col,col.line = ln_col, alternating=3), y = list(limits = c(min_, max_),at =c(max_*10/max_,max_*30/max_),draw=TRUE), col=tra,cex=0.5, tck=0,alternating=2, col.line=ln_col)
 										
-							ylab_right=list('CV of signal strength',cex=0.7, col=wr_col,vjust=-0.3)		#hjust=0
+							ylab_right=list('CV of signal strength',cex=0.6, col=wr_col,vjust=-0.3)		#hjust=0
 							}
 				   #scales = list(x = list(at=c(0,6,12,18,24),labels=c('00:00','06:00','12:00','18:00','24:00') , #cex = 0.7, 
 					#			limits = c(0,24),alternating=3), y = list(limits = c(0, 50),at =c(10,30), alternating=2, cex=0.6, tck=0.4))	
@@ -579,17 +579,17 @@
 			{# legend 
 					{# caption
 						if(act_ID%in%c("biparental_70")){
-						clr_0=list(text=list(c("Biparental species  ", figCap$species, figCap$scinam),cex=0.6, col=c(wr_col,wr_col,wr_col,wr_col), font=c(2,1,3)),
+						clr_0=list(text=list(c("Biparental species  ", figCap$species, figCap$scinam),cex=0.5, col=c(wr_col,wr_col,wr_col,wr_col), font=c(2,1,3)),
 								points=list(pch=c(15),cex= c(0.8), col=c(tra)))
 						
 						}else{		
-						clr_0=list(text=list(c("Uniparental species", figCap$species, figCap$scinam),cex=0.6, col=c(wr_col,wr_col,wr_col,wr_col), font=c(2,1,3)),
+						clr_0=list(text=list(c("Uniparental species", figCap$species, figCap$scinam),cex=0.5, col=c(wr_col,wr_col,wr_col,wr_col), font=c(2,1,3)),
 								points=list(pch=c(15),cex= c(0.8), col=c(tra)))
 						}
-						clr_e=list(text=list(c("Biparental species  ", figCap$scinam, figCap$species),cex=0.6, col=c(tra)))	
+						clr_e=list(text=list(c("Biparental species  ", figCap$scinam, figCap$species),cex=0.5, col=c(tra)))	
 					}
 					{# type of incubation	
-						clr_1=list(	text= list(c("Incubation:","biparental","uniparental \u2642 "),cex=0.6, col=c(wr_col,wr_col,wr_col),font=c(2,1,1)),
+						clr_1=list(	text= list(c("Incubation:","biparental","uniparental \u2642 "),cex=0.5, col=c(wr_col,wr_col,wr_col),font=c(2,1,1)),
 											rectangles=list(size=1,height= 0.4, col=c(tra,bip_col, m_col), border=c(tra,bip_col, m_col)))
 											#points=list(pch=15,cex= c(0.8), col=c(bip_col, m_col)))
 						#clr_1=list(	text= list(c("Biparental incubation","Uniparental incubation \u2642 "),cex=0.6, col=c(wr_col,wr_col),font=c(1,1,1)),
@@ -598,7 +598,7 @@
 						
 					}
 					{# create legend column for temperatures or cv or signal if present
-						clr_3=list(text = list(c("Temperature [°C]:","nest - no incubation ","nest: incubation","surface"),cex=0.6, col=wr_col,font=c(2,1,1,1)),
+						clr_3=list(text = list(c("Temperature [°C]:","nest - no incubation ","nest: incubation","surface"),cex=0.5, col=wr_col,font=c(2,1,1,1)),
 														#lines = list(col=act_c$cols[act_c$who%in%c("nest temperature","surface temperature")],lwd=2,size=1))}								
 														points = list(col=c(tra,act_c$cols[act_c$who%in%c("nest temperature no incubation")],act_c$cols[act_c$who%in%c("nest temperature incubation","surface temperature")]),pch=20,cex=0.8))	
 										 
@@ -659,7 +659,7 @@
 									key=key1,
 									ylab=ylab_,
 									ylab.right=ylab_right,
-									xlab.top=list('Time [h]',cex=0.7,col=wr_col,vjust=1),
+									xlab.top=list('Time [h]',cex=0.6,col=wr_col,vjust=1),
 									xlab=NULL,
 									par.settings=list(axis.components=list(top=list(pad1=0.2,pad2=0),bottom=list(tck=0), left=list(tck=0)), layout.widths=list(right.padding=2),layout.heights=list(top.padding=0,bottom.padding=0,xlab.top=1,main.key.padding =0,axis.xlab.padding=0,xlab.key.padding=0),axis.line = list(col = ln_col)), #box.3d=list(col = wr_col)), #top=list(tck=0.4), lattice.options()$layout.heights
 									as.table=TRUE,
