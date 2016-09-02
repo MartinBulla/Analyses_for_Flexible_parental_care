@@ -665,7 +665,7 @@
 									as.table=TRUE,
 									#aspect = "fill", 
 									strip = FALSE, distribute.type = TRUE,    
-									lattice.options = list(layout.widths = list(strip.left = list(x = 3)))
+									lattice.options = list(layout.widths = list(strip.left = list(x = 2.6)))
 									)
 									
 			return(rfidsplot)

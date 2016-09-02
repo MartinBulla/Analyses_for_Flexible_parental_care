@@ -1172,10 +1172,10 @@
 			h$sin_=sin(h$rad)
 			h$cos_=cos(h$rad)
 			
-			m=lmer(att~sin(rad)*types+cos(rad)*types+(sin(rad)+cos(rad)|actID_type)+(sin(rad)+cos(rad)|sp_type),data=h, REML=FALSE)	
-			plot(allEffects(m))	
-			summary(glht(m))
-			summary(m)
+			#m=lmer(att~sin(rad)*types+cos(rad)*types+(sin(rad)+cos(rad)|actID_type)+(sin(rad)+cos(rad)|sp_type),data=h, REML=FALSE)	
+			#plot(allEffects(m))	
+			#summary(glht(m))
+			#summary(m)
 			{# run first - prepare predictions
 							m=lmer(att~sin_*types+cos_*types+(sin(rad)+cos(rad)|actID_type)+(sin(rad)+cos(rad)|sp_type),data=h, REML=FALSE)	
 							#summary(m)
@@ -1471,15 +1471,15 @@
 			  {# plot within R	
 				dev.new(width = 3.5, height = 3*2)
 				grid.arrange(p1,p2)
-				grid.text(x=0.04,y=0.99,label=expression(bold("a")), gp=gpar(col="grey50", cex=0.8,fontsize=12, fontfamily="arie"))
-				grid.text(x=0.04,y=0.5,label=expression(bold("b")), gp=gpar(col="grey50", cex=0.8,fontsize=12, fontfamily="arie"))
+				grid.text(x=0.04,y=0.99,label=expression(bold("a")), gp=gpar(col="grey50", cex=0.6,fontsize=12, fontfamily="arie"))
+				grid.text(x=0.04,y=0.5,label=expression(bold("b")), gp=gpar(col="grey50", cex=0.6,fontsize=12, fontfamily="arie"))
 			}
 			  {# export to png	
 				png(paste(out_, "Figure_5.png",sep="_"), width = 3.5, height = 3*2, units = "in", res = 300)	
 					
 				grid.arrange(p1,p2)
-				grid.text(x=0.04,y=0.99,label=expression(bold("a")), gp=gpar(col="grey50", cex=0.8,fontsize=12, fontfamily="arie"))
-				grid.text(x=0.04,y=0.5,label=expression(bold("b")), gp=gpar(col="grey50", cex=0.8,fontsize=12, fontfamily="arie"))
+				grid.text(x=0.04,y=0.99,label=expression(bold("a")), gp=gpar(col="grey50", cex=0.6,fontsize=12, fontfamily="arie"))
+				grid.text(x=0.04,y=0.5,label=expression(bold("b")), gp=gpar(col="grey50", cex=0.6,fontsize=12, fontfamily="arie"))
 						
 				dev.off()
 			}	
@@ -1487,8 +1487,50 @@
 		  }
 		}
 		
-		# check SEX differences in unip of bip
+		# check SEX differences in unip of bip ### use only species where both sexes
+			dd=d[d$sys=='biparental' & d$type=='uni',]
+				{# sex
+				nest =read.csv(paste(wd,'nests.csv', sep=""), stringsAsFactors=FALSE)
+				nest_=nest[nest$circumstances!='temporal',]
+
+				dd$sex=nest_$sex[match(dd$act_ID,nest_$act_ID)]
+				}	
 		
+			ggplot(dd,aes(x=order,y=att, col=sex))+	geom_boxplot()+
+														coord_flip(ylim = c(0.2, 1))+
+														scale_x_discrete(labels=sp_$species)+
+														#scale_y_continuous(breaks=c(0.2,0.4,0.6,0.8,1.0))+
+														
+														scale_colour_discrete(name="Sex", breaks=c("f","m"), labels=c("female", "male"))+		
+														ylab("Nest attendance [proportion]")+
+														annotate("text", label = "Uniparental\nspecies", x = 1.5, y = 0.22, size = 1.8, colour = "grey60",angle = 90)+#y = 0.95,
+														theme_light()+
+														theme(	
+															axis.line=element_line(colour="grey70", size=0.25),
+															panel.border=element_rect(colour="grey70", size=0.25),
+															panel.grid = element_blank(),
+											
+															axis.title=element_text(size=7, colour="grey30"),
+															axis.title.y = element_blank(),
+															axis.title.x = element_text(vjust=0.2),
+															axis.text=element_text(size=6),# margin=units(0.5,"mm")),
+															axis.ticks.length=unit(0.5,"mm"),
+															#axis.ticks.margin,
+															
+															strip.background = element_blank(),
+															strip.text.x = element_blank(),
+															#strip.background = element_blank(), 
+															#strip.text = element_blank(),
+															panel.margin = unit(1, "mm"),
+															#legend.position="none"
+															#legend.background=element_rect(colour="grey80"),
+															legend.key=element_blank(),
+															#legend.justification=c(0,0), legend.position=c(-0.03,0.75),
+															legend.key.size = unit(0.75, 'lines'),
+															legend.text=element_text(size=6, colour="grey30"),
+															legend.title=element_text(size=7, colour="grey30")
+																)
+															
 		
 		
 		
