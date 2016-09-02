@@ -501,6 +501,7 @@
 									print(gg, newpage=FALSE) # prints the map
 									}}
 				}	
+
 	}
 	
 	{# define constants
@@ -538,6 +539,11 @@
 				bip_col="#f4f9f1"#"#f6faf3"#
 				m_col="#eef0f2"#"#f2f3f5"#"#edeff1"
 				f_col="#fef7e9"
+			
+			# Figure cols
+				bip_bip_col='#5eab2b'
+				bip_uni_col="#535F7C"
+				uni_col="#FCB42C"
 				
 			# writing color
 				wr_col="grey50"
