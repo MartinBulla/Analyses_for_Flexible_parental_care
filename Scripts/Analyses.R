@@ -39,7 +39,7 @@
 	}
 	
 	{# load packages
-	   sapply(c('ggplot2', 'ggthemes','grid','plyr','lattice', 'latticeExtra','magrittr','maptools','raster', 'rgeos', 'rgdal', 'RSQLite','XLConnect','zoo'),
+	   sapply(c('ggplot2', 'ggthemes','grid','gridExtra','plyr','lattice', 'latticeExtra','magrittr','maptools','raster', 'rgeos', 'rgdal', 'RSQLite','XLConnect','zoo'),
 			function(x) suppressPackageStartupMessages(require(x , character.only = TRUE, quietly = TRUE) ))  
 		
 		sapply(c('AICcmodavg', 'arm','effects','multcomp'),
@@ -1377,7 +1377,7 @@
 		
 				ggsave(paste(out_,"Supplementary_Figure_2.png", sep=""),width=7, height=6.5, units='in',dpi=600)						
 				}
-		{# Figure 5 TO DO
+		{# Figure 5 
 		  {# load metadata
 			{# nests to extract the data for
 				nests=readWorksheetFromFile(paste(wd,'nests.xls', sep=""), sheet='original',colTypes = c(
@@ -1434,11 +1434,9 @@
 			{# species
 					sp =read.csv(paste(wd,'species.csv', sep=""), stringsAsFactors=FALSE)
 				}
-		
 		  }	
-			
-		  {# biparental_70
-					
+		  {# plots
+			{# create the two actograms
 				for(i in c('biparental_70','uniparental_07')){	
 					nest=nests_$nest[nests_$act_ID==i]
 					yr= nests_$year[nests_$act_ID==i]
@@ -1468,12 +1466,33 @@
 								# generate actograms
 									if(i=='biparental_70'){p1=Temperature_actogram(dfr=dfr_,day='TRUEcons')}else{p2=Temperature_actogram(dfr=dfr_,day='TRUEcons')}
 				}
+			}
+			{# paste the two actograms together	
+			  {# plot within R	
+				dev.new(width = 3.5, height = 3*2)
+				grid.arrange(p1,p2)
+				grid.text(x=0.04,y=0.99,label=expression(bold("a")), gp=gpar(col="grey50", cex=0.8,fontsize=12, fontfamily="arie"))
+				grid.text(x=0.04,y=0.5,label=expression(bold("b")), gp=gpar(col="grey50", cex=0.8,fontsize=12, fontfamily="arie"))
+			}
+			  {# export to png	
+				png(paste(out_, "Figure_5.png",sep="_"), width = 3.5, height = 3*2, units = "in", res = 300)	
+					
+				grid.arrange(p1,p2)
+				grid.text(x=0.04,y=0.99,label=expression(bold("a")), gp=gpar(col="grey50", cex=0.8,fontsize=12, fontfamily="arie"))
+				grid.text(x=0.04,y=0.5,label=expression(bold("b")), gp=gpar(col="grey50", cex=0.8,fontsize=12, fontfamily="arie"))
+						
+				dev.off()
+			}	
+			}
+		  }
+		}
+		
 		# check SEX differences in unip of bip
 		
 		
 		
 		
-			#dev.new(width=3.5, height=3)
+			
 }
 
 
