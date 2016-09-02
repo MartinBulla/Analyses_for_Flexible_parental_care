@@ -1439,7 +1439,7 @@
 			
 		  {# biparental_70
 					
-				for(i in c('biparental_70','uniparental_05')){	
+				for(i in c('biparental_70','uniparental_07')){	
 					nest=nests_$nest[nests_$act_ID==i]
 					yr= nests_$year[nests_$act_ID==i]
 					act_ID=nests_$act_ID[nests_$act_ID==i]
@@ -1454,7 +1454,7 @@
 					
 					# get data from database
 						conLite = dbConnect(dbDriver("SQLite"),dbname = db)
-						dfr_=dbq(conLite,paste("SELECT*FROM biparental_70"))
+						dfr_=dbq(conLite,paste("SELECT*FROM", i))
 						dfr_=dfr_[which(!is.na(dfr_$datetime_)),]
 						dfr=dfr_
 						
@@ -1466,199 +1466,14 @@
 									latlon=latlon_
 								
 								# generate actograms
-									Temperature_actogram(dfr=dfr_,day='TRUEcons') #type="SAVE")# 
-			
-		Temperature_actogram = function(dfr,figCap = figCap_, latlon = latlon_, inp = ip_, ins = inc_start,  min_=-3, max_=49, day='TRUEcons') {
-				# dfr - data frame
-				# figCap - figure captions
-				# latlon - latitude longitude
-				# day - panel labels as day or as day of incubation period and inc constancy
-				# ins = start of incubation period
-				# inp = lenght of incubation period
-				# min_/max_ - limits of y-axis in the panel
-				
-			 dfr$datetime_=as.POSIXct(dfr$datetime_, tz="UTC")
-			 dfr$day = as.Date(trunc(dfr$datetime_, "day"))
-			 dfr$time = as.numeric(difftime(dfr$datetime_, trunc(dfr$datetime_,"day"), units = "hours"))
-			 dfr=dfr[!dfr$day%in%as.Date(c('2013-06-29','2013-07-11')),]
-			
-			 sl1 = unique(dfr$day)
-			 sl1=sl1[order(sl1)]
-			 
-			 # prepare panel labels
-    		 sl2=ddply(dfr,.(day),summarise, const=mean(inc,na.rm=TRUE))
-			 sl2$day_j=as.numeric(format(sl2$day ,"%j")) - as.numeric(format(as.Date(trunc(ins, "day")),"%j"))+1
-			 sl2$day_j=ifelse(nchar(sl2$day_j)==1, paste(0,sl2$day_j,sep=""),sl2$day_j)
-			 sl2$day_inc_per=as.character(paste(sl2$day_j,"/",round(as.numeric(inp),0),"; ",round(sl2$const*100,0),'%',sep=""))
-			 sl2$col_=ifelse(sl2$day%in%as.Date(c("2013-06-30","2013-07-01","2013-07-02","2013-07-03","2013-07-04","2013-07-05")),bip_col,m_col) 
-			{# add colors for ploting	
-			  # general cols and sizes for actogram
-			  clr = act_c
-				
-			  # color for temperature
-			 dfr$col_t_nest=ifelse(is.na(dfr$inc), NA, ifelse(dfr$inc==1,act_c$cols[act_c$who=='nest temperature incubation'],act_c$cols[act_c$who=='nest temperature no incubation']))
-			# dfr$col_cv_nest=ifelse(is.na(dfr$inc), NA, ifelse(dfr$inc==1,signal_inc,signal_no_inc))
-				#dfr$col_type=ifelse(dfr$type=='no',none_col, ifelse(dfr$type=='bip',bip_col, ifelse(dfr$type=='uni',uni_col, NA)))
-			}
-			
-			{# scales, 
-				 if(day==TRUE){ 
-								strip.left1 = function(which.panel, ...) {
-										LAB = format(sl1[which.panel], "%b-%d")
-										grid.rect(gp = gpar(fill = "grey95", col=ln_col))
-										ltext(0.5, 0.5, cex = 0.6, LAB, col=wr_col)
-										}
-								ylab_=list('Date',cex=0.7, col=wr_col, vjust=1, hjust=0.5)		
-										
-								}else if (day=='TRUEcons'){
-									strip.left1 = function(which.panel, ...) {
-										LAB = paste(format(sl1[which.panel], "%b-%d")," | ",round(sl2$const[which.panel]*100,0),"%",sep="")
-										grid.rect(gp = gpar(fill = sl2$col_[which.panel], col=ln_col))
-										ltext(0.5, 0.5, cex = 0.6, LAB, col=wr_col)
-										}
-										ylab_=list('Date | Nest attendance [%]',cex=0.7, col=wr_col,  hjust=0.5)
-										
-									}else{
-									strip.left1 = function(which.panel, ...) {
-										LAB = sl2$day_inc_per[which.panel]
-										grid.rect(gp = gpar(fill = "grey95", col=ln_col))
-										ltext(0.5, 0.5, cex = 0.6, LAB, col=wr_col)
-													} 									
-									ylab_=list('Day of incubation / incubation period; incubation constancy %',cex=0.7, col=wr_col, vjust=1, hjust=0.5)		
-									}
-				 if(length(c(dfr$t_nest[!is.na(dfr$t_nest)],dfr$t_surface[!is.na(dfr$t_surface)]))>0){
-							scales1 = list(x = list(at=c(0,6,12,18,24),labels=c('00:00','06:00','12:00','18:00','24:00') , cex = 0.6, tck=0.4,
-										limits = c(0,24),col=wr_col,col.line = ln_col, alternating=2), y = list(limits = c(min_, max_),at =c(max_*10/max_,max_*30/max_),draw=FALSE), col=wr_col,cex=0.5, tck=0.4,alternating=2, col.line=ln_col)
-																	
-							ylab_right=list('Temperature [°C]',cex=0.7, col=wr_col,vjust=-0.1)
-												
-							}else{
-							 scales1 = list(x = list(at=c(0,6,12,18,24),labels=c('00:00','06:00','12:00','18:00','24:00') , cex = 0.6, tck=0.4,
-										limits = c(0,24),col=wr_col,col.line = ln_col, alternating=3), y = list(limits = c(min_, max_),at =c(max_*10/max_,max_*30/max_),draw=TRUE), col=tra,cex=0.5, tck=0,alternating=2, col.line=ln_col)
-										
-							ylab_right=list('CV of signal strength',cex=0.7, col=wr_col,vjust=-0.3)		#hjust=0
-							}
-				   #scales = list(x = list(at=c(0,6,12,18,24),labels=c('00:00','06:00','12:00','18:00','24:00') , #cex = 0.7, 
-					#			limits = c(0,24),alternating=3), y = list(limits = c(0, 50),at =c(10,30), alternating=2, cex=0.6, tck=0.4))	
-			}	
-			{# legend 
-					{# caption
-						if(act_ID%in%c("biparental_70")){
-						clr_0=list(text=list(c("Biparental species  ", figCap$species, figCap$scinam),cex=0.6, col=c(wr_col,wr_col,wr_col,wr_col), font=c(2,1,3)),
-								points=list(pch=c(15),cex= c(0.8), col=c(tra)))
-						
-						}else{		
-						clr_0=list(text=list(c("Uniparental species", figCap$species, figCap$scinam),cex=0.6, col=c(wr_col,wr_col,wr_col,wr_col), font=c(2,1,3)),
-								points=list(pch=c(15),cex= c(0.8), col=c(tra)))
-						}
-						clr_e=list(text=list(c("Biparental species  ", figCap$scinam, figCap$species),cex=0.6, col=c(tra)))	
-					}
-					{# type of incubation	
-						clr_1=list(	text= list(c("Incubation:","biparental","uniparental \u2642 "),cex=0.6, col=c(wr_col,wr_col,wr_col),font=c(2,1,1)),
-											rectangles=list(size=1,height= 0.4, col=c(tra,bip_col, m_col), border=c(tra,bip_col, m_col)))
-											#points=list(pch=15,cex= c(0.8), col=c(bip_col, m_col)))
-						#clr_1=list(	text= list(c("Biparental incubation","Uniparental incubation \u2642 "),cex=0.6, col=c(wr_col,wr_col),font=c(1,1,1)),
-						#					rectangles=list(size=1,height= 0.5, col=c(bip_col, m_col), border=c(bip_col, m_col)))
-											#points=list(pch=15,cex= c(0.8), col=c(bip_col, m_col)))
-						
-					}
-					{# create legend column for temperatures or cv or signal if present
-						clr_3=list(text = list(c("Temperature [°C]:","nest - no incubation ","nest: incubation","surface"),cex=0.6, col=wr_col,font=c(2,1,1,1)),
-														#lines = list(col=act_c$cols[act_c$who%in%c("nest temperature","surface temperature")],lwd=2,size=1))}								
-														points = list(col=c(tra,act_c$cols[act_c$who%in%c("nest temperature no incubation")],act_c$cols[act_c$who%in%c("nest temperature incubation","surface temperature")]),pch=20,cex=0.8))	
-										 
-					}				
-					{# adds buffer around legend columns by creating fake legend columns
-						clr_n=list(text = list(c("")))				
-					}	
-					{# combine new
-						key1 = c(  # captions
-									#clr_0,
-									#clr_n,
-								# incubation
-									clr_1,
-									clr_n,
-								
-								# temperature
-									clr_3,
-									#clr_n,
-								# rfid
-									#clr_2,
-									#clr_n,
-								# sun
-									#clr_4,
-									#clr_n,	
-								
-								# ending to compensate for captions
-									#clr_e,
-								rep=FALSE, between=0.9 #just=-0.3#, 	padding.text=1.1,#, border=ln_col #columns
-								)	
-					}	
-				
-			}
-			   panel1 = function(...) {
-							   #panel.abline(v=c(1:5,7:11,13:17,19:23),col="light grey")
-							  # panel.abline(v=c(6,12,18,24),col = "grey70")
-							   #panel.abline(v=a$time_[a$day==sl1[panel.number()] & a$twilight==1],col="grey66")
-							   #panel.abline(v=a$time_[a$day==sl1[panel.number()] & a$night==1],col="grey35")	
-							   	dfri= dfr[which(dfr$day == sl1[panel.number()]),]	
-							   {# rfid and metadata
-								if(signal==FALSE){	
-									#if(!dfr$sp[1]%in%c('rnph','pesa')){							
-									#	panel.xyplot(dfri$time, dfri$act, col = dfri$cols, type = "h", origin=min_)
-									#	}
-									panel.xyplot(dfri$time, dfri$t_nest, col = dfri$col_t_nest, cex = 0.1)
-									}else{	panel.xyplot(dfri$time, dfri$cv, col = dfri$col_cv_nest, cex = 0.1)}
-								}
-							   
-							   {# twilight and night upper - CHANGE TO BACKROUND
-								nti = nt[which(nt$day == sl1[panel.number()]),] 
-								
-									# twilight and nigth present
-									if(nrow(nti)>0 & !is.na(nti$sunrise) & !is.na(nti$c_dawn)){	panel.rect(xleft=0, ybottom=max_, xright=nti$c_dawn, ytop=max_*0.85, col=act_c$cols[act_c$who%in%c("sun < -6°")], border=0)
-																					panel.rect(xleft=nti$c_dawn, ybottom=max_, xright=nti$sunrise, ytop=max_*0.85, col=act_c$cols[act_c$who%in%c("sun < 0°")], border=0)
-																				}
-									if(nrow(nti)>0 & !is.na(nti$sunset) & !is.na(nti$c_dusk)) {	panel.rect(xleft=nti$sunset, ybottom=max_, xright=nti$c_dusk, ytop=max_*0.85, col=act_c$cols[act_c$who%in%c("sun < 0°")], border=0)
-																							panel.rect(xleft=nti$c_dusk, ybottom=max_, xright=23.9999, ytop=max_*0.85, col=act_c$cols[act_c$who%in%c("sun < -6°")], border=0)
-																								}
-									# only twilight present												
-									if(nrow(nti)>0 & !is.na(nti$sunrise) & is.na(nti$c_dawn)){	panel.rect(xleft=0, ybottom=max_, xright=nti$sunrise, ytop=max_*0.85, col=act_c$cols[act_c$who%in%c("sun < 0°")], border=0)
-																				}
-									if(nrow(nti)>0 & !is.na(nti$sunset) & is.na(nti$c_dusk)){	panel.rect(xleft=nti$sunset, ybottom=max_, xright=23.9999, ytop=max_*0.85, col=act_c$cols[act_c$who%in%c("sun < 0°")], border=0)}
-								}							
-							  	# surface temperature
-									panel.xyplot(...)
-							}
-   
-			{# plot				
-			#dev.new(width=3.5, height=3)
-						
-			rfidsplot = xyplot(t_surface ~ time | day, 
-									data = dfr, 
-									col = c(act_c$cols[act_c$who=="surface temperature"]),
-									cex = 0.1, cex.title=0.5, main = NULL,
-									layout = c(1,length(sl1)),# ifelse(length(sl1) > 30, 30, length(sl1))), 
-									strip.left = strip.left1, 
-									scales = scales1,
-									panel=panel1, 
-									key=key1,
-									ylab=ylab_,
-									ylab.right=ylab_right,
-									xlab.top=list('Time [h]',cex=0.7,col=wr_col,vjust=1),
-									xlab=NULL,
-									par.settings=list(axis.components=list(top=list(pad1=0.2,pad2=0),bottom=list(tck=0), left=list(tck=0)), layout.widths=list(right.padding=2),layout.heights=list(top.padding=0,bottom.padding=0,xlab.top=1,main.key.padding =0,axis.xlab.padding=0,xlab.key.padding=0),axis.line = list(col = ln_col)), #box.3d=list(col = wr_col)), #top=list(tck=0.4), lattice.options()$layout.heights
-									as.table=TRUE,
-									#aspect = "fill", 
-									strip = FALSE, distribute.type = TRUE,    
-									lattice.options = list(layout.widths = list(strip.left = list(x = 3)))
-									)
-									
-			return(rfidsplot)
-			
-				
-			
-		}
+									if(i=='biparental_70'){p1=Temperature_actogram(dfr=dfr_,day='TRUEcons')}else{p2=Temperature_actogram(dfr=dfr_,day='TRUEcons')}
+				}
 		# check SEX differences in unip of bip
+		
+		
+		
+		
+			#dev.new(width=3.5, height=3)
 }
 
 
