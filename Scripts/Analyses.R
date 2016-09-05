@@ -963,23 +963,59 @@
 				}	
 		}
 		
-		{# number of cases of daily and hourly nest attendance
-			nrow(d) # cases of daily nest attendance
-			length(unique(d$nest)) # number of nests
-			length(unique(d$nest[d$sys=='biparental'])) # number of biparental nests
-			length(unique(d$nest[d$sys=='uniparental'])) # number of biparental nests
-			length(unique(d$nest[d$sp=='pesa'])) # number of pectoral sandpiper nests
-			length(unique(d$nest[d$sp=='rnph'])) # number of red-necked phalarope nests
-			length(unique(d$sp)) # number of species
-			
-			nrow(h) # cases of hourly nest attendance
-			length(unique(h$nest)) # number of nests
-			length(unique(h$sp)) # number of species
-		
-		}
 		{# Figure 4 a
 			{# (a) 
-				length(unique(d$act_ID))
+				{# run first - species and order variables
+				sp_ =read.csv(paste(wd,'species.csv', sep=""), stringsAsFactors=FALSE)
+				sp_$order=-sp_$order
+				sp_=sp_[order(sp_$order),]
+				sp_$at=+1+sp_$order*2.5
+				
+				d$species=sp_$species[match(d$sp,sp_$sp)]
+				d$order=sp_$order[match(d$sp,sp_$sp)]
+				d$at=sp_$at[match(d$sp,sp_$sp)]
+				
+				 k=0.2
+				 k2=0.5
+				 d$order_inc=ifelse(d$sys=='uniparental', d$order, ifelse(d$type=='bip', d$order+k, d$order-k))
+				 d$at=ifelse(d$sys=='uniparental', d$at, ifelse(d$type=='bip', d$at+k2, d$at-k2))
+				 d$cols=ifelse(d$sys=='uniparental', uni_col, ifelse(d$type=='bip',bip_bip_col, bip_uni_col))#
+				 
+				 col_=ddply(d,.(at,cols), summarise, n=1)
+					
+						}	
+				{# boxplot
+					#dev.new(width=0.51+3.5*0.5,height=1.85)
+					png(paste(out_,"Figure_4a.png", sep=""), width=0.51+3.5*0.5,height=1.85,units="in",res=600)
+					par(mar=c(0.0,0,0,0.4),oma = c(2.1, 5, 0.2, 0),ps=12, mgp=c(1.2,0.35,0), las=1, cex=1, col.axis="grey30",font.main = 1, col.lab="grey30", col.main="grey30", fg="grey70", cex.lab=0.6,cex.main=0.7, cex.axis=0.5, tcl=-0.1,bty="n",xpd=TRUE) #
+				
+					boxplot(att ~ order_inc, data = d,
+											ylab = NULL,xaxt='n', yaxt='n',
+											ylim=c(0.2,1),								
+											at=unique(d$at)[order(unique(d$at))],
+											#1,2,3.5,4.5,7,8,9.5,10.5
+											#at=unique(d$order_inc)[order(unique(d$order_inc))]*2,
+											#type='n',
+											outcex=0.3,outpch=20,boxwex=0.6,whisklty=1,staplelty=0,#medlwd=1, 
+											lwd = 1,
+											border=col_$cols,
+											#col = adjustcolor("white", alpha.f = 0), # trick for PNGs, to show what is underneath the boxplot else can be taken out
+											#outcol="darkgrey",boxcol='darkgrey',whiskcol='darkgrey',staplecol='darkgrey',medcol='darkgrey', 
+											horizontal=TRUE
+											#add=TRUE
+											)					
+						axis(1, at=seq(0.2,1,by=0.2), ,mgp=c(0,-0.20,0))
+						mtext("Nest attendance\n[proportion]",side=1,line=1, cex=0.6, las=1, col='grey30')
+						
+						axis(2, at=sp_$at,cex.axis=0.5, labels=sp_$species)
+						
+						mtext(expression(bold("a")),side=3,line=-.7/2, cex=0.6,  col='grey30', outer=TRUE, adj=0.48*2)
+					dev.off()
+				}
+			}
+			
+			{# not used
+			{# ggplot
 				{# species
 				sp_ =read.csv(paste(wd,'species.csv', sep=""), stringsAsFactors=FALSE)
 				sp_$order=-sp_$order
@@ -1030,7 +1066,7 @@
 															
 				ggsave(paste(out_,"Figure 4a_.png", sep=""),width=3.5,height=2.8, units='in',dpi=600)	
 			}
-			{# not used
+			
 			ggplot(d,aes(x=order,y=att, col=type))+geom_boxplot()+
 													scale_x_discrete(labels=sp_$species)+
 													theme(axis.text.x=element_text(angle = 90, hjust = 1, vjust=0))
@@ -1178,6 +1214,8 @@
 							
 							axis(2, at=seq(0,1,by=0.25), labels=TRUE)
 							mtext("Nest attendance [proportion]",side=2,line=1.3, cex=0.6, las=3, col='grey30')
+							
+							mtext(expression(bold("b")),side=3,line=-.7/2, cex=0.6,  col='grey30', outer=TRUE, adj=0.48*2)
 							#lines(c(0,0),c(0,16.5), lty=3, col="red")							
 						# data
 							points(d$att~d$prop_ip, col=adjustcolor(d$cols, alpha.f = 0.3), pch=20, cex=0.2)	
@@ -1307,10 +1345,10 @@
 							axis(1, at=seq(0,24,by=6),labels=seq(0,24,by=6),cex.axis=0.5,mgp=c(0,-0.20,0))
 								mtext("Time of day [hours]",side=1,line=1/2, cex=0.6, las=1, col='grey30')
 							
-							axis(2, at=seq(0,1,by=0.25), labels=TRUE)
-							mtext("Nest attendance [proportion]",side=2,line=1.3, cex=0.6, las=3, col='grey30')
+							#axis(2, at=seq(0,1,by=0.25), labels=TRUE)
+							#mtext("Nest attendance [proportion]",side=2,line=1.3, cex=0.6, las=3, col='grey30')
 							
-							mtext('c',side=3,line=-.7, cex=0.6,  col='grey30', outer=TRUE, adj=0.48)
+							mtext(expression(bold("c")),side=3,line=-.7, cex=0.6,  col='grey30', outer=TRUE, adj=0.48)
 							
 							lines(c(0,24),c(0.19,0.19),, lty=3, col="grey80")							
 						# data
@@ -1339,7 +1377,8 @@
 											
 							axis(1, at=seq(0,24,by=6),labels=seq(0,24,by=6),cex.axis=0.5,mgp=c(0,-0.20,0))
 								mtext("Time of day [hours]",side=1,line=1/2, cex=0.6, las=1, col='grey30')
-							mtext('d',side=3,line=-.7, cex=0.6,  col='grey30', outer=TRUE, adj=0.86)
+							mtext(expression(bold("d")),side=3,line=-.7, cex=0.6,  col='grey30', outer=TRUE, adj=0.86)
+							
 							#axis(2, at=seq(0,1,by=0.25), labels=TRUE)
 							#mtext("Nest attendance [proportion]",side=2,line=1.3, cex=0.6, las=3, col='grey30')
 						# predictions
