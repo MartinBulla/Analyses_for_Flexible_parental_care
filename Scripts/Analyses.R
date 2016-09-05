@@ -81,6 +81,47 @@
 	}
 }
 
+{# METHODS - Extraction of incubation
+		{# run first
+			load(paste(wd,'for_analyses.RData',sep="")) 
+			# limit to periods with at least 75% of uniparental or biparental incubation
+				d=d[which((d$sp=='pesa' & 0.75<(d$n/1440))| (d$sp!='pesa' & 0.75<(d$n/17280))),]
+				d=ddply(d,.(act_ID,type), transform, start_j=day_j-min(day_j)+1)
+				h=h[which((h$sp=='pesa' & 0.75<(h$n/60))| (h$sp!='pesa' & 0.75<(h$n/720))),]
+				h=ddply(h,.(act_ID,type), transform, start_j=day_j-min(day_j)+1)
+				h$hour=as.numeric(h$hour)
+				
+			{# species
+				sp_ =read.csv(paste(wd,'species.csv', sep=""), stringsAsFactors=FALSE)
+				sp_$order=-sp_$order
+				sp_=sp_[order(sp_$order),]
+		
+				d$species=sp_$species[match(d$sp,sp_$sp)]
+				d$order=as.factor(sp_$order[match(d$sp,sp_$sp)])
+				
+				h$species=sp_$species[match(h$sp,sp_$sp)]
+				h$order=as.factor(sp_$order[match(h$sp,sp_$sp)])
+
+				}	
+		}
+		
+		{# number of cases of daily and hourly nest attendance
+			nrow(d) # cases of daily nest attendance
+			length(unique(d$act_ID)) # number of nests
+			length(unique(d$act_ID[d$sys=='biparental'])) # number of biparental nests
+			length(unique(d$act_ID[d$sys=='uniparental'])) # number of biparental nests
+			length(unique(d$act_ID[d$sp=='pesa'])) # number of pectoral sandpiper nests
+			length(unique(d$act_ID[d$sp=='rnph'])) # number of red-necked phalarope nests
+			length(unique(d$sp)) # number of species
+			
+			nrow(h) # cases of hourly nest attendance
+			length(unique(h$act_ID)) # number of nests
+			length(unique(h$sp)) # number of species
+		
+		}
+		
+
+}
 {# RESULTS
   {# Abundance of uniparental incubation
 	{# run first
@@ -119,15 +160,15 @@
 				length(unique(nn$sp))
 	}
 	{# number of uniparental nests per species	
-	  {# results within text	
-		length(unique(n_$nest)) # overall number of nests
+		nrow(n_)# number of cases
+		length(unique(n_$act_ID)) # overall number of nests
 		summary(factor(n_$sex)) # uniparental females and males
 		dd=ddply(n_,.(sp,nest), summarise,nn=1)
 		ddply(dd,.(sp), summarise,nn=sum(nn)) # numer of nests per species
 		
 		dd=ddply(n_,.(sp,nest,sex), summarise,nn=1)
 		ddply(dd,.(sp,sex), summarise,nn=sum(nn)) # numer of nests per species and sex
-		}
+		
 	 } 
 	{# day in incubation period when the uniparental incubation started and for how long it lasted
 		{# started
@@ -137,10 +178,11 @@
 			
 			densityplot(~n_$prop_ip*100)
 			
+			# limited to those before the eggs were supposed to hatch
 			summary(n_$prop_ip[n_$prop_ip<1])
 			densityplot(~n_$prop_ip[n_$prop_ip<1]*100)
-			length(unique(n_$nest[n_$prop_ip<1]))
-			length(n_$prop_ip[n_$prop_ip<1])
+			length(unique(n_$nest[n_$prop_ip<1])) # number of nests
+			length(n_$prop_ip[n_$prop_ip<1]) # number of cases
 		}
 		{# lasted
 			summary(n_$uni_last/24)
@@ -155,7 +197,7 @@
 	}	 
 	
 	{# Figure 1a
-		sp_=sp[!is.na(sp$order),]
+		sp_=sp[!sp$sp%in%c('pesa','rnph'),]
 		sp_$order=-sp_$order
 		sp_=sp_[order(sp_$order),]
 		
@@ -166,7 +208,7 @@
 		
 		# par(mfrow=c(1,3),mar=c(0.0,0,0,0.4),oma = c(1.8, 1.8, 0.2, 0.5),ps=12, mgp=c(1.2,0.35,0), las=1, cex=1, col.axis="grey30",font.main = 1, col.lab="grey30", col.main="grey30", fg="grey70") # 0.6 makes font 7pt, 0.7 8pt
 		 #dev.new(width=3.5*0.75,height=1.85)
-		 png(paste(out_,"Figure_1.png", sep=""), width=3.5*0.75,height=1.85,units="in",res=600)
+		 png(paste(out_,"Figure_1a.png", sep=""), width=3.5*0.75,height=1.85,units="in",res=600)
 		 par(mar=c(0.0,0,0,0.4),oma = c(2.1, 5, 0.2, 0.5),ps=12, mgp=c(1.2,0.35,0), las=1, cex=1, col.axis="grey30",font.main = 1, col.lab="grey30", col.main="grey30", fg="grey70",
 		 cex.lab=0.6,cex.main=0.7, cex.axis=0.5, tcl=-0.1,bty="n",xpd=TRUE) # 0.6 makes font 7pt, 0.7 8pt
 				#par(ps=12,	cex.lab=0.6,cex.main=0.7, cex.axis=0.5, tcl=-0.15,bty="n",xpd=TRUE)
@@ -366,11 +408,11 @@
 		}	
 		
 		{# number of nests with given state and distribution of success/failure across cay and durantion of uniparental
-			unique(n_$state)
-			summary(factor(g$state))
+			nrow(g) # number of nests
+			summary(factor(g$state)) # distribution of end states
 			g$success=ifelse(g$state%in%c('s','l','h'),'yes','no')
-			table(g$sp,g$success)
-			nrow(g)
+			table(g$sp,g$success)  # distribution of successful nests
+			unique(n_$state)
 			
 				densityplot(~g$prop_ip)
 				densityplot(~g$prop_ip, groups=g$success, auto.key=TRUE)
@@ -380,7 +422,7 @@
 				densityplot(~log(g$uni_last))
 				
 			{# Figure 2a distribution across nests
-			sp_=sp[!is.na(sp$order),]
+			sp_=sp[!sp$sp%in%c('pesa','rnph'),]
 			sp_$order=-sp_$order
 			sp_=sp_[order(sp_$order),]
 			
@@ -400,16 +442,16 @@
 							names.arg=sp_$species,
 							xlab="Number of nests", 
 							xlim=c(0,30),
-							col=c(male_col,female_col), 
+							col=c(female_col,male_col), 
 							#legend = rownames(counts),args.legend = list(bty='n', legend=c('\u2642','\u2640')),
 							xaxt='n'
 							)
 												
 						axis(1, at=seq(0,30,by=5),labels=c(0,'',10,'',20,"",30),cex.axis=0.5,mgp=c(0,-0.2,0))
-							mtext('Number of nests\n ',side=1,line=1, cex=0.6, las=1, col='grey30')
+							mtext('Nests\n[count] ',side=1,line=1, cex=0.6, las=1, col='grey30')
 							
-						text(y=23.5,x=32, labels='Sucessful', col='#FCB42C', cex=0.5, pos=2)
-						text(y=22.0,x=32, labels='Failed', col='#535F7C', cex=0.5,pos=2)
+						text(y=23.5,x=32, labels='Failed', col=male_col, cex=0.5, pos=2)
+						text(y=22.0,x=32, labels='Successful', col=female_col, cex=0.5,pos=2)
 						
 							#axis(2, at=seq(0,1,by=0.25), labels=c('0.0','','0.5','','1.0'))
 						mtext('a',side=3,line=-.35, cex=0.6,  col='grey30', outer=TRUE, adj=0.95)
@@ -921,6 +963,20 @@
 				}	
 		}
 		
+		{# number of cases of daily and hourly nest attendance
+			nrow(d) # cases of daily nest attendance
+			length(unique(d$nest)) # number of nests
+			length(unique(d$nest[d$sys=='biparental'])) # number of biparental nests
+			length(unique(d$nest[d$sys=='uniparental'])) # number of biparental nests
+			length(unique(d$nest[d$sp=='pesa'])) # number of pectoral sandpiper nests
+			length(unique(d$nest[d$sp=='rnph'])) # number of red-necked phalarope nests
+			length(unique(d$sp)) # number of species
+			
+			nrow(h) # cases of hourly nest attendance
+			length(unique(h$nest)) # number of nests
+			length(unique(h$sp)) # number of species
+		
+		}
 		{# Figure 4 a
 			{# (a) 
 				length(unique(d$act_ID))
@@ -998,15 +1054,39 @@
 				h$order=as.factor(sp_$order[match(h$sp,sp_$sp)])
 
 				}	
-		
+				{# add sex
+					n =read.csv(paste(wd,'nests.csv', sep=""), stringsAsFactors=FALSE)
+					n=n[!duplicated(n$act_ID),]
+					d$sex=NA
+					d$sex[d$type=='uni']=n$sex[match(d$act_ID[d$type=='uni'],n$act_ID)]
+					d$sex=factor(ifelse(is.na(d$sex),'biparental', ifelse(d$sex=='m', 'uniparental male', 'uniparental female')),levels=c('biparental','uniparental female', 'uniparental male'))#'uniparental \u2640', 'uniparental \u2642'))
+					}
+				{# create order for plotting
+					d=d[order(d$order, d$act_ID),]
+						xx=data.frame(act_ID=unique(d$act_ID))
+						xx$order_=1:nrow(xx)
+					d$order_all=xx$order_[match(d$act_ID,xx$act_ID)]	
+					
+					# create dummy value for one nest without >0.75 uni incubation in one day 
+					dd=d[d$type=='uni',]
+					d2=d[!d$act_ID%in%c(unique(dd$act_ID)),][1,]
+					d2$type='uni'
+					d2$sex='uniparental male'
+					d2$att=-1
+					dd=rbind(dd,d2)
+				}
+				
 				dev.new(width=7, height=6.5)
-				ggplot(d[d$type=='uni',],aes(x=prop_ip,y=att))+
-										geom_point(aes(fill=sys),shape=21,size=0.9,col='grey50')+#	#geom_point(aes(shape=sys),alpha=0.3,size=1)+
-										scale_fill_manual(name="Incubation system",values=alpha(c("grey40", "white"),.3))+
+				ggplot(dd,aes(x=prop_ip,y=att))+
+										geom_point(aes(fill=sex),shape=21,size=0.9,col='grey50')+#	#geom_point(aes(shape=sys),alpha=0.3,size=1)+
+										scale_fill_manual(name="Incubation",breaks=c('uniparental female', 'uniparental male'),values=alpha(c("#FCB42C","#535F7C"),0.6))+
 										stat_smooth(aes(col=order),method='lm', se=FALSE, lwd=1)+
-										scale_colour_discrete(name="Species", labels=sp_$species[order(sp_$order)])+		
-										facet_wrap(~act_ID, ncol=8)+#, scales="free_x")+
-										xlab("Species' incubation period [proportion]")+
+										scale_colour_discrete(name="Species", labels=sp_$species[order(sp_$order)])+
+										scale_x_continuous(limits=c(0,1.6),breaks=seq(0,1.5,by=0.5), labels=c('0','50','100','150'))+	
+										scale_y_continuous(limits=c(-0.05,1.05),breaks=seq(0,1,by=0.25), labels=c('0.0','','0.5','','1.0'))+										
+										facet_wrap(~order_all, ncol=8)+#, scales="free_x")+
+										guides(fill = guide_legend(order = 1), colour = guide_legend(order = 2))+
+										xlab("Species' incubation period [%]")+
 										ylab("Nest attendance [proportion]")+
 										theme_light()+
 										theme(	
@@ -1034,7 +1114,7 @@
 												legend.title=element_text(size=7, colour="grey30")
 													)
 		
-				ggsave(paste(out_,"Change_in_uniparental_nest_attendance_for_all_nests.png", sep=""),width=7, height=6.5, units='in',dpi=600)						
+				ggsave(paste(out_,"Supplementary_Figure_1.png", sep=""),width=7, height=6.5, units='in',dpi=600)						
 				}
 		{# Figure 4b
 			d$actID_type=interaction(d$act_ID,d$type)
@@ -1328,12 +1408,20 @@
 			
 					h$species=sp_$species[match(h$sp,sp_$sp)]
 					h$order=as.factor(sp_$order[match(h$sp,sp_$sp)])
+				}	
+				{# create order for plotting
+					h=h[order(h$order, h$act_ID),]
+						xx=data.frame(act_ID=unique(h$act_ID))
+						xx$order_=1:nrow(xx)
+					h$order_all=xx$order_[match(h$act_ID,xx$act_ID)]	
 				}
 				{# add sex
 					n =read.csv(paste(wd,'nests.csv', sep=""), stringsAsFactors=FALSE)
 					n=n[!duplicated(n$act_ID),]
+					h$sex=NA
 					h$sex[h$type=='uni']=n$sex[match(h$act_ID[h$type=='uni'],n$act_ID)]
-					h$sex=factor(ifelse(is.na(h$sex),'biparental', ifelse(h$sex=='m', 'uniparental female', 'uniparental male')),levels=c('biparental','uniparental female', 'uniparental male'))#'uniparental \u2640', 'uniparental \u2642'))
+					h$sex=factor(ifelse(is.na(h$sex),'biparental', ifelse(h$sex=='m', 'uniparental male', 'uniparental female')),levels=c('biparental','uniparental female', 'uniparental male'))#'uniparental \u2640', 'uniparental \u2642'))
+					
 				}
 				
 				dev.new(width=7, height=6.5)
@@ -1341,14 +1429,17 @@
 										geom_point(aes(fill=sex),shape=21, size=0.75, col='grey80')+#	#geom_point(aes(shape=sys),alpha=0.3,size=1)+
 										
 										stat_smooth(aes(col=order, lwd=sex),method='loess', se=FALSE)+#, lwd=0.8)+
-										scale_size_manual(name='Incubation type', breaks=c('biparental','uniparental female', 'uniparental male'),values=c(0.3,0.7,0.7))+										
+										scale_size_manual(name='Incubation', breaks=c('biparental','uniparental female', 'uniparental male'),values=c(0.3,0.7,0.7))+										
 										#scale_linetype_manual(name='Incubation type', breaks=c('biparental','uniparental female', 'uniparental male'),values=c("dashed","solid","solid"))+
-										scale_fill_manual(name="Incubation type",breaks=c('biparental','uniparental female', 'uniparental male'),values=alpha(c("#5eab2b","#FCB42C","#535F7C"),0.6))+
+										scale_fill_manual(name="Incubation",breaks=c('biparental','uniparental female', 'uniparental male'),values=alpha(c("#5eab2b","#FCB42C","#535F7C"),0.6))+
 										
-										scale_colour_discrete(name="Species", labels=sp_$species[order(sp_$order)])+		
-										facet_wrap(~act_ID, ncol=8)+#, scales="free_x")+
-										xlab("Species' incubation period [proportion]")+
+										scale_colour_discrete(name="Species", breaks=sp_$order[sp_$order], labels=sp_$species[sp_$order])+		
+										guides(lwd = guide_legend(order = 1), fill = guide_legend(order = 1),	colour = guide_legend(order = 2))+
+										facet_wrap(~order_all, ncol=8)+#, scales="free_x")+
+										xlab("Time of day [hours]")+
 										ylab("Nest attendance [proportion]")+
+										scale_x_continuous(limits=c(-0.1,24.1),breaks=seq(0,24,by=6), labels=c('0','','12','','24'))+
+										scale_y_continuous(limits=c(-0.05,1.05),breaks=seq(0,1,by=0.25), labels=c('0.0','','0.5','','1.0'))+
 										theme_light()+
 										theme(	
 												axis.line=element_line(colour="grey70", size=0.25),
