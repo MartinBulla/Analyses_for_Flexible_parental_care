@@ -81,7 +81,7 @@
 	}
 }
 
-{# METHODS - Extraction of incubation
+{# METHODS - Extraction of incubation - Sample sizes
 		{# run first
 			load(paste(wd,'for_analyses.RData',sep="")) 
 			# limit to periods with at least 75% of uniparental or biparental incubation
@@ -122,6 +122,7 @@
 		
 
 }
+
 {# RESULTS
   {# Abundance of uniparental incubation
 	{# run first
@@ -1531,7 +1532,7 @@
 						}
 			}	
 		}	
-		{# Supplementary Data Table 3
+		{# Supplementary Data Table 4
 				m=lmer(att~sin(rad)+cos(rad) + types +sin(rad)*types+cos(rad)*types+(sin(rad)+cos(rad)|actID_type)+(sin(rad)+cos(rad)|sp_type),data=h, REML=FALSE)	
 			 
 				pred=c('Intercept (bip_bip)','Sin', 'Cos','Type (bip_uni)','Type (uni)', 'Sin x bip_sp_uni', 'Sin x uni', 'Cos x bip_sp_uni', 'Cos x uni')
@@ -1564,7 +1565,7 @@
 			
 		}
 		
-		{# Supplementary Figure 2
+		{# Supplementary Figure 3
 				{# species
 					sp_ =read.csv(paste(wd,'species.csv', sep=""), stringsAsFactors=FALSE)
 					#sp_$order=-sp_$order
@@ -1903,41 +1904,12 @@
 			}
 		  }
 		}
+	}	
 		
-		# check SEX differences in unip of bip ### use only species where both sexes
-			{# run first	
-				# limited to species with uniparental data for both sexes	
-					dd=d[d$sys=='biparental' & d$type=='uni' & d$sp%in%c('amgp','basa','sesa','wesa'),]
-					hh=h[h$sys=='biparental' & h$type=='uni' & h$sp%in%c('amgp','basa','sesa','wesa'),]
-				
-				{# add sex
-				nest =read.csv(paste(wd,'nests.csv', sep=""), stringsAsFactors=FALSE)
-				nest_=nest[nest$circumstances!='temporal',]
-
-				dd$sex=as.factor(nest_$sex[match(dd$act_ID,nest_$act_ID)])
-				hh$sex=as.factor(nest_$sex[match(hh$act_ID,nest_$act_ID)])
-				}	
-				# convert time to radians
-					hh$hour=as.numeric(hh$hour)
-					hh$rad=as.numeric(hh$hour)*pi/12
-					hh$sin_=sin(hh$rad)
-					hh$cos_=cos(hh$rad)
-			}
-			summary(factor(dd$sex))
-			summary(factor(hh$sex))
-			ggplot(dd,aes(x=sp,y=att, col=sex))+	geom_boxplot()
-			densityplot(~dd$prop_ip,groups=dd$sex, auto.key=TRUE)
-			m=lmer(att~scale(prop_ip)*sex+(prop_ip|act_ID)+(prop_ip|sp),dd, REML=FALSE)	
-			plot(allEffects(m))
-			summary(glht(m))
-			m=lmer(att~sin(rad)+cos(rad) + sex +sin(rad)*sex+cos(rad)*sex+(sin(rad)+cos(rad)|act_ID)+(sin(rad)+cos(rad)|sp),data=hh, REML=FALSE)	
-			summary(glht(m))
-			plot(allEffects(m))
-			
 }
 
 
-}	
+	
 			
 			
 			
@@ -2109,8 +2081,36 @@
 	table(d$sp, freq(d$nest)
 	
 	
+		{# check SEX differences in unip of bip ### use only species where both sexes
+			{# run first	
+				# limited to species with uniparental data for both sexes	
+					dd=d[d$sys=='biparental' & d$type=='uni' & d$sp%in%c('amgp','basa','sesa','wesa'),]
+					hh=h[h$sys=='biparental' & h$type=='uni' & h$sp%in%c('amgp','basa','sesa','wesa'),]
+				
+				{# add sex
+				nest =read.csv(paste(wd,'nests.csv', sep=""), stringsAsFactors=FALSE)
+				nest_=nest[nest$circumstances!='temporal',]
 
-	
+				dd$sex=as.factor(nest_$sex[match(dd$act_ID,nest_$act_ID)])
+				hh$sex=as.factor(nest_$sex[match(hh$act_ID,nest_$act_ID)])
+				}	
+				# convert time to radians
+					hh$hour=as.numeric(hh$hour)
+					hh$rad=as.numeric(hh$hour)*pi/12
+					hh$sin_=sin(hh$rad)
+					hh$cos_=cos(hh$rad)
+			}
+			summary(factor(dd$sex))
+			summary(factor(hh$sex))
+			ggplot(dd,aes(x=sp,y=att, col=sex))+	geom_boxplot()
+			densityplot(~dd$prop_ip,groups=dd$sex, auto.key=TRUE)
+			m=lmer(att~scale(prop_ip)*sex+(prop_ip|act_ID)+(prop_ip|sp),dd, REML=FALSE)	
+			plot(allEffects(m))
+			summary(glht(m))
+			m=lmer(att~sin(rad)+cos(rad) + sex +sin(rad)*sex+cos(rad)*sex+(sin(rad)+cos(rad)|act_ID)+(sin(rad)+cos(rad)|sp),data=hh, REML=FALSE)	
+			summary(glht(m))
+			plot(allEffects(m))
+	}
 {# not USED in the analyses
 	{# day in incubation period when the uniparental incubation started and for how long it lasted
 		{# run first
