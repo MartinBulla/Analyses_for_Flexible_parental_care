@@ -228,7 +228,7 @@
 					text(y=23,x=30, labels='\u2642', col='#535F7C', cex=0.6)
 					
 						#axis(2, at=seq(0,1,by=0.25), labels=c('0.0','','0.5','','1.0'))
-					mtext('a',side=3,line=-.35, cex=0.6,  col='grey30', outer=TRUE, adj=0.95)
+					mtext(expression(bold("a")),side=3,line=-.35, cex=0.6,  col='grey30', outer=TRUE, adj=0.95)
 		 dev.off()				
 		}
 	{# Figure 1bc 
@@ -289,7 +289,7 @@
 					#mtext('Nest attendance',side=2,line=1, cex=0.6, las=3, col='grey30')
 					#text(y=23,x=28, labels='\u2640', col='#FCB42C', cex=0.6)
 					#text(y=23.5,x=30, labels='\u2642', col='#535F7C', cex=0.6)
-					mtext('b',side=3,line=-.35, cex=0.6,  col='grey30', outer=TRUE, adj=0.95)	
+					mtext(expression(bold("b")),side=3,line=-.35, cex=0.6,  col='grey30', outer=TRUE, adj=0.95)	
 		 dev.off()				
 		}
 		 {# Figure 1b points and boxplot
@@ -374,7 +374,7 @@
 						#mtext('Nest attendance',side=2,line=1, cex=0.6, las=3, col='grey30')
 					#text(y=23,x=28, labels='\u2640', col='#FCB42C', cex=0.6)
 					#text(y=23.5,x=30, labels='\u2642', col='#535F7C', cex=0.6)
-					mtext('c',side=3,line=-.35, cex=0.6,  col='grey30', outer=TRUE, adj=0.95)	
+					mtext(expression(bold("c")),side=3,line=-.35, cex=0.6,  col='grey30', outer=TRUE, adj=0.95)	
 		 dev.off()				
 		}
 	}
@@ -412,6 +412,7 @@
 			summary(factor(g$state)) # distribution of end states
 			g$success=ifelse(g$state%in%c('s','l','h'),'yes','no')
 			table(g$sp,g$success)  # distribution of successful nests
+			
 			unique(n_$state)
 			
 				densityplot(~g$prop_ip)
@@ -420,16 +421,18 @@
 				densityplot(~g$uni_last)
 				densityplot(~g$uni_last, groups=g$success, auto.key=TRUE)
 				densityplot(~log(g$uni_last))
+			{# run first
+				sp_=sp[!sp$sp%in%c('pesa','rnph'),]
+				sp_$order=-sp_$order
+				sp_=sp_[order(sp_$order),]
 				
+				g$species=sp_$species[match(g$sp,sp_$sp)]
+				g$order=sp_$order[match(g$sp,sp_$sp)]
+				g$success=ifelse(g$state%in%c('s','l','h'),'yes','no')
+				g$success=factor(g$success, levels=c('yes','no'))
+				counts=table(g$success,g$order)
+			}	
 			{# Figure 2a distribution across nests
-			sp_=sp[!sp$sp%in%c('pesa','rnph'),]
-			sp_$order=-sp_$order
-			sp_=sp_[order(sp_$order),]
-			
-			g$species=sp_$species[match(g$sp,sp_$sp)]
-			g$order=sp_$order[match(g$sp,sp_$sp)]
-			g$success=factor(g$success, levels=c('yes','no'))
-			counts=table(g$success,g$order)
 			
 			# par(mfrow=c(1,3),mar=c(0.0,0,0,0.4),oma = c(1.8, 1.8, 0.2, 0.5),ps=12, mgp=c(1.2,0.35,0), las=1, cex=1, col.axis="grey30",font.main = 1, col.lab="grey30", col.main="grey30", fg="grey70") # 0.6 makes font 7pt, 0.7 8pt
 			 #dev.new(width=3.5*0.75,height=1.85)
@@ -454,7 +457,7 @@
 						text(y=22.0,x=32, labels='Successful', col=female_col, cex=0.5,pos=2)
 						
 							#axis(2, at=seq(0,1,by=0.25), labels=c('0.0','','0.5','','1.0'))
-						mtext('a',side=3,line=-.35, cex=0.6,  col='grey30', outer=TRUE, adj=0.95)
+						mtext(expression(bold("a")),side=3,line=-.35, cex=0.6,  col='grey30', outer=TRUE, adj=0.95)
 			 dev.off()				
 			}
 			{# Figure 2b densityplot across day
@@ -484,7 +487,7 @@
 					points(y=jitter(points_$y),x=points_$x, pch = 21,cex=0.5, col="gray63",bg=adjustcolor(points_$col_, alpha.f = 0.6))
 					#points(y=jitter(points_$y),x=points_$x, col=points_$col_, pch=19, cex=0.5)
 					
-					mtext('b',side=3,line=-.35, cex=0.6,  col='grey30', outer=TRUE, adj=0.9)	
+					mtext(expression(bold("b")),side=3,line=-.35, cex=0.6,  col='grey30', outer=TRUE, adj=0.9)	
 				dev.off()
 		}
 			{# Figure 2c densityplot across duration
@@ -509,13 +512,13 @@
 					
 						axis(1, at=seq(0,20,by=5),labels=seq(0,20,by=5),cex.axis=0.5,mgp=c(0,-0.2,0))
 							mtext("Duration of uniparental incubation\n[days]",side=1,line=1, cex=0.6, las=1, col='grey30')
-							mtext("Kernel density",side=2,line=1.2, cex=0.6, las=3, col='grey30')
+							#mtext("Kernel density",side=2,line=1.2, cex=0.6, las=3, col='grey30')
 					lines(dens_suc,col=female_col, xpd=FALSE)
 					lines(dens_fail,col=male_col,xpd=FALSE)
 					points(y=jitter(points_$y),x=points_$x, pch = 21,cex=0.5, col="gray63",bg=adjustcolor(points_$col_, alpha.f = 0.6))
 					#points(y=jitter(points_$y),x=points_$x, col=points_$col_, pch=19, cex=0.5)
 					
-					mtext('c',side=3,line=-.35, cex=0.6,  col='grey30', outer=TRUE, adj=0.9)	
+					mtext(expression(bold("c")),side=3,line=-.35, cex=0.6,  col='grey30', outer=TRUE, adj=0.9)	
 				dev.off()
 		}
 		}
@@ -615,7 +618,7 @@
 					plot(NA, xlim=c(0,160), ylim=c(0,1), ylab='Nest success [probability]',xlab=NA, xaxt='n', type='n')#yaxt='n',
 							axis(1, at=seq(0,160,by=20),labels=c(0,"",40,"",80,"",120,"",160),cex.axis=0.5,mgp=c(0,-0.2,0))
 							mtext("Start of uniparental\n[% of incubation period]",side=1,line=1, cex=0.6, las=1, col='grey30')
-							mtext('a',side=3,line=-.7, cex=0.6,  col='grey30', outer=TRUE, adj=0.48)
+							mtext(expression(bold("a")),side=3,line=-.7, cex=0.6,  col='grey30', outer=TRUE, adj=0.48)
 							
 							polygon(c(pp$predictor, rev(pp$predictor)), c(pp$lwr, 
 									rev(pp$upr)), border=NA, col=col_lb)#adjustcolor(col_l ,alpha.f = 0.1)) #0,0,0 black 0.5 is transparents RED
@@ -644,7 +647,7 @@
 							#axis(1, at=seq(0,160,by=20),labels=c(0,"",40,"",80,"",120,"",160),cex.axis=0.5,mgp=c(0,-0.2,0))
 							axis(1, at=seq(0,20,by=5),labels=seq(0,20,by=5),cex.axis=0.5,mgp=c(0,-0.2,0))
 							mtext("Duration of uniparental\n[days]",side=1,line=1, cex=0.6, las=1, col='grey30')
-							mtext('b',side=3,line=-.7, cex=0.6,  col='grey30', outer=TRUE, adj=0.86)
+							mtext(expression(bold("b")),side=3,line=-.7, cex=0.6,  col='grey30', outer=TRUE, adj=0.86)
 							
 							polygon(c(pd$predictor, rev(pd$predictor)), c(pd$lwr, 
 									rev(pd$upr)), border=NA, col=col_lb)#col=adjustcolor(col_l ,alpha.f = 0.1)) #0,0,0 black 0.5 is transparents RED
@@ -1152,7 +1155,7 @@
 		
 				ggsave(paste(out_,"Supplementary_Figure_1.png", sep=""),width=7, height=6.5, units='in',dpi=600)						
 				}
-		{# Figure 4b
+		{# Figure 4b and Supplementary Table 2
 			d$actID_type=interaction(d$act_ID,d$type)
 			d$sp_type=interaction(d$sp,d$type)
 			d$types=factor(ifelse(d$sys=='uniparental', 'unip_sp', ifelse(d$type=='bip', 'bip_sp_bip', 'bip_sp_uni')))#,levels=c('unip_sp','bip_sp_uni','bip_sp_bip'))
@@ -1248,6 +1251,7 @@
 													
 				dev.off()
 			}	
+			
 			{# Supplementary Data Table 2
 				m=lmer(att~scale(prop_ip)*types+(prop_ip|actID_type)+(prop_ip|sp_type),d, REML=FALSE)	
 			 
@@ -1281,6 +1285,130 @@
 			
 		}
 		}
+		{# Supplementary Figure 2a, Supplementary Table 3
+			{# run first - prepare data	
+				# limited to species with uniparental data for both sexes	
+					dd=d[d$sys=='biparental' & d$type=='uni' & d$sp%in%c('amgp','basa','sesa','wesa'),]
+									
+				{# add sex
+				nest =read.csv(paste(wd,'nests.csv', sep=""), stringsAsFactors=FALSE)
+				nest_=nest[nest$circumstances!='temporal',]
+
+				dd$sex=as.factor(nest_$sex[match(dd$act_ID,nest_$act_ID)])
+				dd$cols=ifelse(dd$sex=='f', uni_col, bip_uni_col)
+				
+				}	
+				
+			}
+			{# run first - prepare predictions
+							m=lmer(att~scale(prop_ip)*sex+(prop_ip|act_ID)+(prop_ip|sp),dd, REML=FALSE)		
+							#summary(m)
+							#plot(allEffects(m))
+						
+							# simulation		
+								nsim <- 5000
+								bsim <- sim(m, n.sim=nsim)  
+								apply(bsim@fixef, 2, quantile, prob=c(0.025,0.975))	
+							
+							# coefficients
+								v <- apply(bsim@fixef, 2, quantile, prob=c(0.5))	
+							# predicted values		
+								newDa=data.frame(prop_ip=seq(min(dd$prop_ip[dd$sex=='f']),max(d$prop_ip[dd$sex=='f']),length.out=200),
+												sex='f')
+								newDb=data.frame(prop_ip=seq(min(d$prop_ip[dd$sex=='m']),max(d$prop_ip[dd$sex=='m']),length.out=200),
+												sex='m')	
+							
+								newD=rbind(newDa,newDb)			
+																
+							# exactly the model which was used has to be specified here 
+								X <- model.matrix(~ prop_ip*sex,data=newD)	
+											
+							# calculate predicted values and creditability intervals
+								newD$pred <- X%*%v # #newD$fit_b <- plogis(X%*%v) # in case on binomial scaleback
+										predmatrix <- matrix(nrow=nrow(newD), ncol=nsim)
+										for(i in 1:nsim) predmatrix[,i] <- X%*%bsim@fixef[i,]
+										newD$lwr <- apply(predmatrix, 1, quantile, prob=0.025)
+										newD$upr <- apply(predmatrix, 1, quantile, prob=0.975)
+										#newD$other <- apply(predmatrix, 1, quantile, prob=0.5)
+										#newD=newD[order(newD$t_tundra),]
+								p=newD
+								p_f=p[p$sex=='f',]
+								p_m=p[p$sex=='m',]
+						
+				}			
+			
+			{# Supplementary Figure 2a 
+				 #dev.new(width=3.5*0.5,height=1.85)
+					png(paste(out_,"Supplementary_Figure_2a_sex.png", sep=""), width=3.5*0.5,height=1.85,units="in",res=600)
+						par(mar=c(0.0,0,0,0.4),oma = c(2.1, 2.1, 0.2, 0.2),ps=12, mgp=c(1.2,0.35,0), las=1, cex=1, col.axis="grey30",font.main = 1, col.lab="grey30", col.main="grey30", fg="grey70", cex.lab=0.6,cex.main=0.7, cex.axis=0.5, tcl=-0.1,bty="n",xpd=TRUE) #
+						
+						plot(NA,pch=19,xlim=c(0,1.6), ylim=c(-0.05,1), xlab=NA, ylab=NA, yaxt='n',xaxt='n', type='n')
+											
+							axis(1, at=seq(0,1.6,by=0.4),labels=seq(0,1.6,by=0.4),cex.axis=0.5,mgp=c(0,-0.20,0))
+								mtext("Species' incubation period\n[proportion]",side=1,line=1, cex=0.6, las=1, col='grey30')
+							
+							axis(2, at=seq(0,1,by=0.25), labels=TRUE)
+							mtext("Nest attendance [proportion]",side=2,line=1.3, cex=0.6, las=3, col='grey30')
+							
+							mtext(expression(bold("a")),side=3,line=-.7/2, cex=0.6,  col='grey30', outer=TRUE, adj=0.48*2)
+							#lines(c(0,0),c(0,16.5), lty=3, col="red")							
+						# data
+							points(dd$att~dd$prop_ip, col=adjustcolor(dd$cols, alpha.f = 0.3), pch=20, cex=0.2)	
+							#points(inc$inc_eff~inc$bout_start_j_c, col=inc$col_,bg=adjustcolor(inc$col_, alpha.f = 0.4), pch=21, cex=0.5)	
+						
+						
+						# predictions
+							# uniparental species
+							polygon(c(p_f$prop_ip, rev(p_f$prop_ip)), c(p_f$lwr, 
+								rev(p_f$upr)), border=NA, col=adjustcolor(uni_col ,alpha.f = 0.2)) #0,0,0 black 0.5 is transparents RED
+							lines(p_f$prop_ip, p_f$pred, col=uni_col,lwd=1)
+														
+							# biparental species uniparental incubation
+							polygon(c(p_m$prop_ip, rev(p_m$prop_ip)), c(p_m$lwr, 
+								rev(p_m$upr)), border=NA, col=adjustcolor(bip_uni_col ,alpha.f = 0.2)) #0,0,0 black 0.5 is transparents RED
+							lines(p_m$prop_ip, p_m$pred, col=bip_uni_col,lwd=1)
+							
+																			
+					
+							text(y=0.045,x=0.9333333*1.6, labels='\u2640', col='#FCB42C', cex=0.6)
+							text(y=0.05,x=1.6, labels='\u2642', col='#535F7C', cex=0.6)
+					
+												
+													
+				dev.off()
+			}	
+			
+			{# Supplementary Data Table 3
+				pred=c('Intercept (female)','Incubation period', 'Sex (male)', 'Incubation period x male')
+						
+				# Fixed effects
+					v <- apply(bsim@fixef, 2, quantile, prob=c(0.5))
+					ci=apply(bsim@fixef, 2, quantile, prob=c(0.025,0.975))	
+					oi=data.frame(model='1',type='fixed',effect=pred,estimate=v, lwr=ci[1,], upr=ci[2,])
+					rownames(oi) = NULL
+						oi$estimate_r=round(oi$estimate,2)
+						oi$lwr_r=round(oi$lwr,2)
+						oi$upr_r=round(oi$upr,2)
+						#oi$CI=paste("(", oi$lwr_r, "-", oi$upr_r, ")", sep = "", collapse = NULL)
+					oii=oi[c('model','type',"effect", "estimate_r","lwr_r",'upr_r')]	
+				# Random effects var*100
+					l=data.frame(summary(m)$varcor)
+					l=l[is.na(l$var2),]
+						ri=data.frame(model='1', type='random (var)',effect=l$grp, estimate_r=round(l$vcov*100,2), lwr_r=NA, upr_r=NA)
+					o1=rbind(oii,ri)
+				# create xlsx		
+						sname = tempfile(fileext='.xls')
+						wb = loadWorkbook(sname,create = TRUE)	
+						createSheet(wb, name = "output")
+						writeWorksheet(wb, o1, sheet = "output")
+						#createSheet(wb, name = "output_AIC")
+						#writeWorksheet(wb, rbind(o), sheet = "output_AIC")
+						saveWorkbook(wb)
+						shell(sname)
+			
+		}
+		}
+		
 		{# Figure 4c-d
 			h$actID_type=interaction(h$act_ID,h$type)
 			h$sp_type=interaction(h$sp,h$type)
@@ -1339,15 +1467,15 @@
 					#dev.new(width=3.5*0.5,height=1.85)
 					{# (c) raw data
 						png(paste(out_,"Figure_4c.png", sep=""), width=3.5*0.5,height=1.85,units="in",res=600)
-						par(mar=c(0.0,0,0,0.4),oma = c(2.1, 2.1, 0.2, 0.2),ps=12, mgp=c(1.2,0.35,0), las=1, cex=1, col.axis="grey30",font.main = 1, col.lab="grey30", col.main="grey30", fg="grey70", cex.lab=0.6,cex.main=0.7, cex.axis=0.5, tcl=-0.1,bty="n",xpd=TRUE) #
+						par(mar=c(0.0,0.2,0,0.2),oma = c(2.1, 2.1, 0.2, 0.2),ps=12, mgp=c(1.2,0.35,0), las=1, cex=1, col.axis="grey30",font.main = 1, col.lab="grey30", col.main="grey30", fg="grey70", cex.lab=0.6,cex.main=0.7, cex.axis=0.5, tcl=-0.1,bty="n",xpd=TRUE) #
 						
 						plot(NA,pch=19,xlim=c(0,24), ylim=c(0,1), xlab=NA, ylab=NA, yaxt='n',xaxt='n', type='n')
 											
 							axis(1, at=seq(0,24,by=6),labels=seq(0,24,by=6),cex.axis=0.5,mgp=c(0,-0.20,0))
 								mtext("Time of day [hours]",side=1,line=1/2, cex=0.6, las=1, col='grey30')
 							
-							axis(2, at=seq(0,1,by=0.25), labels=TRUE)
-							mtext("Nest attendance [proportion]",side=2,line=1.3, cex=0.6, las=3, col='grey30')
+							#axis(2, at=seq(0,1,by=0.25), labels=TRUE)
+							#mtext("Nest attendance [proportion]",side=2,line=1.3, cex=0.6, las=3, col='grey30')
 							
 							mtext(expression(bold("c")),side=3,line=-.7/2, cex=0.6,  col='grey30', outer=TRUE, adj=0.48*2)
 							
@@ -1380,7 +1508,7 @@
 											
 							axis(1, at=seq(0,24,by=6),labels=seq(0,24,by=6),cex.axis=0.5,mgp=c(0,-0.20,0))
 								mtext("Time of day [hours]",side=1,line=1/2, cex=0.6, las=1, col='grey30')
-							mtext(expression(bold("d")),side=3,line=-.7/2, cex=0.6,  col='grey30', outer=TRUE, adj=0.86)
+							mtext(expression(bold("d")),side=3,line=-.7/2, cex=0.6,  col='grey30', outer=TRUE, adj=0.48*2)
 							
 							#axis(2, at=seq(0,1,by=0.25), labels=TRUE)
 							#mtext("Nest attendance [proportion]",side=2,line=1.3, cex=0.6, las=3, col='grey30')
@@ -1399,14 +1527,8 @@
 							polygon(c(pbu$hour, rev(pbu$hour)), c(pbu$lwr, 
 								rev(pbu$upr)), border=NA, col=adjustcolor(bip_uni_col ,alpha.f = 0.2)) #0,0,0 black 0.5 is transparents RED
 							lines(pbu$hour, pbu$pred, col=bip_uni_col,lwd=1)
+							dev.off()
 						}
-					{# legend
-							#text(x=0.2,y=0.13, labels='Biparental\nspecies\nbiparental\nincubation', col=bip_bip_col, cex=0.4)
-							#text(x=0.8,y=0.13, labels='Biparental\nspecies\nuniparental\nincubation', col=bip_uni_col, cex=0.4)
-							#text(x=1.4,y=0.13, labels='Uniparental\nspecies\nuniparental\nincubation', col=uni_col, cex=0.4)
-					}		
-													
-				dev.off()
 			}	
 		}	
 		{# Supplementary Data Table 3
@@ -1510,6 +1632,168 @@
 		
 				ggsave(paste(out_,"Supplementary_Figure_2.png", sep=""),width=7, height=6.5, units='in',dpi=600)						
 				}
+		
+		{# Supplementary Figure 2b, Supplementary Table 5
+			{# run first - prepare data	
+				# limited to species with uniparental data for both sexes	
+				hh=h[h$sys=='biparental' & h$type=='uni' & h$sp%in%c('amgp','basa','sesa','wesa'),]
+				
+				{# add sex
+				nest =read.csv(paste(wd,'nests.csv', sep=""), stringsAsFactors=FALSE)
+				nest_=nest[nest$circumstances!='temporal',]
+
+				hh$sex=as.factor(nest_$sex[match(hh$act_ID,nest_$act_ID)])
+				hh$cols=ifelse(hh$sex=='f', uni_col, bip_uni_col)
+				}
+				
+				# convert time to radians
+					hh$hour=as.numeric(hh$hour)
+					hh$rad=as.numeric(hh$hour)*pi/12
+					hh$sin_=sin(hh$rad)
+					hh$cos_=cos(hh$rad)
+				# min value for y-axis
+					k=-0.05	
+			}	
+			
+			{# run first - prepare predictions
+							m=lmer(att~sin_*sex+cos_*sex+(sin_+cos_|act_ID)+(sin_+cos_|sp),data=hh, REML=FALSE)
+							#m=lmer(att~sin(rad)+cos(rad) + sex +sin(rad)*sex+cos(rad)*sex+(sin(rad)+cos(rad)|act_ID)+(sin(rad)+cos(rad)|sp),data=hh, REML=FALSE)	
+							#summary(m)
+							#plot(allEffects(m))
+						
+							# simulation		
+								nsim <- 5000
+								bsim <- sim(m, n.sim=nsim)  
+								apply(bsim@fixef, 2, quantile, prob=c(0.025,0.975))	
+							
+							# coefficients
+								v <- apply(bsim@fixef, 2, quantile, prob=c(0.5))	
+							# predicted values		
+								ll=list()
+								for(i in c('f','m')){
+									newD=data.frame(hour=seq(0,24,0.25))
+										newD$rad=2*pi*newD$hour / 24
+										newD$sin_=sin(newD$rad)
+										newD$cos_=cos(newD$rad)
+										newD$sex=i
+										ll[[i]]=newD
+										}
+								newD=do.call(rbind,ll)		
+								
+							# exactly the model which was used has to be specified here 
+								X <- model.matrix(~ sin_*sex+cos_*sex,data=newD)	
+											
+							# calculate predicted values and creditability intervals
+								newD$pred <- X%*%v # #newD$fit_b <- plogis(X%*%v) # in case on binomial scaleback
+										predmatrix <- matrix(nrow=nrow(newD), ncol=nsim)
+										for(i in 1:nsim) predmatrix[,i] <- X%*%bsim@fixef[i,]
+										newD$lwr <- apply(predmatrix, 1, quantile, prob=0.025)
+										newD$upr <- apply(predmatrix, 1, quantile, prob=0.975)
+										#newD$other <- apply(predmatrix, 1, quantile, prob=0.5)
+										#newD=newD[order(newD$t_tundra),]
+								p=newD
+								p_f=p[p$sex=='f',]
+								p_m=p[p$sex=='m',]
+				}			
+			{# Supplementary Figure 2b-c
+					#dev.new(width=3.5*0.5,height=1.85)
+					{# (b) raw data
+						png(paste(out_,"Supplementary_Figure_2b.png", sep=""), width=3.5*0.5,height=1.85,units="in",res=600)
+						
+						par(mar=c(0.0,0.2,0,0.2),oma = c(2.1, 2.1, 0.2, 0.2),ps=12, mgp=c(1.2,0.35,0), las=1, cex=1, col.axis="grey30",font.main = 1, col.lab="grey30", col.main="grey30", fg="grey70", cex.lab=0.6,cex.main=0.7, cex.axis=0.5, tcl=-0.1,bty="n",xpd=TRUE) #
+						
+						plot(NA,pch=19,xlim=c(0,24), ylim=c(k,1), xlab=NA, ylab=NA, yaxt='n',xaxt='n', type='n')
+											
+							axis(1, at=seq(0,24,by=6),labels=seq(0,24,by=6),cex.axis=0.5,mgp=c(0,-0.20,0))
+								mtext("Time of day [hours]",side=1,line=1/2, cex=0.6, las=1, col='grey30')
+							
+							#axis(2, at=seq(0,1,by=0.25), labels=TRUE)
+							#mtext("Nest attendance [proportion]",side=2,line=1.3, cex=0.6, las=3, col='grey30')
+							
+							mtext(expression(bold("b")),side=3,line=-.7/2, cex=0.6,  col='grey30', outer=TRUE, adj=0.48*2)
+							
+							lines(c(0,24),c(0.19,0.19)+k,, lty=3, col="grey80")							
+						# data
+							# aggregate per hour, species and type of incubation		
+								hh$nn=1
+								gg=ddply(hh,.(sp,cols, sex, hour), summarise,mean_=mean(att),se_=sd(att)/sqrt(length(att)),n=sum(nn))
+								gg=gg[order(gg$sex),]							
+							#arrows(x0=gg$hour, y0=gg$mean_-gg$se_,x1=gg$hour,y1=gg$mean_+gg$se_,code = 0, col =col_p , angle = 90, length = .025, lwd=1, lty=1)
+							#symbols(gg$hour,gg$mean_, circles=sqrt(gg$n/pi),inches=0.14/1.75,bg='white', add=TRUE) 
+							symbols(gg$hour,gg$mean_, circles=sqrt(gg$n/pi),inches=0.14/1.75,bg=adjustcolor(gg$cols,alpha.f = 0.2),add=TRUE, fg=col_p) #bg=alpha(col_p,0.1)
+							#symbols(gg$hour,gg$mean_, circles=sqrt(gg$n/pi),inches=0.14/1.75,fg=adjustcolor(gg$cols,alpha.f = 0.2),add=TRUE), fg=col_p) #bg=alpha(col_p,0.1)
+								
+														#points(h$att~h$hour, col=adjustcolor(h$cols, alpha.f = 0.3), pch=20, cex=0.2)	
+							#points(inc$inc_eff~inc$bout_start_j_c, col=inc$col_,bg=adjustcolor(inc$col_, alpha.f = 0.4), pch=21, cex=0.5)	
+							
+								text(x=-2+k, y=0.105, pos=4, expression(italic('N')*' cases:'),cex=0.5,las=1,col='grey30') 
+								symbols(c(10,15,20),c(0.105,0.105,0.105)+k,circles=sqrt(c(10,100,150)/pi),inches=0.14/1.75,bg=col_pb, fg=col_p,add=TRUE, xpd=TRUE) #bg=alpha(col_p,0.1)
+								#symbols(c(23,23,23),c(0.77,0.65,0.5),circles=sqrt(c(10,100,300)/pi),inches=0.14/1.75,bg=col_pb, fg=col_p,add=TRUE, xpd=TRUE) #bg=alpha(col_p,0.1)
+								text(c(10,15,20),c(0.007,0.007,0.007)+k,labels=c(10,100,150), xpd=TRUE, cex=0.5,col='grey30') 
+						dev.off()															
+						
+						}
+					{# (c) 
+						png(paste(out_,"Supplementary_Figure_2c.png", sep=""), width=3.5*0.5,height=1.85,units="in",res=600)
+						par(mar=c(0.0,0,0,0.4),oma = c(2.1, 2.1, 0.2, 0.2),ps=12, mgp=c(1.2,0.35,0), las=1, cex=1, col.axis="grey30",font.main = 1, col.lab="grey30", col.main="grey30", fg="grey70", cex.lab=0.6,cex.main=0.7, cex.axis=0.5, tcl=-0.1,bty="n",xpd=TRUE) #
+						
+						plot(NA,pch=19,xlim=c(0,24), ylim=c(k,1), xlab=NA, ylab=NA, yaxt='n',xaxt='n', type='n')
+											
+							axis(1, at=seq(0,24,by=6),labels=seq(0,24,by=6),cex.axis=0.5,mgp=c(0,-0.20,0))
+								mtext("Time of day [hours]",side=1,line=1/2, cex=0.6, las=1, col='grey30')
+							mtext(expression(bold("c")),side=3,line=-.7/2, cex=0.6,  col='grey30', outer=TRUE, adj=0.48*2)
+							
+							#axis(2, at=seq(0,1,by=0.25), labels=TRUE)
+							#mtext("Nest attendance [proportion]",side=2,line=1.3, cex=0.6, las=3, col='grey30')
+						# predictions
+							# uniparental species
+							polygon(c(p_f$hour, rev(p_f$hour)), c(p_f$lwr, 
+								rev(p_f$upr)), border=NA, col=adjustcolor(uni_col ,alpha.f = 0.2)) #0,0,0 black 0.5 is transparents RED
+							lines(p_f$hour, p_f$pred, col=uni_col,lwd=1)
+							
+							# biparental species uniparental incubation
+							polygon(c(p_m$hour, rev(p_m$hour)), c(p_m$lwr, 
+								rev(p_m$upr)), border=NA, col=adjustcolor(bip_uni_col ,alpha.f = 0.2)) #0,0,0 black 0.5 is transparents RED
+							lines(p_m$hour, p_m$pred, col=bip_uni_col,lwd=1)
+							
+							dev.off()
+						}
+			}	
+			
+			{# Supplementary Data Table 5
+				m=lmer(att~sin(rad)+cos(rad) + sex +sin(rad)*sex+cos(rad)*sex+(sin(rad)+cos(rad)|act_ID)+(sin(rad)+cos(rad)|sp),data=hh, REML=FALSE)	
+			 
+				pred=c('Intercept (female)','Sin', 'Cos','Sex (male)','Sin x sex(male)', 'Cos x sex(male)')
+						nsim <- 5000
+						bsim <- sim(m, n.sim=nsim)  
+				# Fixed effects
+					v <- apply(bsim@fixef, 2, quantile, prob=c(0.5))
+					ci=apply(bsim@fixef, 2, quantile, prob=c(0.025,0.975))	
+					oi=data.frame(model='1',type='fixed',effect=pred,estimate=v, lwr=ci[1,], upr=ci[2,])
+					rownames(oi) = NULL
+						oi$estimate_r=round(oi$estimate,2)
+						oi$lwr_r=round(oi$lwr,2)
+						oi$upr_r=round(oi$upr,2)
+						#oi$CI=paste("(", oi$lwr_r, "-", oi$upr_r, ")", sep = "", collapse = NULL)
+					oii=oi[c('model','type',"effect", "estimate_r","lwr_r",'upr_r')]	
+				# Random effects var*100
+					l=data.frame(summary(m)$varcor)
+					l=l[is.na(l$var2),]
+						ri=data.frame(model='1', type='random (var)',effect=l$grp, estimate_r=round(l$vcov*100,2), lwr_r=NA, upr_r=NA)
+					o1=rbind(oii,ri)
+				# create xlsx		
+						sname = tempfile(fileext='.xls')
+						wb = loadWorkbook(sname,create = TRUE)	
+						createSheet(wb, name = "output")
+						writeWorksheet(wb, o1, sheet = "output")
+						#createSheet(wb, name = "output_AIC")
+						#writeWorksheet(wb, rbind(o), sheet = "output_AIC")
+						saveWorkbook(wb)
+						shell(sname)
+			
+		}
+		}
+		
 		{# Figure 5 
 		  {# load metadata
 			{# nests to extract the data for
@@ -1621,52 +1905,34 @@
 		}
 		
 		# check SEX differences in unip of bip ### use only species where both sexes
-			dd=d[d$sys=='biparental' & d$type=='uni',]
-				{# sex
+			{# run first	
+				# limited to species with uniparental data for both sexes	
+					dd=d[d$sys=='biparental' & d$type=='uni' & d$sp%in%c('amgp','basa','sesa','wesa'),]
+					hh=h[h$sys=='biparental' & h$type=='uni' & h$sp%in%c('amgp','basa','sesa','wesa'),]
+				
+				{# add sex
 				nest =read.csv(paste(wd,'nests.csv', sep=""), stringsAsFactors=FALSE)
 				nest_=nest[nest$circumstances!='temporal',]
 
-				dd$sex=nest_$sex[match(dd$act_ID,nest_$act_ID)]
+				dd$sex=as.factor(nest_$sex[match(dd$act_ID,nest_$act_ID)])
+				hh$sex=as.factor(nest_$sex[match(hh$act_ID,nest_$act_ID)])
 				}	
-		
-			ggplot(dd,aes(x=order,y=att, col=sex))+	geom_boxplot()+
-														coord_flip(ylim = c(0.2, 1))+
-														scale_x_discrete(labels=sp_$species)+
-														#scale_y_continuous(breaks=c(0.2,0.4,0.6,0.8,1.0))+
-														
-														scale_colour_discrete(name="Sex", breaks=c("f","m"), labels=c("female", "male"))+		
-														ylab("Nest attendance [proportion]")+
-														annotate("text", label = "Uniparental\nspecies", x = 1.5, y = 0.22, size = 1.8, colour = "grey60",angle = 90)+#y = 0.95,
-														theme_light()+
-														theme(	
-															axis.line=element_line(colour="grey70", size=0.25),
-															panel.border=element_rect(colour="grey70", size=0.25),
-															panel.grid = element_blank(),
-											
-															axis.title=element_text(size=7, colour="grey30"),
-															axis.title.y = element_blank(),
-															axis.title.x = element_text(vjust=0.2),
-															axis.text=element_text(size=6),# margin=units(0.5,"mm")),
-															axis.ticks.length=unit(0.5,"mm"),
-															#axis.ticks.margin,
-															
-															strip.background = element_blank(),
-															strip.text.x = element_blank(),
-															#strip.background = element_blank(), 
-															#strip.text = element_blank(),
-															panel.margin = unit(1, "mm"),
-															#legend.position="none"
-															#legend.background=element_rect(colour="grey80"),
-															legend.key=element_blank(),
-															#legend.justification=c(0,0), legend.position=c(-0.03,0.75),
-															legend.key.size = unit(0.75, 'lines'),
-															legend.text=element_text(size=6, colour="grey30"),
-															legend.title=element_text(size=7, colour="grey30")
-																)
-															
-		
-		
-		
+				# convert time to radians
+					hh$hour=as.numeric(hh$hour)
+					hh$rad=as.numeric(hh$hour)*pi/12
+					hh$sin_=sin(hh$rad)
+					hh$cos_=cos(hh$rad)
+			}
+			summary(factor(dd$sex))
+			summary(factor(hh$sex))
+			ggplot(dd,aes(x=sp,y=att, col=sex))+	geom_boxplot()
+			densityplot(~dd$prop_ip,groups=dd$sex, auto.key=TRUE)
+			m=lmer(att~scale(prop_ip)*sex+(prop_ip|act_ID)+(prop_ip|sp),dd, REML=FALSE)	
+			plot(allEffects(m))
+			summary(glht(m))
+			m=lmer(att~sin(rad)+cos(rad) + sex +sin(rad)*sex+cos(rad)*sex+(sin(rad)+cos(rad)|act_ID)+(sin(rad)+cos(rad)|sp),data=hh, REML=FALSE)	
+			summary(glht(m))
+			plot(allEffects(m))
 			
 }
 
