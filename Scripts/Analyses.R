@@ -1207,6 +1207,7 @@
 				 #dev.new(width=3.5*0.5,height=1.85)
 					png(paste(out_,"Figure_4b.png", sep=""), width=3.5*0.5,height=1.85,units="in",res=600)
 						par(mar=c(0.0,0,0,0.4),oma = c(2.1, 2.1, 0.2, 0.2),ps=12, mgp=c(1.2,0.35,0), las=1, cex=1, col.axis="grey30",font.main = 1, col.lab="grey30", col.main="grey30", fg="grey70", cex.lab=0.6,cex.main=0.7, cex.axis=0.5, tcl=-0.1,bty="n",xpd=TRUE) #
+						
 						plot(NA,pch=19,xlim=c(0,1.6), ylim=c(0,1), xlab=NA, ylab=NA, yaxt='n',xaxt='n', type='n')
 											
 							axis(1, at=seq(0,1.6,by=0.4),labels=seq(0,1.6,by=0.4),cex.axis=0.5,mgp=c(0,-0.20,0))
@@ -1335,20 +1336,20 @@
 								pbu=p[p$types=='bip_sp_uni',]
 				}			
 			{# plot
-					#dev.new(width=3.5,height=1.85)
-					png(paste(out_,"Figure_4cd.png", sep=""), width=3.5,height=1.85,units="in",res=600)
+					#dev.new(width=3.5*0.5,height=1.85)
 					{# (c) raw data
-						par(mfrow=c(1,2),mar=c(2.2,2.1,0.5,0.1),  mgp=c(1.2,0.35,0),oma = c(0, 0, 0, 1),ps=12, las=1, cex.lab=0.6,cex.main=0.7, cex.axis=0.5, tcl=-0.15,bty="n",xpd=TRUE, col.axis="grey30",font.main = 1, col.lab="grey30", col.main="grey30", fg="grey70") # 0.6 makes font 7pt, 0.7 8pt
-				
+						png(paste(out_,"Figure_4c.png", sep=""), width=3.5*0.5,height=1.85,units="in",res=600)
+						par(mar=c(0.0,0,0,0.4),oma = c(2.1, 2.1, 0.2, 0.2),ps=12, mgp=c(1.2,0.35,0), las=1, cex=1, col.axis="grey30",font.main = 1, col.lab="grey30", col.main="grey30", fg="grey70", cex.lab=0.6,cex.main=0.7, cex.axis=0.5, tcl=-0.1,bty="n",xpd=TRUE) #
+						
 						plot(NA,pch=19,xlim=c(0,24), ylim=c(0,1), xlab=NA, ylab=NA, yaxt='n',xaxt='n', type='n')
 											
 							axis(1, at=seq(0,24,by=6),labels=seq(0,24,by=6),cex.axis=0.5,mgp=c(0,-0.20,0))
 								mtext("Time of day [hours]",side=1,line=1/2, cex=0.6, las=1, col='grey30')
 							
-							#axis(2, at=seq(0,1,by=0.25), labels=TRUE)
-							#mtext("Nest attendance [proportion]",side=2,line=1.3, cex=0.6, las=3, col='grey30')
+							axis(2, at=seq(0,1,by=0.25), labels=TRUE)
+							mtext("Nest attendance [proportion]",side=2,line=1.3, cex=0.6, las=3, col='grey30')
 							
-							mtext(expression(bold("c")),side=3,line=-.7, cex=0.6,  col='grey30', outer=TRUE, adj=0.48)
+							mtext(expression(bold("c")),side=3,line=-.7/2, cex=0.6,  col='grey30', outer=TRUE, adj=0.48*2)
 							
 							lines(c(0,24),c(0.19,0.19),, lty=3, col="grey80")							
 						# data
@@ -1368,16 +1369,18 @@
 								symbols(c(10,15,20),c(0.105,0.105,0.105),circles=sqrt(c(10,100,300)/pi),inches=0.14/1.75,bg=col_pb, fg=col_p,add=TRUE, xpd=TRUE) #bg=alpha(col_p,0.1)
 								#symbols(c(23,23,23),c(0.77,0.65,0.5),circles=sqrt(c(10,100,300)/pi),inches=0.14/1.75,bg=col_pb, fg=col_p,add=TRUE, xpd=TRUE) #bg=alpha(col_p,0.1)
 								text(c(10,15,20),c(0.007,0.007,0.007),labels=c(10,100,300), xpd=TRUE, cex=0.5,col='grey30') 
-																					
+						dev.off()															
 						
 						}
 					{# (d) 
-						par(mar=c(2.2,0.2,0.5,2))
+						png(paste(out_,"Figure_4d.png", sep=""), width=3.5*0.5,height=1.85,units="in",res=600)
+						par(mar=c(0.0,0,0,0.4),oma = c(2.1, 2.1, 0.2, 0.2),ps=12, mgp=c(1.2,0.35,0), las=1, cex=1, col.axis="grey30",font.main = 1, col.lab="grey30", col.main="grey30", fg="grey70", cex.lab=0.6,cex.main=0.7, cex.axis=0.5, tcl=-0.1,bty="n",xpd=TRUE) #
+						
 						plot(NA,pch=19,xlim=c(0,24), ylim=c(0,1), xlab=NA, ylab=NA, yaxt='n',xaxt='n', type='n')
 											
 							axis(1, at=seq(0,24,by=6),labels=seq(0,24,by=6),cex.axis=0.5,mgp=c(0,-0.20,0))
 								mtext("Time of day [hours]",side=1,line=1/2, cex=0.6, las=1, col='grey30')
-							mtext(expression(bold("d")),side=3,line=-.7, cex=0.6,  col='grey30', outer=TRUE, adj=0.86)
+							mtext(expression(bold("d")),side=3,line=-.7/2, cex=0.6,  col='grey30', outer=TRUE, adj=0.86)
 							
 							#axis(2, at=seq(0,1,by=0.25), labels=TRUE)
 							#mtext("Nest attendance [proportion]",side=2,line=1.3, cex=0.6, las=3, col='grey30')
