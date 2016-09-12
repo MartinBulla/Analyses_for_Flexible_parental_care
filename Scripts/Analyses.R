@@ -623,11 +623,11 @@
 							# coefficients
 								v <- apply(bsim@fixef, 2, quantile, prob=c(0.5))	
 							# predicted values		
-								newDa=data.frame(prop_ip=seq(min(d$prop_ip),max(d$prop_ip),length.out=200),
+								newDa=data.frame(prop_ip=seq(min(d$prop_ip[d$types=='bip_sp_bip']),max(d$prop_ip[d$types=='bip_sp_bip']),length.out=200),
 												types='bip_sp_bip')
-								newDb=data.frame(prop_ip=seq(min(d$prop_ip),max(d$prop_ip),length.out=200),
+								newDb=data.frame(prop_ip=seq(min(d$prop_ip[d$types=='bip_sp_uni']),max(d$prop_ip[d$types=='bip_sp_uni']),length.out=200),
 												types='bip_sp_uni')	
-								newDc=data.frame(prop_ip=seq(min(d$prop_ip),max(d$prop_ip),length.out=200),
+								newDc=data.frame(prop_ip=seq(min(d$prop_ip[d$types=='unip_sp']),max(d$prop_ip[d$types=='unip_sp']),length.out=200),
 												types='unip_sp')
 								newD=rbind(newDa,newDb,newDc)			
 																
@@ -649,7 +649,7 @@
 				}			
 			{# plot 
 				 #dev.new(width=3.5*0.5,height=1.85)
-					png(paste(out_,"Figure_4b.png", sep=""), width=3.5*0.5,height=1.85,units="in",res=600)
+					png(paste(out_,"Figure_4b_.png", sep=""), width=3.5*0.5,height=1.85,units="in",res=600)
 						par(mar=c(0.0,0,0,0.4),oma = c(2.1, 2.1, 0.2, 0.2),ps=12, mgp=c(1.2,0.35,0), las=1, cex=1, col.axis="grey30",font.main = 1, col.lab="grey30", col.main="grey30", fg="grey70", cex.lab=0.6,cex.main=0.7, cex.axis=0.5, tcl=-0.1,bty="n",xpd=TRUE) #
 						
 						plot(NA,pch=19,xlim=c(0,1.6), ylim=c(0,1), xlab=NA, ylab=NA, yaxt='n',xaxt='n', type='n')
