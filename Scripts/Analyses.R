@@ -385,6 +385,13 @@
   {# Change in nest attendance
 		{# run first
 			load(paste(wd,'for_analyses.RData',sep="")) 
+			 n =read.csv(paste(wd,'nests.csv', sep=""), stringsAsFactors=FALSE)
+			 n=n[!n$circumstances=='temporal',]
+			 d$lat=n$lat[match(d$act_ID,n$act_ID)]
+			 h$lat=n$lat[match(h$act_ID,n$act_ID)]
+			 d$lon=n$lon[match(d$act_ID,n$act_ID)]
+			 h$lon=n$lon[match(h$act_ID,n$act_ID)]
+			 
 			# limit to periods with at least 75% of uniparental or biparental incubation
 				d=d[which((d$sp=='pesa' & 0.75<(d$n/1440))| (d$sp!='pesa' & 0.75<(d$n/17280))),]
 				d=ddply(d,.(act_ID,type), transform, start_j=day_j-min(day_j)+1)
@@ -725,6 +732,45 @@
 						shell(sname)
 			
 		}
+					{# model assumptions simple
+						dev.new(width=6,height=9)
+						
+						par(mfrow=c(4,3))
+						m=lmer(att~scale(prop_ip)*types+(prop_ip|actID_type)+(prop_ip|sp_type),d, REML=FALSE)	
+						
+						scatter.smooth(fitted(m),resid(m),col='red');abline(h=0, lty=2)
+									 
+						scatter.smooth(fitted(m),sqrt(abs(resid(m))), col='red')
+						
+							
+						qqnorm(resid(m), main=list("Normal Q-Q Plot: residuals", cex=0.8),col='red') 
+						qqline(resid(m))
+			 
+						qqnorm(unlist(ranef(m)$actID_type[1]), main = " actID_type")
+						qqline(unlist(ranef(m)$actID_type[1]))
+						
+						qqnorm(unlist(ranef(m)$sp_type[1]), main = " sp_type")
+						qqline(unlist(ranef(m)$sp_type[1]))
+						
+						scatter.smooth(resid(m)~as.factor(d$types));abline(h=0, lty=2, col='red')
+						plot(resid(m)~d$types);abline(h=0, lty=2, col='red')
+						
+						acf(resid(m), type="p", main=list("Temporal autocorrelation:\npartial series residual",cex=0.8))
+						
+						# spatial autocorrelations - nest location
+							spdata=data.frame(resid=resid(m), x=d$lon, y=d$lat)
+								spdata$col=ifelse(spdata$resid<0,rgb(83,95,124,100, maxColorValue = 255),ifelse(spdata$resid>0,rgb(253,184,19,100, maxColorValue = 255), 'red'))
+								#cex_=c(1,2,3,3.5,4)
+								cex_=c(1,1.5,2,2.5,3)
+								spdata$cex=as.character(cut(abs(spdata$resid), 5, labels=cex_))
+								plot(spdata$x, spdata$y,col=spdata$col, cex=as.numeric(spdata$cex), pch= 16, main=list('Spatial distribution of residuals', cex=0.8))
+								legend("topleft", pch=16, legend=c('>0','<0'), ,col=c(rgb(83,95,124,100, maxColorValue = 255),rgb(253,184,19,100, maxColorValue = 255)), cex=0.8)
+								
+								plot(spdata$x[spdata$resid<0], spdata$y[spdata$resid<0],col=spdata$col[spdata$resid<0], cex=as.numeric(spdata$cex[spdata$resid<0]), pch= 16, main=list('Spatial distribution of residuals', cex=0.8))
+								plot(spdata$x[spdata$resid>=0], spdata$y[spdata$resid>=0],col=spdata$col[spdata$resid>=0], cex=as.numeric(spdata$cex[spdata$resid>=0]), pch= 16, main=list('Spatial distribution of residuals', cex=0.8))
+				
+				}
+			
 		}
 		{# Supplementary Figure 2a, Supplementary Table 2
 			{# run first - prepare data	
@@ -1010,6 +1056,48 @@
 						shell(sname)
 			
 		}
+					{# model assumptions simple
+						dev.new(width=6,height=9)
+						
+						par(mfrow=c(4,3))
+						m=lmer(att~sin(rad)+cos(rad) + types +sin(rad)*types+cos(rad)*types+(sin(rad)+cos(rad)|actID_type)+(sin(rad)+cos(rad)|sp_type),data=h, REML=FALSE)	
+			 	
+						
+						scatter.smooth(fitted(m),resid(m),col='red');abline(h=0, lty=2)
+									 
+						scatter.smooth(fitted(m),sqrt(abs(resid(m))), col='red')
+						
+							
+						qqnorm(resid(m), main=list("Normal Q-Q Plot: residuals", cex=0.8),col='red') 
+						qqline(resid(m))
+			 
+						qqnorm(unlist(ranef(m)$actID_type[1]), main = " actID_type")
+						qqline(unlist(ranef(m)$actID_type[1]))
+						
+						qqnorm(unlist(ranef(m)$sp_type[1]), main = " sp_type")
+						qqline(unlist(ranef(m)$sp_type[1]))
+						
+						scatter.smooth(resid(m)~sin(h$rad));abline(h=0, lty=2, col='red')
+						scatter.smooth(resid(m)~cos(h$rad));abline(h=0, lty=2, col='red')
+						scatter.smooth(resid(m)~as.factor(h$types));abline(h=0, lty=2, col='red')
+						plot(resid(m)~h$types);abline(h=0, lty=2, col='red')
+						
+						acf(resid(m), type="p", main=list("Temporal autocorrelation:\npartial series residual",cex=0.8))
+						
+						# spatial autocorrelations - nest location
+							spdata=data.frame(resid=resid(m), x=d$lon, y=d$lat)
+								spdata$col=ifelse(spdata$resid<0,rgb(83,95,124,100, maxColorValue = 255),ifelse(spdata$resid>0,rgb(253,184,19,100, maxColorValue = 255), 'red'))
+								#cex_=c(1,2,3,3.5,4)
+								cex_=c(1,1.5,2,2.5,3)
+								spdata$cex=as.character(cut(abs(spdata$resid), 5, labels=cex_))
+								plot(spdata$x, spdata$y,col=spdata$col, cex=as.numeric(spdata$cex), pch= 16, main=list('Spatial distribution of residuals', cex=0.8))
+								legend("topleft", pch=16, legend=c('>0','<0'), ,col=c(rgb(83,95,124,100, maxColorValue = 255),rgb(253,184,19,100, maxColorValue = 255)), cex=0.8)
+								
+								plot(spdata$x[spdata$resid<0], spdata$y[spdata$resid<0],col=spdata$col[spdata$resid<0], cex=as.numeric(spdata$cex[spdata$resid<0]), pch= 16, main=list('Spatial distribution of residuals', cex=0.8))
+								plot(spdata$x[spdata$resid>=0], spdata$y[spdata$resid>=0],col=spdata$col[spdata$resid>=0], cex=as.numeric(spdata$cex[spdata$resid>=0]), pch= 16, main=list('Spatial distribution of residuals', cex=0.8))
+				
+				}
+			
 		}
 		{# Supplementary Figure 2b-c, Supplementary Table 4
 			{# run first - prepare data	
