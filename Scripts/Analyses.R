@@ -604,6 +604,7 @@
 				}
 		
 		{# Figure 2b and Supplementary Table 1
+			{# run first)
 			d$actID_type=interaction(d$act_ID,d$type)
 			d$sp_type=interaction(d$sp,d$type)
 			d$types=factor(ifelse(d$sys=='uniparental', 'unip_sp', ifelse(d$type=='bip', 'bip_sp_bip', 'bip_sp_uni')))#,levels=c('unip_sp','bip_sp_uni','bip_sp_bip'))
@@ -614,9 +615,10 @@
 			#mp=lmer(att~poly(prop_ip,2)*types+(prop_ip|actID_type)+(prop_ip|sp_type),d, REML=FALSE)	
 			#m=lmer(att~scale(prop_ip)*types+(prop_ip|act_ID)+(prop_ip|sp),d)	
 			
-			plot(allEffects(m))	
-			summary(glht(m))
-			summary(m)
+			#plot(allEffects(m))	
+			#summary(glht(m))
+			#summary(m)
+			}
 			{# run first - prepare predictions
 							m=lmer(att~scale(prop_ip)*types+(prop_ip|actID_type)+(prop_ip|sp_type),d, REML=FALSE)	
 							#summary(m)
@@ -700,7 +702,7 @@
 				dev.off()
 			}	
 			
-			{# Supplementary Data Table 2
+			{# Supplementary Data Table 1
 				m=lmer(att~scale(prop_ip)*types+(prop_ip|actID_type)+(prop_ip|sp_type),d, REML=FALSE)	
 			 
 				pred=c('Intercept (bip_bip)','Incubation period', 'Type (bip_uni)','Type (uni)', 'Incubation period x bip_sp_uni', 'Incubation period x uni')
@@ -733,10 +735,10 @@
 			
 		}
 					{# model assumptions simple
-						dev.new(width=6,height=9)
-						
-						par(mfrow=c(4,3))
+						#dev.new(width=6,height=9)
+						png(paste(out_,"model_ass/Supplementary_Table1.png", sep=""), width=6,height=9,units="in",res=600)
 						m=lmer(att~scale(prop_ip)*types+(prop_ip|actID_type)+(prop_ip|sp_type),d, REML=FALSE)	
+						par(mfrow=c(5,3))
 						
 						scatter.smooth(fitted(m),resid(m),col='red');abline(h=0, lty=2)
 									 
@@ -746,13 +748,19 @@
 						qqnorm(resid(m), main=list("Normal Q-Q Plot: residuals", cex=0.8),col='red') 
 						qqline(resid(m))
 			 
-						qqnorm(unlist(ranef(m)$actID_type[1]), main = " actID_type")
+						qqnorm(unlist(ranef(m)$actID_type[1]), main = " actID_type",col='red')
 						qqline(unlist(ranef(m)$actID_type[1]))
 						
-						qqnorm(unlist(ranef(m)$sp_type[1]), main = " sp_type")
+						qqnorm(unlist(ranef(m)$actID_type[2]), main = " prop_ip|actID_type",col='red')
+						qqline(unlist(ranef(m)$actID_type[2]))
+						
+						qqnorm(unlist(ranef(m)$sp_type[1]), main = " sp_type",col='red')
 						qqline(unlist(ranef(m)$sp_type[1]))
 						
-						scatter.smooth(resid(m)~as.factor(d$types));abline(h=0, lty=2, col='red')
+						qqnorm(unlist(ranef(m)$sp_type[2]), main = " prop_ip|sp_type",col='red')
+						qqline(unlist(ranef(m)$sp_type[2]))
+						
+						scatter.smooth(resid(m)~d$prop_ip);abline(h=0, lty=2, col='red')
 						plot(resid(m)~d$types);abline(h=0, lty=2, col='red')
 						
 						acf(resid(m), type="p", main=list("Temporal autocorrelation:\npartial series residual",cex=0.8))
@@ -768,7 +776,8 @@
 								
 								plot(spdata$x[spdata$resid<0], spdata$y[spdata$resid<0],col=spdata$col[spdata$resid<0], cex=as.numeric(spdata$cex[spdata$resid<0]), pch= 16, main=list('Spatial distribution of residuals', cex=0.8))
 								plot(spdata$x[spdata$resid>=0], spdata$y[spdata$resid>=0],col=spdata$col[spdata$resid>=0], cex=as.numeric(spdata$cex[spdata$resid>=0]), pch= 16, main=list('Spatial distribution of residuals', cex=0.8))
-				
+					mtext("lmer(att~scale(prop_ip)*types+(prop_ip|actID_type)+(prop_ip|sp_type),d, REML=FALSE)", side = 3, line = -1.2, cex=0.8,outer = TRUE)	
+				dev.off()
 				}
 			
 		}
@@ -898,6 +907,53 @@
 						shell(sname)
 			
 		}
+					{# model assumptions simple
+						#dev.new(width=6,height=9)
+						png(paste(out_,"model_ass/Supplementary_Table2.png", sep=""), width=6,height=9,units="in",res=600)
+						m=lmer(att~scale(prop_ip)*sex+(prop_ip|act_ID)+(prop_ip|sp),dd, REML=FALSE)	
+						
+						par(mfrow=c(4,3))
+												
+						scatter.smooth(fitted(m),resid(m),col='red');abline(h=0, lty=2)
+						scatter.smooth(fitted(m),sqrt(abs(resid(m))), col='red')
+													
+						qqnorm(resid(m), main=list("Normal Q-Q Plot: residuals", cex=0.8),col='red') 
+						qqline(resid(m))
+			 
+						qqnorm(unlist(ranef(m)$act_ID[1]), main = " act_ID")
+						qqline(unlist(ranef(m)$act_ID[1]))
+						
+						qqnorm(unlist(ranef(m)$act_ID[2]), main = " prop_ip|act_ID")
+						qqline(unlist(ranef(m)$act_ID[2]))
+						
+						qqnorm(unlist(ranef(m)$sp[1]), main = " sp")
+						qqline(unlist(ranef(m)$sp[1]))
+						
+						qqnorm(unlist(ranef(m)$sp[2]), main = " prop_ip|sp")
+						qqline(unlist(ranef(m)$sp[2]))
+						
+						scatter.smooth(resid(m)~scale(dd$prop_ip),col='red');abline(h=0, lty=2, col='blue')
+						scatter.smooth(resid(m)~as.factor(dd$sex),col='red');abline(h=0, lty=2, col='blue')
+						plot(resid(m)~dd$sex);abline(h=0, lty=2, col='red')
+						
+						acf(resid(m), type="p", main=list("Temporal autocorrelation:\npartial series residual",cex=0.8))
+						
+						# spatial autocorrelations - nest location
+							spdata=data.frame(resid=resid(m), x=dd$lon, y=dd$lat)
+								spdata$col=ifelse(spdata$resid<0,rgb(83,95,124,100, maxColorValue = 255),ifelse(spdata$resid>0,rgb(253,184,19,100, maxColorValue = 255), 'red'))
+								#cex_=c(1,2,3,3.5,4)
+								cex_=c(1,1.5,2,2.5,3)
+								spdata$cex=as.character(cut(abs(spdata$resid), 5, labels=cex_))
+								plot(spdata$x, spdata$y,col=spdata$col, cex=as.numeric(spdata$cex), pch= 16, main=list('Spatial distribution of residuals', cex=0.8))
+								legend("topleft", pch=16, legend=c('>0','<0'), ,col=c(rgb(83,95,124,100, maxColorValue = 255),rgb(253,184,19,100, maxColorValue = 255)), cex=0.8)
+								
+								plot(spdata$x[spdata$resid<0], spdata$y[spdata$resid<0],col=spdata$col[spdata$resid<0], cex=as.numeric(spdata$cex[spdata$resid<0]), pch= 16, main=list('Spatial distribution of residuals', cex=0.8))
+								plot(spdata$x[spdata$resid>=0], spdata$y[spdata$resid>=0],col=spdata$col[spdata$resid>=0], cex=as.numeric(spdata$cex[spdata$resid>=0]), pch= 16, main=list('Spatial distribution of residuals', cex=0.8))
+								
+						mtext("lmer(att~scale(prop_ip)*sex+(prop_ip|act_ID)+(prop_ip|sp),dd, REML=FALSE)", side = 3, line = -1.2, cex=0.8,outer = TRUE)	
+					dev.off()
+				}
+			
 		}
 		
 		{# Figure 2c-d &  Supplementary Table 3
@@ -1057,35 +1113,45 @@
 			
 		}
 					{# model assumptions simple
-						dev.new(width=6,height=9)
-						
-						par(mfrow=c(4,3))
+						#dev.new(width=6,height=9)
 						m=lmer(att~sin(rad)+cos(rad) + types +sin(rad)*types+cos(rad)*types+(sin(rad)+cos(rad)|actID_type)+(sin(rad)+cos(rad)|sp_type),data=h, REML=FALSE)	
-			 	
 						
-						scatter.smooth(fitted(m),resid(m),col='red');abline(h=0, lty=2)
-									 
-						scatter.smooth(fitted(m),sqrt(abs(resid(m))), col='red')
+						png(paste(out_,"model_ass/Supplementary_Table3.png", sep=""), width=6,height=9,units="in",res=600)
+						par(mfrow=c(4,4))
 						
-							
-						qqnorm(resid(m), main=list("Normal Q-Q Plot: residuals", cex=0.8),col='red') 
+						scatter.smooth(fitted(m),resid(m),col='grey');abline(h=0, lty=2, col='red')
+						scatter.smooth(fitted(m),sqrt(abs(resid(m))), col='grey')
+						
+						qqnorm(resid(m), main=list("Normal Q-Q Plot: residuals", cex=0.8),col='grey') 
 						qqline(resid(m))
-			 
-						qqnorm(unlist(ranef(m)$actID_type[1]), main = " actID_type")
+						
+						qqnorm(unlist(ranef(m)$actID_type[1]), main = " actID_type",col='grey')
 						qqline(unlist(ranef(m)$actID_type[1]))
 						
-						qqnorm(unlist(ranef(m)$sp_type[1]), main = " sp_type")
+						qqnorm(unlist(ranef(m)$actID_type[2]), main = " sin|actID_type",col='grey')
+						qqline(unlist(ranef(m)$actID_type[2]))
+						
+						qqnorm(unlist(ranef(m)$actID_type[3]), main = " cos|actID_type",col='grey')
+						qqline(unlist(ranef(m)$actID_type[3]))
+						
+						qqnorm(unlist(ranef(m)$sp_type[1]), main = " sp_type",col='grey')
 						qqline(unlist(ranef(m)$sp_type[1]))
 						
-						scatter.smooth(resid(m)~sin(h$rad));abline(h=0, lty=2, col='red')
-						scatter.smooth(resid(m)~cos(h$rad));abline(h=0, lty=2, col='red')
-						scatter.smooth(resid(m)~as.factor(h$types));abline(h=0, lty=2, col='red')
+						qqnorm(unlist(ranef(m)$sp_type[2]), main = " sin|sp_type",col='grey')
+						qqline(unlist(ranef(m)$sp_type[2]))
+						
+						qqnorm(unlist(ranef(m)$sp_type[3]), main = " cos|sp_type",col='grey')
+						qqline(unlist(ranef(m)$sp_type[3]))
+						
+						scatter.smooth(resid(m)~sin(h$rad),col='grey');abline(h=0, lty=2, col='red')
+						scatter.smooth(resid(m)~cos(h$rad),col='grey');abline(h=0, lty=2, col='red')
+						#scatter.smooth(resid(m)~as.factor(h$types));abline(h=0, lty=2, col='red')
 						plot(resid(m)~h$types);abline(h=0, lty=2, col='red')
 						
 						acf(resid(m), type="p", main=list("Temporal autocorrelation:\npartial series residual",cex=0.8))
 						
 						# spatial autocorrelations - nest location
-							spdata=data.frame(resid=resid(m), x=d$lon, y=d$lat)
+							spdata=data.frame(resid=resid(m), x=h$lon, y=h$lat)
 								spdata$col=ifelse(spdata$resid<0,rgb(83,95,124,100, maxColorValue = 255),ifelse(spdata$resid>0,rgb(253,184,19,100, maxColorValue = 255), 'red'))
 								#cex_=c(1,2,3,3.5,4)
 								cex_=c(1,1.5,2,2.5,3)
@@ -1095,7 +1161,9 @@
 								
 								plot(spdata$x[spdata$resid<0], spdata$y[spdata$resid<0],col=spdata$col[spdata$resid<0], cex=as.numeric(spdata$cex[spdata$resid<0]), pch= 16, main=list('Spatial distribution of residuals', cex=0.8))
 								plot(spdata$x[spdata$resid>=0], spdata$y[spdata$resid>=0],col=spdata$col[spdata$resid>=0], cex=as.numeric(spdata$cex[spdata$resid>=0]), pch= 16, main=list('Spatial distribution of residuals', cex=0.8))
-				
+					mtext("lmer(att~sin(rad)+cos(rad) + types +sin(rad)*types+cos(rad)*types+(sin(rad)+cos(rad)|actID_type)+(sin(rad)+cos(rad)|sp_type),data=h, REML=FALSE)", side = 3, line = -1.2, cex=0.5,outer = TRUE)	
+					
+					dev.off()
 				}
 			
 		}
@@ -1259,6 +1327,60 @@
 						shell(sname)
 			
 		}
+				{# model assumptions simple
+						#dev.new(width=6,height=9)
+						m=lmer(att~sin(rad)+cos(rad) + sex +sin(rad)*sex+cos(rad)*sex+(sin(rad)+cos(rad)|act_ID)+(sin(rad)+cos(rad)|sp),data=hh, REML=FALSE)	
+						
+						png(paste(out_,"model_ass/Supplementary_Table4.png", sep=""), width=6,height=9,units="in",res=600)
+						par(mfrow=c(4,4))
+						
+						scatter.smooth(fitted(m),resid(m),col='grey');abline(h=0, lty=2, col='red')
+						scatter.smooth(fitted(m),sqrt(abs(resid(m))), col='grey')
+						
+						qqnorm(resid(m), main=list("Normal Q-Q Plot: residuals", cex=0.8),col='grey') 
+						qqline(resid(m))
+			 
+						qqnorm(unlist(ranef(m)$act_ID[1]), main = " act_ID",col='grey')
+						qqline(unlist(ranef(m)$act_ID[1]))
+						
+						qqnorm(unlist(ranef(m)$act_ID[2]), main = " sin|act_ID",col='grey')
+						qqline(unlist(ranef(m)$act_ID[2]))
+						
+						qqnorm(unlist(ranef(m)$act_ID[3]), main = " cos|act_ID",col='grey')
+						qqline(unlist(ranef(m)$act_ID[3]))
+						
+						qqnorm(unlist(ranef(m)$sp[1]), main = " sp",col='grey')
+						qqline(unlist(ranef(m)$sp[1]))
+						
+						qqnorm(unlist(ranef(m)$sp[2]), main = " sin|sp",col='grey')
+						qqline(unlist(ranef(m)$sp[2]))
+						
+						qqnorm(unlist(ranef(m)$sp[3]), main = " cos|sp",col='grey')
+						qqline(unlist(ranef(m)$sp[3]))
+						
+						scatter.smooth(resid(m)~sin(hh$rad),col='grey');abline(h=0, lty=2, col='red')
+						scatter.smooth(resid(m)~cos(hh$rad),col='grey');abline(h=0, lty=2, col='red')
+						#scatter.smooth(resid(m)~as.factor(h$types));abline(h=0, lty=2, col='red')
+						plot(resid(m)~hh$sex);abline(h=0, lty=2, col='red')
+						
+						acf(resid(m), type="p", main=list("Temporal autocorrelation:\npartial series residual",cex=0.8))
+						
+						# spatial autocorrelations - nest location
+							spdata=data.frame(resid=resid(m), x=hh$lon, y=hh$lat)
+								spdata$col=ifelse(spdata$resid<0,rgb(83,95,124,100, maxColorValue = 255),ifelse(spdata$resid>0,rgb(253,184,19,100, maxColorValue = 255), 'red'))
+								#cex_=c(1,2,3,3.5,4)
+								cex_=c(1,1.5,2,2.5,3)
+								spdata$cex=as.character(cut(abs(spdata$resid), 5, labels=cex_))
+								plot(spdata$x, spdata$y,col=spdata$col, cex=as.numeric(spdata$cex), pch= 16, main=list('Spatial distribution of residuals', cex=0.8))
+								legend("topleft", pch=16, legend=c('>0','<0'), ,col=c(rgb(83,95,124,100, maxColorValue = 255),rgb(253,184,19,100, maxColorValue = 255)), cex=0.8)
+								
+								plot(spdata$x[spdata$resid<0], spdata$y[spdata$resid<0],col=spdata$col[spdata$resid<0], cex=as.numeric(spdata$cex[spdata$resid<0]), pch= 16, main=list('Spatial distribution of residuals', cex=0.8))
+								plot(spdata$x[spdata$resid>=0], spdata$y[spdata$resid>=0],col=spdata$col[spdata$resid>=0], cex=as.numeric(spdata$cex[spdata$resid>=0]), pch= 16, main=list('Spatial distribution of residuals', cex=0.8))
+					mtext("lmer(att~sin(rad)+cos(rad) + sex +sin(rad)*sex+cos(rad)*sex+(sin(rad)+cos(rad)|act_ID)+(sin(rad)+cos(rad)|sp),data=hh, REML=FALSE)", side = 3, line = -1.2, cex=0.5,outer = TRUE)	
+					
+					dev.off()
+				}
+			
 		}
 		
 		{# Figure 3 
@@ -1754,6 +1876,61 @@
 						shell(sname)
 			
 		}
+									{# model assumptions simple
+						#dev.new(width=6,height=9)
+						png(paste(out_,"model_ass/Supplementary_Table5.png", sep=""), width=6,height=9,units="in",res=600)
+						m=glmer(success_bin~prop_ip+uni_last+(1|sp),data=g,family='binomial')
+						par(mfrow=c(5,3))
+						
+						scatter.smooth(fitted(m),resid(m),col='red');abline(h=0, lty=2)
+									 
+						scatter.smooth(fitted(m),sqrt(abs(resid(m))), col='red')
+						
+						plot(fitted(m), jitter(g$success_bin, amount=0.05), xlab="Fitted values", ylab="Probability of presence", las=1, cex.lab=1.2, cex=0.8)
+							abline(0,1, lty=3)
+							t.breaks <- cut(fitted(m), seq(0,1, by=0.1))
+							means <- tapply(g$success_bin, t.breaks, mean)
+							semean <- function(x) sd(x)/sqrt(length(x))
+							means.se <- tapply(g$success_bin, t.breaks, semean)
+							points(seq(0.05, 0.95, by=0.1), means, pch=16, col="orange")
+							segments(seq(0.05, 0.95, by=0.1), means-2*means.se, seq(0.05, 0.95,by=0.1), means+2*means.se,lwd=2, col="orange")
+							
+						plot(fitted(m), jitter(g$success_bin, amount=0.05), xlab="Fitted values", ylab="Probability of presence", las=1, cex.lab=1.2, cex=0.8)
+							abline(0,1, lty=3)
+							t.breaks <- cut(fitted(m), seq(0,1, by=0.2))
+							means <- tapply(g$success_bin, t.breaks, mean)
+							semean <- function(x) sd(x)/sqrt(length(x))
+							means.se <- tapply(g$success_bin, t.breaks, semean)
+							points(seq(0.05, 0.95, by=0.2), means, pch=16, col="orange")
+							segments(seq(0.05, 0.95, by=0.2), means-2*means.se, seq(0.05, 0.95,by=0.2), means+2*means.se,lwd=2, col="orange")	
+			 
+						qqnorm(resid(m), main=list("Normal Q-Q Plot: residuals", cex=0.8),col='red') 
+							qqline(resid(m))
+						qqnorm(unlist(ranef(m)$sp[1]), main = " sp",col='red')
+						qqline(unlist(ranef(m)$sp[1]))
+						
+						scatter.smooth(resid(m)~g$prop_ip);abline(h=0, lty=2, col='red')
+						scatter.smooth(resid(m)~g$uni_last);abline(h=0, lty=2, col='red')
+												
+						acf(resid(m), type="p", main=list("Temporal autocorrelation:\npartial series residual",cex=0.8))
+						
+						# spatial autocorrelations - nest location
+							spdata=data.frame(resid=resid(m), x=g$lon, y=g$lat)
+								spdata$col=ifelse(spdata$resid<0,rgb(83,95,124,100, maxColorValue = 255),ifelse(spdata$resid>0,rgb(253,184,19,100, maxColorValue = 255), 'red'))
+								#cex_=c(1,2,3,3.5,4)
+								cex_=c(1,1.5,2,2.5,3)
+								spdata$cex=as.character(cut(abs(spdata$resid), 5, labels=cex_))
+								plot(spdata$x, spdata$y,col=spdata$col, cex=as.numeric(spdata$cex), pch= 16, main=list('Spatial distribution of residuals', cex=0.8))
+								legend("topleft", pch=16, legend=c('>0','<0'), ,col=c(rgb(83,95,124,100, maxColorValue = 255),rgb(253,184,19,100, maxColorValue = 255)), cex=0.8)
+								
+								plot(spdata$x, spdata$y,col=spdata$col, cex=as.numeric(spdata$cex), pch= 16, main=list('Spatial distribution of residuals', cex=0.8),xlim=c(-156.68,-156.6), ylim=c(71.31,71.33))
+								
+								plot(spdata$x[spdata$resid<0], spdata$y[spdata$resid<0],col=spdata$col[spdata$resid<0], cex=as.numeric(spdata$cex[spdata$resid<0]), pch= 16, main=list('Spatial distribution of residuals', cex=0.8),xlim=c(-156.68,-156.6), ylim=c(71.31,71.33))
+								plot(spdata$x[spdata$resid>=0], spdata$y[spdata$resid>=0],col=spdata$col[spdata$resid>=0], cex=as.numeric(spdata$cex[spdata$resid>=0]), pch= 16, main=list('Spatial distribution of residuals', cex=0.8), xlim=c(-156.68,-156.6), ylim=c(71.31,71.33))
+					mtext("glmer(success_bin~prop_ip+uni_last+(1|sp),data=g,family='binomial')", side = 3, line = -1.2, cex=0.8,outer = TRUE)	
+				dev.off()
+				}
+			
 		}		
 		{# hatching succes 	
 				sum(g$success_bin)/nrow(g) # overall
