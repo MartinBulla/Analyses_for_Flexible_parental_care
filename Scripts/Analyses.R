@@ -123,7 +123,7 @@
 
 }
 
-{# RESULTS
+{# RESULTS & Supplementary
   {# Abundance of uniparental incubation
 	{# run first
 		    n =read.csv(paste(wd,'nests.csv', sep=""), stringsAsFactors=FALSE)
@@ -912,7 +912,7 @@
 						png(paste(out_,"model_ass/Supplementary_Table2.png", sep=""), width=6,height=9,units="in",res=600)
 						m=lmer(att~scale(prop_ip)*sex+(prop_ip|act_ID)+(prop_ip|sp),dd, REML=FALSE)	
 						
-						par(mfrow=c(4,3))
+						par(mfrow=c(5,3))
 												
 						scatter.smooth(fitted(m),resid(m),col='red');abline(h=0, lty=2)
 						scatter.smooth(fitted(m),sqrt(abs(resid(m))), col='red')
@@ -1327,7 +1327,7 @@
 						shell(sname)
 			
 		}
-				{# model assumptions simple
+				{# model assumptions 
 						#dev.new(width=6,height=9)
 						m=lmer(att~sin(rad)+cos(rad) + sex +sin(rad)*sex+cos(rad)*sex+(sin(rad)+cos(rad)|act_ID)+(sin(rad)+cos(rad)|sp),data=hh, REML=FALSE)	
 						
@@ -2193,107 +2193,9 @@
 			}
 			
   }	
-}
-
-
-	
-			
-			
-			
-		}
-		{# uniparental nest attendance (rnph highre then pesa)
-		u=d[d$sp%in%c('rnph','pesa') & d$type=='uni', ]
-		u$sp=as.factor(u$sp)
-		densityplot(~u$att, groups=u$sp, auto.key=TRUE)
-		ggplot(u,aes(x=sp,y=att))+geom_boxplot()
-		ggplot(u,aes(x=prop_ip,y=att, fill=sp))+geom_point()+stat_smooth()
-		ggplot(u,aes(x=prop_ip,y=att, fill=sp))+geom_point()+stat_smooth(method='lm')
-		m=lmer(att~sp*scale(prop_ip)+(prop_ip|act_ID),u)
-		summary(m)
-		plot(allEffects(m))
   
-		u=h[h$sp%in%c('rnph','pesa') & h$type=='uni', ]
-		u$sp=as.factor(u$sp)
-		u$hour=as.numeric(u$hour)
-		u$rad=as.numeric(u$hour)*pi/12
-				b$sin_=sin(b$rad)
-				b$cos_=cos(b$rad)
-		densityplot(~u$att, groups=u$sp)
-		ggplot(u,aes(x=sp,y=att))+geom_boxplot()
-		ggplot(u,aes(x=hour,y=att, fill=sp))+geom_point()+stat_smooth()
-	
-		m=lmer(att~sp*sin(rad)+sp*cos(rad)+(sin(rad)+cos(rad)|act_ID),u)
-		summary(m)
-		plot(allEffects(m))
-		}
-		
-		{# unip between bip a unip
-		u=h[h$type=='uni', ]
-		
-		u$sp=as.factor(u$sp)
-		u$sys=as.factor(u$sys)
-		
-		u$hour=as.numeric(u$hour)
-		
-		u$rad=as.numeric(u$hour)*pi/12
-				
-		densityplot(~u$att, groups=u$sp)
-		ggplot(u,aes(x=sp,y=att))+geom_boxplot()
-		ggplot(u,aes(x=hour,y=att, col=sp))+geom_point()+stat_smooth()
-	
-		m=lmer(att~sys*sin(rad)+sys*cos(rad)+(sin(rad)+cos(rad)|sp)+(sin(rad)+cos(rad)|act_ID),u)
-		#m=lmer(att~sys*sin(rad)+sys*cos(rad)+(sin(rad)+cos(rad)|sp)+(sin(rad)+cos(rad)|act_ID),u[u$sp!='pesa',])
-		ms=lmer(att~sin(rad)*sp+cos(rad)*sp+(sin(rad)+cos(rad)|sp)+(sin(rad)+cos(rad)|act_ID),u)
-		summary(m)
-		plot(allEffects(ms))
-		}
-		{# biparental nest attendance 
-		u=d[!d$sp%in%c('rnph','pesa'), ]
-		u$sp=as.factor(u$sp)
-		u$type=as.factor(u$type)
-		ggplot(u,aes(x=sp,y=att, col=type))+geom_boxplot()
-		ggplot(u,aes(x=prop_ip,y=att,  col=type))+geom_point()+stat_smooth()
-		ggplot(u,aes(x=prop_ip,y=att, fill=type))+geom_point()+stat_smooth(method='lm')
-		m=lmer(att~type*scale(prop_ip)+(prop_ip|act_ID)+(prop_ip|sp),u)
-		summary(m)
-		plot(allEffects(m))
-		
-		u=h[!h$sp%in%c('rnph','pesa'), ]
-		u$sp=as.factor(u$sp)
-		u$type=as.factor(u$type)
-		u$sys=as.factor(u$sys)
-		u$hour=as.numeric(u$hour)
-		u$rad=as.numeric(u$hour)*pi/12
-				
-		densityplot(~u$att, groups=u$sp)
-		ggplot(u,aes(x=sp,y=att, fill=type))+geom_boxplot()
-		ggplot(u,aes(x=hour,y=att, fill=type))+geom_point()+stat_smooth()
-	
-		m=lmer(att~type*sin(rad)+type*cos(rad)+(sin(rad)+cos(rad)|sp)+(sin(rad)+cos(rad)|act_ID),u)
-	
-		summary(m)
-		plot(allEffects(ms))
-		
-		u=h
-		u$sp=as.factor(u$sp)
-		u$type=as.factor(u$type)
-		u$sys=as.factor(u$sys)
-		u$hour=as.numeric(u$hour)
-		u$sys_t=as.factor(interaction(u$sys,u$type))
-		u$sys_t2=as.factor(ifelse(u$sys=='uniparental', ifelse(u$sp=='rnph', 'uni_rnph','uni_pesa'), ifelse(u$type=='uni', 'bip_uni', 'bip_bip')))
-		u$rad=as.numeric(u$hour)*pi/12
-		m=lmer(att~sys_t*sin(rad)+sys_t*cos(rad)+(sin(rad)+cos(rad)|sp)+(sin(rad)+cos(rad)|act_ID),u)
-		m2=lmer(att~sys_t2*sin(rad)+sys_t2*cos(rad)+(sin(rad)+cos(rad)|sp)+(sin(rad)+cos(rad)|act_ID),u)
-		AICc(m)
-		AICc(m2)
-		summary(m)
-		plot(allEffects(m))
-		plot(allEffects(m2))
-  }
-
-{# SUPPLEMENTARY
-	{# ACTOGRAMS
-	  {# load metadata
+  {# Supplementary ActogramsACTOGRAMS
+	{# load metadata
 		{# nests to extract the data for
 				nests =read.csv(paste(wd,'nests.csv', sep=""), stringsAsFactors=FALSE)
 				nests$on=as.POSIXct(nests$on)
@@ -2331,7 +2233,7 @@
 				sp =read.csv(paste(wd,'species.csv', sep=""), stringsAsFactors=FALSE)
 		}
 	}
-	  {# create actograms
+	{# create actograms
 			for (i in (1:nrow(nests_))) {
 				nest=nests_$nest[i]
 				yr= nests_$year[i]
@@ -2362,42 +2264,11 @@
 				print(paste(act_ID, nest, i,sep=" "))
 				}
 	  }
-    }	  
+   }	  
 }
-	
-	table(d$sp, freq(d$nest)
-	
-	
-		{# check SEX differences in unip of bip ### use only species where both sexes
-			{# run first	
-				# limited to species with uniparental data for both sexes	
-					dd=d[d$sys=='biparental' & d$type=='uni' & d$sp%in%c('amgp','basa','sesa','wesa'),]
-					hh=h[h$sys=='biparental' & h$type=='uni' & h$sp%in%c('amgp','basa','sesa','wesa'),]
-				
-				{# add sex
-				nest =read.csv(paste(wd,'nests.csv', sep=""), stringsAsFactors=FALSE)
-				nest_=nest[nest$circumstances!='temporal',]
 
-				dd$sex=as.factor(nest_$sex[match(dd$act_ID,nest_$act_ID)])
-				hh$sex=as.factor(nest_$sex[match(hh$act_ID,nest_$act_ID)])
-				}	
-				# convert time to radians
-					hh$hour=as.numeric(hh$hour)
-					hh$rad=as.numeric(hh$hour)*pi/12
-					hh$sin_=sin(hh$rad)
-					hh$cos_=cos(hh$rad)
-			}
-			summary(factor(dd$sex))
-			summary(factor(hh$sex))
-			ggplot(dd,aes(x=sp,y=att, col=sex))+	geom_boxplot()
-			densityplot(~dd$prop_ip,groups=dd$sex, auto.key=TRUE)
-			m=lmer(att~scale(prop_ip)*sex+(prop_ip|act_ID)+(prop_ip|sp),dd, REML=FALSE)	
-			plot(allEffects(m))
-			summary(glht(m))
-			m=lmer(att~sin(rad)+cos(rad) + sex +sin(rad)*sex+cos(rad)*sex+(sin(rad)+cos(rad)|act_ID)+(sin(rad)+cos(rad)|sp),data=hh, REML=FALSE)	
-			summary(glht(m))
-			plot(allEffects(m))
-	}
+
+	
 {# not USED in the analyses
 	{# day in incubation period when the uniparental incubation started and for how long it lasted
 		{# run first
@@ -2555,8 +2426,129 @@
 						}
 		}
 }
+		{# uniparental nest attendance (rnph highre then pesa)
+		u=d[d$sp%in%c('rnph','pesa') & d$type=='uni', ]
+		u$sp=as.factor(u$sp)
+		densityplot(~u$att, groups=u$sp, auto.key=TRUE)
+		ggplot(u,aes(x=sp,y=att))+geom_boxplot()
+		ggplot(u,aes(x=prop_ip,y=att, fill=sp))+geom_point()+stat_smooth()
+		ggplot(u,aes(x=prop_ip,y=att, fill=sp))+geom_point()+stat_smooth(method='lm')
+		m=lmer(att~sp*scale(prop_ip)+(prop_ip|act_ID),u)
+		summary(m)
+		plot(allEffects(m))
+  
+		u=h[h$sp%in%c('rnph','pesa') & h$type=='uni', ]
+		u$sp=as.factor(u$sp)
+		u$hour=as.numeric(u$hour)
+		u$rad=as.numeric(u$hour)*pi/12
+				b$sin_=sin(b$rad)
+				b$cos_=cos(b$rad)
+		densityplot(~u$att, groups=u$sp)
+		ggplot(u,aes(x=sp,y=att))+geom_boxplot()
+		ggplot(u,aes(x=hour,y=att, fill=sp))+geom_point()+stat_smooth()
+	
+		m=lmer(att~sp*sin(rad)+sp*cos(rad)+(sin(rad)+cos(rad)|act_ID),u)
+		summary(m)
+		plot(allEffects(m))
+		}
+		
+		{# unip between bip a unip
+		u=h[h$type=='uni', ]
+		
+		u$sp=as.factor(u$sp)
+		u$sys=as.factor(u$sys)
+		
+		u$hour=as.numeric(u$hour)
+		
+		u$rad=as.numeric(u$hour)*pi/12
+				
+		densityplot(~u$att, groups=u$sp)
+		ggplot(u,aes(x=sp,y=att))+geom_boxplot()
+		ggplot(u,aes(x=hour,y=att, col=sp))+geom_point()+stat_smooth()
+	
+		m=lmer(att~sys*sin(rad)+sys*cos(rad)+(sin(rad)+cos(rad)|sp)+(sin(rad)+cos(rad)|act_ID),u)
+		#m=lmer(att~sys*sin(rad)+sys*cos(rad)+(sin(rad)+cos(rad)|sp)+(sin(rad)+cos(rad)|act_ID),u[u$sp!='pesa',])
+		ms=lmer(att~sin(rad)*sp+cos(rad)*sp+(sin(rad)+cos(rad)|sp)+(sin(rad)+cos(rad)|act_ID),u)
+		summary(m)
+		plot(allEffects(ms))
+		}
+		{# biparental nest attendance 
+		u=d[!d$sp%in%c('rnph','pesa'), ]
+		u$sp=as.factor(u$sp)
+		u$type=as.factor(u$type)
+		ggplot(u,aes(x=sp,y=att, col=type))+geom_boxplot()
+		ggplot(u,aes(x=prop_ip,y=att,  col=type))+geom_point()+stat_smooth()
+		ggplot(u,aes(x=prop_ip,y=att, fill=type))+geom_point()+stat_smooth(method='lm')
+		m=lmer(att~type*scale(prop_ip)+(prop_ip|act_ID)+(prop_ip|sp),u)
+		summary(m)
+		plot(allEffects(m))
+		
+		u=h[!h$sp%in%c('rnph','pesa'), ]
+		u$sp=as.factor(u$sp)
+		u$type=as.factor(u$type)
+		u$sys=as.factor(u$sys)
+		u$hour=as.numeric(u$hour)
+		u$rad=as.numeric(u$hour)*pi/12
+				
+		densityplot(~u$att, groups=u$sp)
+		ggplot(u,aes(x=sp,y=att, fill=type))+geom_boxplot()
+		ggplot(u,aes(x=hour,y=att, fill=type))+geom_point()+stat_smooth()
+	
+		m=lmer(att~type*sin(rad)+type*cos(rad)+(sin(rad)+cos(rad)|sp)+(sin(rad)+cos(rad)|act_ID),u)
+	
+		summary(m)
+		plot(allEffects(ms))
+		
+		u=h
+		u$sp=as.factor(u$sp)
+		u$type=as.factor(u$type)
+		u$sys=as.factor(u$sys)
+		u$hour=as.numeric(u$hour)
+		u$sys_t=as.factor(interaction(u$sys,u$type))
+		u$sys_t2=as.factor(ifelse(u$sys=='uniparental', ifelse(u$sp=='rnph', 'uni_rnph','uni_pesa'), ifelse(u$type=='uni', 'bip_uni', 'bip_bip')))
+		u$rad=as.numeric(u$hour)*pi/12
+		m=lmer(att~sys_t*sin(rad)+sys_t*cos(rad)+(sin(rad)+cos(rad)|sp)+(sin(rad)+cos(rad)|act_ID),u)
+		m2=lmer(att~sys_t2*sin(rad)+sys_t2*cos(rad)+(sin(rad)+cos(rad)|sp)+(sin(rad)+cos(rad)|act_ID),u)
+		AICc(m)
+		AICc(m2)
+		summary(m)
+		plot(allEffects(m))
+		plot(allEffects(m2))
+  }
+		{# check SEX differences in unip of bip ### use only species where both sexes
+			{# run first	
+				# limited to species with uniparental data for both sexes	
+					dd=d[d$sys=='biparental' & d$type=='uni' & d$sp%in%c('amgp','basa','sesa','wesa'),]
+					hh=h[h$sys=='biparental' & h$type=='uni' & h$sp%in%c('amgp','basa','sesa','wesa'),]
+				
+				{# add sex
+				nest =read.csv(paste(wd,'nests.csv', sep=""), stringsAsFactors=FALSE)
+				nest_=nest[nest$circumstances!='temporal',]
 
+				dd$sex=as.factor(nest_$sex[match(dd$act_ID,nest_$act_ID)])
+				hh$sex=as.factor(nest_$sex[match(hh$act_ID,nest_$act_ID)])
+				}	
+				# convert time to radians
+					hh$hour=as.numeric(hh$hour)
+					hh$rad=as.numeric(hh$hour)*pi/12
+					hh$sin_=sin(hh$rad)
+					hh$cos_=cos(hh$rad)
+			}
+			summary(factor(dd$sex))
+			summary(factor(hh$sex))
+			ggplot(dd,aes(x=sp,y=att, col=sex))+	geom_boxplot()
+			densityplot(~dd$prop_ip,groups=dd$sex, auto.key=TRUE)
+			m=lmer(att~scale(prop_ip)*sex+(prop_ip|act_ID)+(prop_ip|sp),dd, REML=FALSE)	
+			plot(allEffects(m))
+			summary(glht(m))
+			m=lmer(att~sin(rad)+cos(rad) + sex +sin(rad)*sex+cos(rad)*sex+(sin(rad)+cos(rad)|act_ID)+(sin(rad)+cos(rad)|sp),data=hh, REML=FALSE)	
+			summary(glht(m))
+			plot(allEffects(m))
+	}
+	nests_[,c('nest','bird_ID','sex','datetime_')]	
+		table(d$sp, freq(d$nest)
 }	
 	
-nests_[,c('nest','bird_ID','sex','datetime_')]		
+	
+	
 	
