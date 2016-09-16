@@ -484,7 +484,7 @@
 									print(gg, newpage=FALSE) # prints the map
 									dev.off()
 				}else{if(type %in% c('PNG')) {
-									tf = paste0(outdir, paste(figCap$ID,"_",figCap$sp,"_",figCap$site,"_",figCap$year,"_",figCap$nest,sep=""), "_%03d.png",sep="") 
+									tf = paste0(outdir, paste(figCap$ID,"_",figCap$sp,"_",figCap$site,"_",figCap$year,"_",figCap$nest,sep=""), ".png",sep="") 
 									png(tf,width = 210, height = 57+8*length(sl1), units = "mm", res = 600)	#png(tf,width = 210, height = 297, units = "mm", res = 600)	
 									par(pin = c(8.26771654, (57+8*length(sl1))/25.4)) #c(8.26771654, 11.6929134)#par(pin = c(8.26771654, 11.6929134)) 
 									print(rfidsplot)
