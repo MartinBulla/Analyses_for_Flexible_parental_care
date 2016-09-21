@@ -966,9 +966,10 @@
 			h$rad=as.numeric(h$hour)*pi/12
 			h$sin_=sin(h$rad)
 			h$cos_=cos(h$rad)
-			
+			h=ddply(h,.(nest, type, sys, year), transform, att_previous=c(NA,att[-length(att)]))
 				
-			#m=lmer(att~sin(rad)*types+cos(rad)*types+(sin(rad)+cos(rad)|actID_type)+(sin(rad)+cos(rad)|sp_type),data=h, REML=FALSE)	
+			#m=lmer(att~sin(rad)*types+cos(rad)*types+(sin(rad)+cos(rad)|actID_type)+(sin(rad)+cos(rad)|sp_type),data=h[!is.na(h$att_previous),], REML=FALSE)	
+			#m2=lmer(att~att_previous+sin(rad)*types+cos(rad)*types+(sin(rad)+cos(rad)|actID_type)+(sin(rad)+cos(rad)|sp_type),data=h[!is.na(h$att_previous),], REML=FALSE)	
 			#plot(allEffects(m))	
 			#summary(glht(m))
 			#summary(m)
@@ -1562,6 +1563,79 @@
 				ggsave(paste(out_,"Supplementary_Figure_2.png", sep=""),width=7, height=6.5, units='in',dpi=600)						
 				}
 		
+		
+		
+		
+		 {# run first - prepare predictions - with att previous
+							m2=lmer(att~att_previous+sin_*types+cos_*types+(sin(rad)+cos(rad)|actID_type)+(sin(rad)+cos(rad)|sp_type),data=h[!is.na(h$att_previous),], REML=FALSE)	
+							#summary(m)
+							#plot(allEffects(m))
+						
+							# simulation		
+								nsim <- 5000
+								bsim <- sim(m2, n.sim=nsim)  
+								apply(bsim@fixef, 2, quantile, prob=c(0.025,0.975))	
+							
+							# coefficients
+								v <- apply(bsim@fixef, 2, quantile, prob=c(0.5))	
+							# predicted values		
+								ll=list()
+								for(i in c('bip_sp_bip','bip_sp_uni','unip_sp')){
+									newD=data.frame(hour=seq(0,24,0.25), att_previous=mean(h$att_previous, na.rm=TRUE))
+										newD$rad=2*pi*newD$hour / 24
+										newD$sin_=sin(newD$rad)
+										newD$cos_=cos(newD$rad)
+										newD$types=i
+										ll[[i]]=newD
+										}
+								newD=do.call(rbind,ll)		
+								
+							# exactly the model which was used has to be specified here 
+								X <- model.matrix(~ att_previous+sin_*types+cos_*types,data=newD)	
+											
+							# calculate predicted values and creditability intervals
+								newD$pred <- X%*%v # #newD$fit_b <- plogis(X%*%v) # in case on binomial scaleback
+										predmatrix <- matrix(nrow=nrow(newD), ncol=nsim)
+										for(i in 1:nsim) predmatrix[,i] <- X%*%bsim@fixef[i,]
+										newD$lwr <- apply(predmatrix, 1, quantile, prob=0.025)
+										newD$upr <- apply(predmatrix, 1, quantile, prob=0.975)
+										#newD$other <- apply(predmatrix, 1, quantile, prob=0.5)
+										#newD=newD[order(newD$t_tundra),]
+								p=newD
+								pu=p[p$types=='unip_sp',]
+								pbb=p[p$types=='bip_sp_bip',]
+								pbu=p[p$types=='bip_sp_uni',]
+				}			
+		  			{# (d) 
+						png(paste(out_,"Figure_4d_previous.png", sep=""), width=3.5*0.5,height=1.85,units="in",res=600)
+						par(mar=c(0.0,0,0,0.4),oma = c(2.1, 2.1, 0.2, 0.2),ps=12, mgp=c(1.2,0.35,0), las=1, cex=1, col.axis="grey30",font.main = 1, col.lab="grey30", col.main="grey30", fg="grey70", cex.lab=0.6,cex.main=0.7, cex.axis=0.5, tcl=-0.1,bty="n",xpd=TRUE) #
+						
+						plot(NA,pch=19,xlim=c(0,24), ylim=c(0,1), xlab=NA, ylab=NA, yaxt='n',xaxt='n', type='n')
+											
+							axis(1, at=seq(0,24,by=6),labels=seq(0,24,by=6),cex.axis=0.5,mgp=c(0,-0.20,0))
+								mtext("Time of day [hours]",side=1,line=1/2, cex=0.6, las=1, col='grey30')
+							mtext(expression(bold("d")),side=3,line=-.7/2, cex=0.6,  col='grey30', outer=TRUE, adj=0.48*2)
+							
+							#axis(2, at=seq(0,1,by=0.25), labels=TRUE)
+							#mtext("Nest attendance [proportion]",side=2,line=1.3, cex=0.6, las=3, col='grey30')
+						# predictions
+							# uniparental species
+							polygon(c(pu$hour, rev(pu$hour)), c(pu$lwr, 
+								rev(pu$upr)), border=NA, col=adjustcolor(uni_col ,alpha.f = 0.2)) #0,0,0 black 0.5 is transparents RED
+							lines(pu$hour, pu$pred, col=uni_col,lwd=1)
+							
+							# biparental species biparental incubation
+							polygon(c(pbb$hour, rev(pbb$hour)), c(pbb$lwr, 
+								rev(pbb$upr)), border=NA, col=adjustcolor(bip_bip_col ,alpha.f = 0.2)) #0,0,0 black 0.5 is transparents RED
+							lines(pbb$hour, pbb$pred, col=bip_bip_col,lwd=1)
+							
+							# biparental species uniparental incubation
+							polygon(c(pbu$hour, rev(pbu$hour)), c(pbu$lwr, 
+								rev(pbu$upr)), border=NA, col=adjustcolor(bip_uni_col ,alpha.f = 0.2)) #0,0,0 black 0.5 is transparents RED
+							lines(pbu$hour, pbu$pred, col=bip_uni_col,lwd=1)
+							dev.off()
+						}
+			
 	}	
 	  
   {# Nest success	
@@ -2266,3 +2340,13 @@
 	  }
    }	  
 }
+
+
+
+
+				dsplit=split(d,d$nest) # if issues than nest has factor levels that are not present
+					#x=dsplit$"S312"
+				dsplit=lapply(dsplit,function(x) cbind(x,bout_lag=c(NA,x$bout_length[-nrow(x)])))
+				d=do.call(rbind, dsplit)
+				
+				
