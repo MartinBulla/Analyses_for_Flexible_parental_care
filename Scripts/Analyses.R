@@ -130,7 +130,7 @@
 				n$end=as.POSIXct(n$end)
 				n$start=as.POSIXct(n$start)
 				n=n[!n$sp%in%c('pesa','rnph'),]
-					p=readWorksheetFromFile(paste(wd,'populations.xls', sep=""), sheet='populations')
+					p=read.csv(paste(wd,'populations.csv', sep=""), stringsAsFactors=FALSE)
 				n$bout=p$bout[match(paste(n$site,n$sp), paste(p$site_abbreviation, p$sp))]
 				
 				n$start=n$start+n$bout*60*60
@@ -145,6 +145,9 @@
 				n$prop_ip=n$day_j/n$inc_per_sp
 				n$uni_last=as.numeric(difftime(n$end, n$start, units='hours'))
 				n_=n[n$uni_last>=2*n$bout,]
+				n_$sex=as.factor(n_$sex)
+				n_$sexsp=interaction(n_$sp,n_$sex)
+				n_$uni_last=n_$uni_last/24
 				
 				{# species
 				sp =read.csv(paste(wd,'species.csv', sep=""), stringsAsFactors=FALSE)
@@ -184,12 +187,40 @@
 			densityplot(~n_$prop_ip[n_$prop_ip<1]*100)
 			length(unique(n_$nest[n_$prop_ip<1])) # number of nests
 			length(n_$prop_ip[n_$prop_ip<1]) # number of cases
+			
+			# sex specific?
+				# overall
+
+				m=lmer(prop_ip~sex+(1|sp),n_)
+								nsim <- 5000
+								bsim <- sim(m, n.sim=nsim)  
+								apply(bsim@fixef, 2, quantile, prob=c(0.5, 0.025,0.975))/0.7035061 # output is in %
+								
+								l=data.frame(summary(m)$varcor)
+								l=l[is.na(l$var2),]
+								ri=data.frame(model='1', type='random (var)',effect=l$grp, estimate_r=round(l$vcov*100/sum(l$vcov),1), lwr_r=NA, upr_r=NA)
+					
+				plot(allEffects(m))
+				summary(m)
+				ggplot(n_, aes(x=sp, y=prop_ip, col=sex))+geom_point()+geom_boxplot()
+										
 		}
 		{# lasted
-			summary(n_$uni_last/24)
-			n_$uni_last=n_$uni_last/24
 			n_[n_$uni_last>10,]
 			densityplot(~n_$uni_last)
+			
+			m=lmer(uni_last~sex+(1|sp),n_)
+								nsim <- 5000
+								bsim <- sim(m, n.sim=nsim)  
+								apply(bsim@fixef, 2, quantile, prob=c(0.5, 0.025,0.975)) # output is in %
+								
+								l=data.frame(summary(m)$varcor)
+								l=l[is.na(l$var2),]
+								ri=data.frame(model='1', type='random (var)',effect=l$grp, estimate_r=round(l$vcov*100/sum(l$vcov),1), lwr_r=NA, upr_r=NA)
+					
+				plot(allEffects(m))
+				summary(m)
+				ggplot(n_, aes(x=sp, y=uni_last, col=sex))+geom_point()+geom_boxplot()
 		}
 		{# nests left because field work ended = 10
 			length(n_$nest[n_$state=='w'])+ length(n_$nest[n_$state=='u'])-3+1 # 3 nests with uncertainty was about hatching, desertion or depredation
@@ -232,7 +263,7 @@
 					mtext(expression(bold("a")),side=3,line=-.35, cex=0.6,  col='grey30', outer=TRUE, adj=0.95)
 		 dev.off()				
 		}
-	{# Figure 1bc 
+	{# Figure 1bc MAKE RIGHT JusTIFIED
 		 {# run first	
 			n_$uni_last=as.numeric(difftime(n_$end, n_$start, units='days'))
 			# create dummy values for species missing nests for one sex
@@ -271,7 +302,7 @@
 			}
 		 {# Figure 1b points	
 		   #dev.new(width=3.5*0.75,height=1.85)
-		    png(paste(out_,"Figure_1b.png", sep=""), width=3.5*0.75,height=1.85,units="in",res=600)
+		    png(paste(out_,"Figure_1b+est.png", sep=""), width=3.5*0.75,height=1.85,units="in",res=600)
 			par(mar=c(0.0,0,0,0.4),oma = c(2.1, 0.5, 0.2, 5),ps=12, mgp=c(1.2,0.35,0), las=1, cex=1, col.axis="grey30",font.main = 1, col.lab="grey30", col.main="grey30", fg="grey70", cex.lab=0.6,cex.main=0.7, cex.axis=0.5, tcl=-0.1,bty="n",xpd=TRUE)
 			#ggplot(n_,aes(x=species, y=prop_ip*100, fill=sex))+geom_boxplot() +coord_flip()+coord_cartesian(ylim = c(0, 160))
 			#ggplot(n_,aes(x=species, y=prop_ip*100, col=sex))+geom_point(position = position_jitter(w = 0.3, h = 0.3)) +coord_flip()+coord_cartesian(ylim = c(0, 160))
@@ -290,12 +321,27 @@
 					#mtext('Nest attendance',side=2,line=1, cex=0.6, las=3, col='grey30')
 					#text(y=23,x=28, labels='\u2640', col='#FCB42C', cex=0.6)
 					#text(y=23.5,x=30, labels='\u2642', col='#535F7C', cex=0.6)
-					mtext(expression(bold("b")),side=3,line=-.35, cex=0.6,  col='grey30', outer=TRUE, adj=0.95)	
-		 dev.off()				
+					mtext(expression(bold("b")),side=3,line=-.35, cex=0.6,  col='grey30', outer=TRUE, adj=0.95)
+					# add species specific estimates for sex differences
+								n__=n_
+								n__$sex=factor(n__$sex, levels=c('f','m'))
+								xx=data.frame(li=c(-2, -10,-14,-16), sp=c('amgp','basa','wesa','sesa'), stringsAsFactors=FALSE)
+								for(i in 1:nrow(xx)){
+									xi=xx[i,]
+									m=lm(prop_ip~sex,n__[n__$sp==xi$sp,])
+										nsim <- 5000
+										bsim <- sim(m, n.sim=nsim)  
+										pp=data.frame(round(100*apply(bsim@coef, 2, quantile, prob=c(0.5, 0.025,0.975))/apply(bsim@coef, 2, quantile, prob=c(0.5, 0.025,0.975))[1,1]))# output is in %
+										if(i==1){
+										text(y=xi$li+0.5,x=140, labels=paste(pp$sexm[1],"(",pp$sexm[2],"-",pp$sexm[3],")", sep=""), col='grey30', cex=0.4)}else{
+										text(y=xi$li+0.5,x=150, labels=paste(pp$sexm[1],"(",pp$sexm[2],"-",pp$sexm[3],")", sep=""), col='grey30', cex=0.4)}
+									}
+								
+					dev.off()				
 		}
 		 {# Figure 1c points	
 		   #dev.new(width=3.5*0.75,height=1.85)
-		    png(paste(out_,"Figure_1c.png", sep=""), width=3.5*0.75,height=1.85,units="in",res=600)
+		    png(paste(out_,"Figure_1c+est.png", sep=""), width=3.5*0.75,height=1.85,units="in",res=600)
 			par(mar=c(0.0,0,0,0.4),oma = c(2.1, 0.5, 0.2, 5),ps=12, mgp=c(1.2,0.35,0), las=1, cex=1, col.axis="grey30",font.main = 1, col.lab="grey30", col.main="grey30", fg="grey70", cex.lab=0.6,cex.main=0.7, cex.axis=0.5, tcl=-0.1,bty="n",xpd=TRUE)
 			#ggplot(n_,aes(x=species, y=prop_ip*100, fill=sex))+geom_boxplot() +coord_flip()+coord_cartesian(ylim = c(0, 160))
 			#ggplot(n_,aes(x=species, y=prop_ip*100, col=sex))+geom_point(position = position_jitter(w = 0.3, h = 0.3)) +coord_flip()+coord_cartesian(ylim = c(0, 160))
@@ -315,6 +361,18 @@
 					#text(y=23,x=28, labels='\u2640', col='#FCB42C', cex=0.6)
 					#text(y=23.5,x=30, labels='\u2642', col='#535F7C', cex=0.6)
 					mtext(expression(bold("c")),side=3,line=-.35, cex=0.6,  col='grey30', outer=TRUE, adj=0.95)	
+								n__=n_
+								n__$sex=factor(n__$sex, levels=c('f','m'))
+								xx=data.frame(li=c(-2, -10,-14,-16), sp=c('amgp','basa','wesa','sesa'), stringsAsFactors=FALSE)
+								for(i in 1:nrow(xx)){
+									xi=xx[i,]
+									m=lm(uni_last~sex,n__[n__$sp==xi$sp,])
+										nsim <- 5000
+										bsim <- sim(m, n.sim=nsim)  
+										pp=data.frame(round(apply(bsim@coef, 2, quantile, prob=c(0.5, 0.025,0.975)),1))# output is in %
+										text(y=xi$li+0.5,x=17.5, labels=paste(pp$sexm[1],"(",pp$sexm[2],"-",pp$sexm[3],")", sep=""), col='grey30', cex=0.4)
+									}
+
 		 dev.off()				
 		}
 			{# not used Figure 1b points and boxplot
@@ -1636,8 +1694,8 @@
 							dev.off()
 						}
 		{# run first - prepare predictions - with AR1 control
-							m2=glmmPQL(att ~sin(rad)+cos(rad) + types +sin(rad)*types+cos(rad)*types, random = ~ sin(rad)+cos(rad) | actID_type/sp_type,data = h, family='gaussian',
-							correlation=corAR1(0.2, form = ~ 1 | actID_type))
+							m2=glmmPQL(att ~sin(rad)+cos(rad) + types +sin(rad)*types+cos(rad)*types, random = ~ sin(rad)+cos(rad) | sp_type/actID_type,data = h, family='gaussian',
+							correlation=corAR1(0.2, form = ~ 1 | sp_type/actID_type))
 				
 							#summary(m)
 							#plot(allEffects(m2))
@@ -1878,6 +1936,8 @@
 				{# run first - predictions
 				# model
 					m=glmer(success_bin~prop_ip+uni_last+(1|sp),data=g,family='binomial')
+					m2=glmer(success_bin~poly(prop_ip,2)+uni_last+(1|sp),data=g,family='binomial')
+					#m2=glmer(success_bin~scale(uni_last):scale(prop_ip)+(1|sp),data=g,family='binomial')
 						  
 				# simulation		
 					nsim <- 5000
