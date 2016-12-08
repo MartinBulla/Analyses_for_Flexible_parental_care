@@ -297,6 +297,10 @@
 			n_$prop_ip_=n_$prop_ip*100
 		n_$col_=ifelse(n_$sex=='f',female_col,male_col)
 		table(n_$sex,n_$sp)
+		
+		n_$order=jitter(n_$order)
+		
+		
 					
 		
 			}
@@ -306,7 +310,7 @@
 			par(mar=c(0.0,0,0,0.4),oma = c(2.1, 0.5, 0.2, 5),ps=12, mgp=c(1.2,0.35,0), las=1, cex=1, col.axis="grey30",font.main = 1, col.lab="grey30", col.main="grey30", fg="grey70", cex.lab=0.6,cex.main=0.7, cex.axis=0.5, tcl=-0.1,bty="n",xpd=TRUE)
 			#ggplot(n_,aes(x=species, y=prop_ip*100, fill=sex))+geom_boxplot() +coord_flip()+coord_cartesian(ylim = c(0, 160))
 			#ggplot(n_,aes(x=species, y=prop_ip*100, col=sex))+geom_point(position = position_jitter(w = 0.3, h = 0.3)) +coord_flip()+coord_cartesian(ylim = c(0, 160))
-			plot(jitter(n_$order)~n_$prop_ip_,xlim=c(0,160), ylim=c(-16.5,-1), 
+			plot(n_$order~n_$prop_ip_,xlim=c(0,160), ylim=c(-16.5,-1), 
 						xaxt='n',yaxt='n',type='n',
 						#xlab="Cases of uniparental incubation [count]", 
 						pch = 21,cex=0.5, col="gray63",bg=adjustcolor(n_$col_, alpha.f = 0.6)
@@ -333,8 +337,8 @@
 										bsim <- sim(m, n.sim=nsim)  
 										pp=data.frame(round(100*apply(bsim@coef, 2, quantile, prob=c(0.5, 0.025,0.975))/apply(bsim@coef, 2, quantile, prob=c(0.5, 0.025,0.975))[1,1]))# output is in %
 										if(i==1){
-										text(y=xi$li+0.5,x=140, labels=paste(pp$sexm[1],"(",pp$sexm[2],"-",pp$sexm[3],")", sep=""), col='grey30', cex=0.4)}else{
-										text(y=xi$li+0.5,x=150, labels=paste(pp$sexm[1],"(",pp$sexm[2],"-",pp$sexm[3],")", sep=""), col='grey30', cex=0.4)}
+										text(y=xi$li+0.5,x=167, labels=paste(pp$sexm[1]," (",pp$sexm[2],"-",pp$sexm[3],")", sep=""), col='grey30', cex=0.4, pos=2, offset=0)}else{
+										text(y=xi$li+0.5,x=167, labels=paste(pp$sexm[1]," (",pp$sexm[2],"-",pp$sexm[3],")", sep=""), col='grey30', cex=0.4, pos=2, offset=0)}
 									}
 								
 					dev.off()				
@@ -345,7 +349,7 @@
 			par(mar=c(0.0,0,0,0.4),oma = c(2.1, 0.5, 0.2, 5),ps=12, mgp=c(1.2,0.35,0), las=1, cex=1, col.axis="grey30",font.main = 1, col.lab="grey30", col.main="grey30", fg="grey70", cex.lab=0.6,cex.main=0.7, cex.axis=0.5, tcl=-0.1,bty="n",xpd=TRUE)
 			#ggplot(n_,aes(x=species, y=prop_ip*100, fill=sex))+geom_boxplot() +coord_flip()+coord_cartesian(ylim = c(0, 160))
 			#ggplot(n_,aes(x=species, y=prop_ip*100, col=sex))+geom_point(position = position_jitter(w = 0.3, h = 0.3)) +coord_flip()+coord_cartesian(ylim = c(0, 160))
-			plot(jitter(n_$order)~n_$uni_last,xlim=c(0,20), ylim=c(-16.5,-1), 
+			plot(n_$order~n_$uni_last,xlim=c(0,20), ylim=c(-16.5,-1), 
 						xaxt='n',yaxt='n',type='n',
 						#xlab="Cases of uniparental incubation [count]", 
 						pch = 21,cex=0.5, col="gray63",bg=adjustcolor(n_$col_, alpha.f = 0.6)
@@ -370,9 +374,11 @@
 										nsim <- 5000
 										bsim <- sim(m, n.sim=nsim)  
 										pp=data.frame(round(apply(bsim@coef, 2, quantile, prob=c(0.5, 0.025,0.975)),1))# output is in %
-										text(y=xi$li+0.5,x=17.5, labels=paste(pp$sexm[1],"(",pp$sexm[2],"-",pp$sexm[3],")", sep=""), col='grey30', cex=0.4)
+										text(y=xi$li+0.5,x=20.9, labels=paste(pp$sexm[1]," (",pp$sexm[2],"-",pp$sexm[3],")", sep=""), col='grey30', cex=0.4, pos=2, offset=0)
 									}
-
+					arrows(y0=n_$order[round(n_$uni_last,2)==round(18.669045,2)], x0= 18.669045+1.5,x1=18.669045+0.5, length = 0.02, angle = 15, col="#5eab2b", lwd=1.5)
+					arrows(y0=n_$order[round(n_$uni_last,2)==round(15.373264,2)],x0=15.373264+1.5,  x1=15.373264+0.5, length = 0.02, angle = 15, col="#5eab2b", lwd=1.5)
+      
 		 dev.off()				
 		}
 			{# not used Figure 1b points and boxplot
