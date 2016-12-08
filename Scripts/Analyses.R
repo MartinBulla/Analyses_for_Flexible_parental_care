@@ -1798,9 +1798,21 @@
 				g=n_[!n_$state%in%c('r','u','w'),]
 				g$success=ifelse(g$state%in%c('s','l','h'),'yes','no')
 				g$success_bin=ifelse(g$state%in%c('s','l','h'),1,0)
+				g$prop_ip=g$prop_ip*100
 				{# species
 				sp =read.csv(paste(wd,'species.csv', sep=""), stringsAsFactors=FALSE)
 				}
+				{# add median daily nest attendance - CHECK WHETHER HERE AND IN OTHER DATASETS WE USE THE RIGHT BIRDS
+						load(paste(wd,'for_analyses.RData',sep="")) 
+							# limit to periods with at least 75% of uniparental or biparental incubation
+								d=d[which((d$sp=='pesa' & 0.75<(d$n/1440))| (d$sp!='pesa' & 0.75<(d$n/17280))),]
+								d=d[which(d$type=='uni'),]
+								d_=ddply(d,.(act_ID), summarise, att_med=median(att, na.rm=TRUE))							
+								g$att_med=d_$att_med[match(g$act_ID,d_$act_ID)]
+								g=g[-which(is.na(g$att_med)),]# biparental_24  48 - dislocated temperature probe; 61 - one egg nest
+				
+				}
+		
 		}	
 		
 		{# number of nests with given state and distribution of success/failure across day and durantion of uniparental
@@ -1961,28 +1973,26 @@
 		
 		}
 		{# Figure 5 & Supplementary Table 5 - effect of day and length of uniparental incubation
-			{# run first
-			
-				g$prop_ip=g$prop_ip*100
-			}
 			{# correlation of predictors
 				cor(g$uni_last,g$prop_ip,method = c("pearson"))
 				cor(g$uni_last,g$prop_ip,method = c("spearman"))
-				cor(log(g$uni_last),g$prop_ip,method = c("pearson"))
-				cor(log(g$uni_last),g$prop_ip,method = c("spearman"))
-				
+				cor(g$uni_last,g$att_med,method = c("pearson"))
+				cor(g$uni_last,g$att_med,method = c("spearman"))
+				cor(g$prop_ip,g$att_med,method = c("pearson"))
+				cor(g$prop_ip,g$att_med,method = c("spearman"))
+							
 				plot(g$uni_last,g$prop_ip)
-				plot(log(g$uni_last),g$prop_ip)
-								
+				plot(g$uni_last,g$att_med)
+				plot(g$prop_ip,g$att_med)
+				
 				nrow(g)
 			}	
 			
-
 			{# Figure 5
 			   {# predictions	
 				{# for day of incubation
 					# model
-					m=glmer(success_bin~poly(prop_ip,2)+uni_last+(1|sp),data=g,family='binomial')
+					m=glmer(success_bin~poly(prop_ip,2)+uni_last+att_med+(1|sp),data=g,family='binomial')
 					#m2=glmer(success_bin~poly(prop_ip,2):uni_last+(1|sp),data=g,family='binomial')
 											  
 					# simulation		
@@ -1996,11 +2006,12 @@
 					
 					# specify dataset
 						newD=data.frame(prop_ip=seq(min(g$prop_ip),max(g$prop_ip),length.out=200),
+										att_med=mean(g$att_med),
 										uni_last=mean(g$uni_last)
 										)
 									
 					# exactly the model which was used has to be specified here 
-							X = model.matrix(~ poly(prop_ip,2)+uni_last,data=newD)	
+							X = model.matrix(~ poly(prop_ip,2)+uni_last+att_med,data=newD)	
 										
 						# calculate predicted values and creditability intervals
 								newD$pred = plogis(X%*%v) # in case on binomial scaleback
@@ -2019,7 +2030,7 @@
 					g$p1=poly(g$prop_ip,2)[,1]
 					g$p2=poly(g$prop_ip,2)[,2]
 					
-					m=glmer(success_bin~p1+p2+uni_last+(1|sp),data=g,family='binomial')
+					m=glmer(success_bin~p1+p2+uni_last+att_med+(1|sp),data=g,family='binomial')
 																  
 				    # simulation		
 					nsim <- 5000
@@ -2032,11 +2043,12 @@
 					# specify dataset
 						newD=data.frame(p1=mean(g$p1),
 										p2=mean(g$p2),
+										att_med=mean(g$att_med),
 										uni_last=seq(min(g$uni_last),max(g$uni_last),length.out=200)
 										)
 									
 					# exactly the model which was used has to be specified here 
-							X = model.matrix(~ p1+p2+uni_last,data=newD)	
+							X = model.matrix(~ p1+p2+uni_last+att_med,data=newD)	
 										
 						# calculate predicted values and creditability intervals
 								newD$pred = plogis(X%*%v) # in case on binomial scaleback
@@ -2050,17 +2062,56 @@
 								pd=newD
 								pd$predictor=pd$uni_last
 			}
+				{# median daily nest attendance
+					# model
+						m=glmer(success_bin~p1+p2+uni_last+att_med+(1|sp),data=g,family='binomial')
+											  
+					# simulation		
+					nsim <- 5000
+					bsim <- sim(m, n.sim=nsim)  
+					apply(bsim@fixef, 2, quantile, prob=c(0.025,0.975))	
+				
+					# coefficients
+					v <-apply(bsim@fixef, 2, quantile, prob=c(0.5))
+				
+					
+					# specify dataset
+						newD=data.frame(p1=mean(g$p1),
+										p2=mean(g$p2),
+										att_med=seq(min(g$att_med),max(g$att_med),length.out=200),
+										uni_last=mean(g$uni_last)
+										)
+									
+					# exactly the model which was used has to be specified here 
+							X = model.matrix(~ p1+p2+uni_last+att_med,data=newD)	
+										
+						# calculate predicted values and creditability intervals
+								newD$pred = plogis(X%*%v) # in case on binomial scaleback
+								
+								predmatrix = matrix(nrow=nrow(newD), ncol=nsim)
+									for(i in 1:nsim) predmatrix[,i] <- plogis(X%*%bsim@fixef[i,])
+									newD$lwr <- apply(predmatrix, 1, quantile, prob=0.025)
+									newD$upr <- apply(predmatrix, 1, quantile, prob=0.975)
+									#newD$other <- apply(predmatrix, 1, quantile, prob=0.5)
+									#newD=newD[order(newD$t_tundra),]
+								pa=newD
+								pa$predictor=pa$att_med
+				
+				}
 			   }			
 			   {# plot
-					png(paste(out_,"Figure_3_.png", sep=""), width=3.5,height=1.85,units="in",res=600)
-					#dev.new(width=3.5,height=1.85)
+					png(paste(out_,"Figure_5.png", sep=""), width=3.5*1.5,height=1.85,units="in",res=600)
+					#dev.new(width=3.5*1.5,height=1.85)
+					par(mfrow=c(1,3),mar=c(2.2,2.1,0.5,0.1),  mgp=c(1.2,0.35,0),oma = c(0, 0, 0, 1),ps=12, cex=1,las=1,  tcl=-0.15,bty="n",xpd=TRUE)
+					#par(mfrow=c(1,3),mar=c(2.2,2.1,0.5,0.1),  mgp=c(1.2,0.35,0),oma = c(0, 0, 0, 1),ps=12, las=1, cex.lab=0.6,cex.main=0.7, cex.axis=0.5, tcl=-0.15,bty="n",xpd=TRUE, col.axis="grey30",font.main = 1, col.lab="grey30", col.main="grey30", fg="grey70") # 0.6 makes font 7pt, 0.7 8pt
 					{# a
-						par(mfrow=c(1,2),mar=c(2.2,2.1,0.5,0.1),  mgp=c(1.2,0.35,0),oma = c(0, 0, 0, 1),ps=12, las=1, cex.lab=0.6,cex.main=0.7, cex.axis=0.5, tcl=-0.15,bty="n",xpd=TRUE, col.axis="grey30",font.main = 1, col.lab="grey30", col.main="grey30", fg="grey70") # 0.6 makes font 7pt, 0.7 8pt
+						par(mar=c(2.2,2.1,0.5,0.1),  mgp=c(1.2,0.35,0),ps=12, las=1, cex.lab=0.6,cex.main=0.7, cex.axis=0.5, tcl=-0.15,bty="n",xpd=TRUE, col.axis="grey30",font.main = 1, col.lab="grey30", col.main="grey30", fg="grey70") 
 					
+						
 						plot(NA, xlim=c(0,160), ylim=c(0,1), ylab='Nest success [probability]',xlab=NA, xaxt='n', type='n')#yaxt='n',
 								axis(1, at=seq(0,160,by=20),labels=c(0,"",40,"",80,"",120,"",160),cex.axis=0.5,mgp=c(0,-0.2,0))
 								mtext("Start of uniparental\n[% of incubation period]",side=1,line=1, cex=0.6, las=1, col='grey30')
-								mtext(expression(bold("a")),side=3,line=-.7, cex=0.6,  col='grey30', outer=TRUE, adj=0.48)
+								mtext(expression(bold("a")),side=3,line=-.7, cex=0.6,  col='grey30', outer=TRUE, adj=0.32)
 								
 								polygon(c(pp$predictor, rev(pp$predictor)), c(pp$lwr, 
 										rev(pp$upr)), border=NA, col=col_lb)#adjustcolor(col_l ,alpha.f = 0.1)) #0,0,0 black 0.5 is transparents RED
@@ -2083,13 +2134,13 @@
 									
 						}
 					{# b
-						par(mar=c(2.2,0.2,0.5,2))
-					
+						par(mar=c(2.2,1.1,0.5,1.1),  mgp=c(1.2,0.35,0),ps=12, las=1, cex.lab=0.6,cex.main=0.7, cex.axis=0.5, tcl=-0.15,bty="n",xpd=TRUE, col.axis="grey30",font.main = 1, col.lab="grey30", col.main="grey30", fg="grey70") 
+											
 						plot(NA, xlim=c(0,20), ylim=c(0,1), ylab=NA,xlab=NA, xaxt='n', type='n',yaxt='n')
 								#axis(1, at=seq(0,160,by=20),labels=c(0,"",40,"",80,"",120,"",160),cex.axis=0.5,mgp=c(0,-0.2,0))
 								axis(1, at=seq(0,20,by=5),labels=seq(0,20,by=5),cex.axis=0.5,mgp=c(0,-0.2,0))
 								mtext("Duration of uniparental\n[days]",side=1,line=1, cex=0.6, las=1, col='grey30')
-								mtext(expression(bold("b")),side=3,line=-.7, cex=0.6,  col='grey30', outer=TRUE, adj=0.86)
+								mtext(expression(bold("b")),side=3,line=-.7, cex=0.6,  col='grey30', outer=TRUE, adj=0.61)
 								
 								polygon(c(pd$predictor, rev(pd$predictor)), c(pd$lwr, 
 										rev(pd$upr)), border=NA, col=col_lb)#col=adjustcolor(col_l ,alpha.f = 0.1)) #0,0,0 black 0.5 is transparents RED
@@ -2105,18 +2156,42 @@
 								symbols(gg$prop_cut_m,gg$mean_, circles=sqrt(gg$n/pi),inches=0.14/1.75,bg=col_pb, fg=col_p,add=TRUE) #bg=alpha(col_p,0.1)
 								
 						}
+					{# c
+						par(mar=c(2.2,0.2,0.5,2),  mgp=c(1.2,0.35,0),ps=12, las=1, cex.lab=0.6,cex.main=0.7, cex.axis=0.5, tcl=-0.15,bty="n",xpd=TRUE, col.axis="grey30",font.main = 1, col.lab="grey30", col.main="grey30", fg="grey70") 
+										
+						plot(NA, xlim=c(0.2,1), ylim=c(0,1), ylab=NA,xlab=NA, type='n',xaxt='n', yaxt='n')
+								#axis(1, at=seq(0,160,by=20),labels=c(0,"",40,"",80,"",120,"",160),cex.axis=0.5,mgp=c(0,-0.2,0))
+								axis(1, at=seq(0.2,1,by=0.2),labels=seq(0.2,1,by=0.2),cex.axis=0.5,mgp=c(0,-0.2,0))
+								mtext("Median daily nest attendance\n[proportion]",side=1,line=1, cex=0.6, las=1, col='grey30')
+								mtext(expression(bold("c")),side=3,line=-.7, cex=0.6,  col='grey30', outer=TRUE, adj=0.92)
+								
+								polygon(c(pa$predictor, rev(pa$predictor)), c(pa$lwr, 
+										rev(pa$upr)), border=NA, col=col_lb)#col=adjustcolor(col_l ,alpha.f = 0.1)) #0,0,0 black 0.5 is transparents RED
+								lines(pa$predictor, pa$pred, col=col_l,lwd=1)			
+									
+									# prepare points for plotting
+										g$prop_cut=as.character(cut(g$att_med, 10))
+										g$n=1
+										gg=ddply(g,.(prop_cut), summarise,mean_=mean(success_bin),se_=sd(success_bin)/sqrt(length(success_bin)), prop_cut_m=median(att_med), n=sum(n))
+								
+								#arrows(x0=gg$prop_cut_m, y0=gg$mean_-gg$se_,x1=gg$prop_cut_m,y1=gg$mean_+gg$se_,code = 0, col =col_p , angle = 90, length = .025, lwd=1, lty=1)
+								symbols(gg$prop_cut_m,gg$mean_, circles=sqrt(gg$n/pi),inches=0.14/1.75,bg='white', add=TRUE) 
+								symbols(gg$prop_cut_m,gg$mean_, circles=sqrt(gg$n/pi),inches=0.14/1.75,bg=col_pb, fg=col_p,add=TRUE) #bg=alpha(col_p,0.1)
+								
+						}
+								
 					{# legend
 								mtext(expression(italic('N')*' nests:'),side = 4,line=0.2, padj=-6.5,cex=0.5,las=1,col='grey30', xpd=TRUE) 
-									symbols(c(23,23,23),c(0.77,0.65,0.5),circles=sqrt(c(1,10,20)/pi),inches=0.14/1.75,bg=col_pb, fg=col_p,add=TRUE, xpd=TRUE) #bg=alpha(col_p,0.1)
-									text(c(23,23,23)+2.7,c(0.77,0.66,0.5),labels=c(1,10,20), xpd=TRUE, cex=0.5,col='grey30') 
+									symbols(c(1.15,1.15,1.15),c(0.77,0.65,0.5),circles=sqrt(c(1,10,20)/pi),inches=0.14/1.75,bg=col_pb, fg=col_p,add=TRUE, xpd=TRUE) #bg=alpha(col_p,0.1)
+									text(c(1.15,1.15,1.15)+2.7/23,c(0.77,0.66,0.5),labels=c(1,10,20), xpd=TRUE, cex=0.5,col='grey30') 
 					}			
 					dev.off()
 				}
 			}
 			{# Supplementary Table 5
-				m=glmer(success_bin~prop_ip+uni_last+(1|sp),data=g,family='binomial')
+				m=glmer(success_bin~poly(prop_ip,2)+uni_last+(1|sp),data=g,family='binomial')
 			 
-				pred=c('Intercept','Incubation period', 'Duration')
+				pred=c('Intercept','Incubation period 1', 'Incubation period 2', 'Duration')
 						nsim <- 5000
 						bsim <- sim(m, n.sim=nsim)  
 				# Fixed effects
@@ -2142,7 +2217,6 @@
 						#writeWorksheet(wb, rbind(o), sheet = "output_AIC")
 						saveWorkbook(wb)
 						shell(sname)
-			
 		}
 									{# model assumptions simple
 						#dev.new(width=6,height=9)
