@@ -156,13 +156,30 @@
 
 						}	
 		}
-		
-				
-
-
+	}
 }
+	
 {# INTRODUCTION - Table 1/2
-
+	{# number of nests with uniparental incubation in biparental species	
+		nrow(n_)# number of cases
+		length(unique(n_$act_ID)) # overall number of nests
+		summary(factor(n_$sex)) # uniparental females and males
+		dd=ddply(n_,.(sp,nest), summarise,nn=1)
+		ddply(dd,.(sp), summarise,nn=sum(nn)) # numer of nests per species
+		
+		dd=ddply(n_,.(sp,nest,sex), summarise,nn=1)
+		ddply(dd,.(sp,sex), summarise,nn=sum(nn)) # numer of nests per species and sex
+		
+	 } 
+	{# number of successful nests
+			g=n_[!n_$state%in%c('r','u','w'),]
+				g$success=ifelse(g$state%in%c('s','l','h'),'yes','no')
+				g$success_bin=ifelse(g$state%in%c('s','l','h'),1,0)
+				g$n=1
+				ddply(g,.(sp), summarise,nn=sum(n)) # nests with known outcome
+				ddply(g,.(sp), summarise,nn=sum(success_bin)) # numer of nests per species
+				ddply(g,.(sp), summarise,nn=sum(success_bin)/sum(n)) # % of successful from nests with known outcome
+	}
 
 
 }
