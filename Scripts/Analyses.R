@@ -28,12 +28,26 @@
 		c('s704')
 		's804', 'w504' # part has poor temperature reading, but part is ok
 	# one egg incubation	
-		's310','s815'
-# considered, but have not met UNIPARENTAL definition
-	c('l301','l401','l501','s304','s902','w504')		
+		's310' (since Jul 6 18:00)
+		's815' (since Jun 30)
+	# considered, but have not met UNIPARENTAL definition
+		c('l301','l401','l501','s304','s902','w504')
+	# we do not know  when the uniparental incubation started (incubation monitoring system was taken of), but we know from visits to the nest that the nest was uniparental before we brought the incubation monitoring system back
+		"s807" #act_ID biparental_59
+	
+# sample sizes
+	# 70 cases of uniparental incubation from 
+	# 68 nests
+	# 66 nests attendance excluded for nest attendance
+		s704 - dislocated temperature probe
+		s310 - should be excluded - incubation of one egg
+		s815 - incubation of one egg
+		
+		
 }
 
-{# TOOLS
+{# RUN FIRST
+  {# TOOLS
 	{# define time 
 	  Sys.setenv(TZ="UTC")	
 	}
@@ -80,32 +94,120 @@
 		col_lb="gray92"  # line color of prediction '#FCB42C'
 	}
 }
-
-{# METHODS - Extraction of incubation - Sample sizes
-		{# run first
-			load(paste(wd,'for_analyses.RData',sep="")) 
-			# limit to periods with at least 75% of uniparental or biparental incubation
-				d=d[which((d$sp=='pesa' & 0.75<(d$n/1440))| (d$sp!='pesa' & 0.75<(d$n/17280))),]
-				d=ddply(d,.(act_ID,type), transform, start_j=day_j-min(day_j)+1)
-				h=h[which((h$sp=='pesa' & 0.75<(h$n/60))| (h$sp!='pesa' & 0.75<(h$n/720))),]
-				h=ddply(h,.(act_ID,type), transform, start_j=day_j-min(day_j)+1)
-				h$hour=as.numeric(h$hour)
+  {# LOAD DATA
+		{# cases of uniparental incubation in biparental species
+				n =read.csv(paste(wd,'nests.csv', sep=""), stringsAsFactors=FALSE)
+				n$end=as.POSIXct(n$end)
+				n$start=as.POSIXct(n$start)
+				n=n[!n$sp%in%c('pesa','rnph'),]
+					p=read.csv(paste(wd,'populations.csv', sep=""), stringsAsFactors=FALSE)
+				n$bout=p$bout[match(paste(n$site,n$sp), paste(p$site_abbreviation, p$sp))]
 				
-			{# species
-				sp_ =read.csv(paste(wd,'species.csv', sep=""), stringsAsFactors=FALSE)
-				sp_$order=-sp_$order
-				sp_=sp_[order(sp_$order),]
-		
-				d$species=sp_$species[match(d$sp,sp_$sp)]
-				d$order=as.factor(sp_$order[match(d$sp,sp_$sp)])
-				
-				h$species=sp_$species[match(h$sp,sp_$sp)]
-				h$order=as.factor(sp_$order[match(h$sp,sp_$sp)])
-
-				}	
+				n$start=n$start+n$bout*60*60
+				n$end=as.POSIXct(ifelse(n$state=='s', as.character(n$end-6*60*60), ifelse(n$state%in%c('l','h'), as.character(n$end-24*60*60), as.character(n$end))))
+					s=read.csv(paste(wd,'inc_start.csv', sep=""), stringsAsFactors=FALSE)
+					s$inc_start=as.POSIXct(s$inc_start,tz='UTC')
+				n$inc_start=s$inc_start[match(paste(n$year,n$nest),paste(s$year,s$nest))]
+				n$day_s = as.Date(trunc(n$start, "day"))
+				n$day_j=as.numeric(format(n$day_s ,"%j")) - as.numeric(format(as.Date(trunc(n$inc_start, "day")),"%j"))+1
+						ip=read.csv(paste(wd,'inc_period.csv', sep=""), stringsAsFactors=FALSE)
+				n$inc_per_sp=ip$inc_period[match(n$sp,ip$sp)]
+				n$prop_ip=n$day_j/n$inc_per_sp
+				n$uni_last=as.numeric(difftime(n$end, n$start, units='hours')) 
+				n_=n[n$act_ID=='biparental_59'| n$uni_last>2*n$bout,] # act_ID biparental_59 (nest s807) we lack data for when the uniparental incubation started (incubation monitoring system was taken of), but we know from visits to the nest that the nest was uniparental before we brought the incubation monitoring system back
+				n_$sex=as.factor(n_$sex)
+				n_$sexsp=interaction(n_$sp,n_$sex)
+				n_$uni_last=n_$uni_last/24
+			}
+		{# species
+				sp =read.csv(paste(wd,'species.csv', sep=""), stringsAsFactors=FALSE)
 		}
 		
+		{# nest attendance data
+				load(paste(wd,'for_analyses.RData',sep="")) 
+					{# check whether sample sizes consistent with nest data
+						dd=d[-which(d$sys=='uniparental'),]
+							#length(unique(dd$act_ID))
+						dn=unique(dd$act_ID)
+							#length(unique(n_$act_ID))
+						nn_=unique(n_$act_ID)
+					
+						nn_[!nn_%in%dn] # not in attandance: biparental_48 s704 (dislocated temperature), biparental_61 s815 (one egg), shall also show s310 (one egg)
+						dn[!dn%in%nn_] # same
+					}
+					
+					{# limit to periods with at least 75% of uniparental or biparental incubation
+						d=d[which((d$sp=='pesa' & 0.75<(d$n/1440))| (d$sp!='pesa' & 0.75<(d$n/17280))),]
+						d=ddply(d,.(act_ID,type), transform, start_j=day_j-min(day_j)+1)
+						h=h[which((h$sp=='pesa' & 0.75<(h$n/60))| (h$sp!='pesa' & 0.75<(h$n/720))),]
+						h=ddply(h,.(act_ID,type), transform, start_j=day_j-min(day_j)+1)
+						h$hour=as.numeric(h$hour)
+					}
+					{# add species # PERHAPS ADD THIS ALWAYS AGAIN WHEN IT IS NEEDED
+						sp_ =read.csv(paste(wd,'species.csv', sep=""), stringsAsFactors=FALSE)
+						sp_$order=-sp_$order
+						sp_=sp_[order(sp_$order),]
+				
+						d$species=sp_$species[match(d$sp,sp_$sp)]
+						d$order=as.factor(sp_$order[match(d$sp,sp_$sp)])
+						
+						h$species=sp_$species[match(h$sp,sp_$sp)]
+						h$order=as.factor(sp_$order[match(h$sp,sp_$sp)])
+
+						}	
+		}
+		
+				
+
+
+}
+{# INTRODUCTION - Table 1/2
+
+
+
+}
+{# METHODS - Extraction of incubation behaviour - sample size
+	
+		{# number of cases and nests with uniparental incubation
+				nrow(n_) # number of cases
+				length(unique(n_$act_ID)) # numbero of nests
+		}
 		{# number of cases of daily and hourly nest attendance
+				{# run first
+					load(paste(wd,'for_analyses.RData',sep="")) 
+					dd=d[-which(d$sys=='uniparental'),]
+					length(unique(dd$act_ID))
+					dn=unique(dd$act_ID)
+					
+					length(unique(n_$act_ID))
+					nn_=unique(n_$act_ID)
+					
+					nn_[!nn_%in%dn] # not in attandance: biparental_48 s704 (dislocated temperature), biparental_61 s815 (one egg), shall also show s310 (one egg)
+					
+					dn[!dn%in%nn_] # same
+					
+					
+					# limit to periods with at least 75% of uniparental or biparental incubation
+						d=d[which((d$sp=='pesa' & 0.75<(d$n/1440))| (d$sp!='pesa' & 0.75<(d$n/17280))),]
+						d=ddply(d,.(act_ID,type), transform, start_j=day_j-min(day_j)+1)
+						h=h[which((h$sp=='pesa' & 0.75<(h$n/60))| (h$sp!='pesa' & 0.75<(h$n/720))),]
+						h=ddply(h,.(act_ID,type), transform, start_j=day_j-min(day_j)+1)
+						h$hour=as.numeric(h$hour)
+				
+					{# species
+						sp_ =read.csv(paste(wd,'species.csv', sep=""), stringsAsFactors=FALSE)
+						sp_$order=-sp_$order
+						sp_=sp_[order(sp_$order),]
+				
+						d$species=sp_$species[match(d$sp,sp_$sp)]
+						d$order=as.factor(sp_$order[match(d$sp,sp_$sp)])
+						
+						h$species=sp_$species[match(h$sp,sp_$sp)]
+						h$order=as.factor(sp_$order[match(h$sp,sp_$sp)])
+
+						}	
+				}
+		
 			nrow(d) # cases of daily nest attendance
 			length(unique(d$act_ID)) # number of nests
 			length(unique(d$act_ID[d$sys=='biparental'])) # number of biparental nests
@@ -144,7 +246,7 @@
 				n$inc_per_sp=ip$inc_period[match(n$sp,ip$sp)]
 				n$prop_ip=n$day_j/n$inc_per_sp
 				n$uni_last=as.numeric(difftime(n$end, n$start, units='hours'))
-				n_=n[n$uni_last>=2*n$bout,]
+				n_=n[n$act_ID=='biparental_59'| n$uni_last>2*n$bout,] # act_ID biparental_59 (nest s807) we lack data for when the uniparental incubation started (incubation monitoring system was taken of), but we know from visits to the nest that the nest was uniparental before we brought the incubation monitoring system back
 				n_$sex=as.factor(n_$sex)
 				n_$sexsp=interaction(n_$sp,n_$sex)
 				n_$uni_last=n_$uni_last/24
@@ -154,12 +256,13 @@
 				}
 		}	
 	
+
 	{# number of species with uniparental incubation from number of species studied
 		# uniparental found in 
 				length(unique(n_$sp))
 						
 		# studied species
-				nn=readWorksheetFromFile(paste(wd,'populations.xls', sep=""), sheet='populations')
+				nn=read.csv(paste(wd,'populations.csv', sep=""), stringsAsFactors=FALSE)
 				nn=nn[!nn$sp%in%c('rnph','pesa'),]
 				length(unique(nn$sp))
 	}
@@ -1988,6 +2091,9 @@
 				nrow(g)
 			}	
 			
+			g$sex=as.factor(g$sex)
+			m=glmer(success_bin~sex+(1|sp),data=g,family='binomial')
+			plot(allEffects(m))
 			{# Figure 5
 			   {# predictions	
 				{# for day of incubation
@@ -2608,3 +2714,38 @@
 	  }
    }	  
 }
+{# DISCUSSION
+
+	{# proportion of nests that started after expected hatching
+		{# run first
+		    n =read.csv(paste(wd,'nests.csv', sep=""), stringsAsFactors=FALSE)
+				n$end=as.POSIXct(n$end)
+				n$start=as.POSIXct(n$start)
+				n=n[!n$sp%in%c('pesa','rnph'),]
+					p=read.csv(paste(wd,'populations.csv', sep=""), stringsAsFactors=FALSE)
+				n$bout=p$bout[match(paste(n$site,n$sp), paste(p$site_abbreviation, p$sp))]
+				
+				n$start=n$start+n$bout*60*60
+				n$end=as.POSIXct(ifelse(n$state=='s', as.character(n$end-6*60*60), ifelse(n$state%in%c('l','h'), as.character(n$end-24*60*60), as.character(n$end))))
+					s=read.csv(paste(wd,'inc_start.csv', sep=""), stringsAsFactors=FALSE)
+					s$inc_start=as.POSIXct(s$inc_start,tz='UTC')
+				n$inc_start=s$inc_start[match(paste(n$year,n$nest),paste(s$year,s$nest))]
+				n$day_s = as.Date(trunc(n$start, "day"))
+				n$day_j=as.numeric(format(n$day_s ,"%j")) - as.numeric(format(as.Date(trunc(n$inc_start, "day")),"%j"))+1
+						ip=read.csv(paste(wd,'inc_period.csv', sep=""), stringsAsFactors=FALSE)
+				n$inc_per_sp=ip$inc_period[match(n$sp,ip$sp)]
+				n$prop_ip=n$day_j/n$inc_per_sp
+				n$uni_last=as.numeric(difftime(n$end, n$start, units='hours'))
+				n_=n[n$uni_last>=2*n$bout,]
+				n_$sex=as.factor(n_$sex)
+				n_$sexsp=interaction(n_$sp,n_$sex)
+				n_$uni_last=n_$uni_last/24
+				
+				{# species
+				sp =read.csv(paste(wd,'species.csv', sep=""), stringsAsFactors=FALSE)
+				}
+				length(n_$prop_ip[n_$prop_ip>1])/nrow(n_)
+		}	
+		
+	
+	}
