@@ -177,10 +177,13 @@
 	save(d,h,se,file=paste(wd,'for_analyses.RData',sep="")) # d - per day aggregates, h per hour aggregates, se - start and end of unip incubation
 	}
 }
-	
 
-	
-	
+{# DONE correctins - delete s310 - dislocated probe
+	load(paste(wd,'for_analyses.RData',sep="")) 
+	d=d[-which(d$act_ID=='biparental_29'),]
+	h=h[-which(h$act_ID=='biparental_29'),]
+	save(d,h,file=paste(wd,'for_analyses.RData',sep="")) # d - per day aggregates, h per hour aggregates, se - start and end of unip incubation
+}
 {# DONE CHECK whether number of 5s readings per day is not higher than it should be - 60*60*24/5
 		load(paste(wd,'for_analyses.RData',sep="")) # d - per day aggregates, h per hour aggregates
 		densityplot(~d$n)
