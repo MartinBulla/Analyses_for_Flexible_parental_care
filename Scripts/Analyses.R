@@ -40,7 +40,7 @@
 	# 68 nests
 	# 66 nests attendance excluded for nest attendance
 		s704 - dislocated temperature probe
-		s310 - should be excluded - incubation of one egg
+		s310 - incubation of one egg
 		s815 - incubation of one egg
 		
 		
@@ -53,7 +53,7 @@
 	}
 	
 	{# load packages
-	   sapply(c('ggplot2', 'ggthemes','grid','gridExtra','plyr','lattice', 'latticeExtra','magrittr','maptools','raster', 'rgeos', 'rgdal', 'RSQLite','XLConnect','zoo'),
+	   sapply(c('ggplot2', 'ggthemes','grid','gridExtra','plyr','lattice', 'latticeExtra','magrittr','matrixStats','maptools','raster', 'rgeos', 'rgdal', 'RSQLite','XLConnect','zoo'),
 			function(x) suppressPackageStartupMessages(require(x , character.only = TRUE, quietly = TRUE) ))  
 		
 		sapply(c('AICcmodavg', 'arm','effects','multcomp'),
@@ -114,10 +114,13 @@
 				n$inc_per_sp=ip$inc_period[match(n$sp,ip$sp)]
 				n$prop_ip=n$day_j/n$inc_per_sp
 				n$uni_last=as.numeric(difftime(n$end, n$start, units='hours')) 
+				n$prop_day_end=(n$day_j+n$uni_last)/n$inc_per_sp
 				n_=n[n$act_ID=='biparental_59'| n$uni_last>2*n$bout,] # act_ID biparental_59 (nest s807) we lack data for when the uniparental incubation started (incubation monitoring system was taken of), but we know from visits to the nest that the nest was uniparental before we brought the incubation monitoring system back
 				n_$sex=as.factor(n_$sex)
 				n_$sexsp=interaction(n_$sp,n_$sex)
 				n_$uni_last=n_$uni_last/24
+				
+
 			}
 		{# species
 				sp =read.csv(paste(wd,'species.csv', sep=""), stringsAsFactors=FALSE)
@@ -132,7 +135,7 @@
 							#length(unique(n_$act_ID))
 						nn_=unique(n_$act_ID)
 					
-						nn_[!nn_%in%dn] # not in attandance: biparental_48 s704 (dislocated temperature), biparental_61 s815 (one egg), shall also show s310 (one egg)
+						nn_[!nn_%in%dn] # not in attandance: biparental_29 s310 (one egg incubation), biparental_48 s704 (dislocated temperature), biparental_61 s815 (one egg incubation)
 						dn[!dn%in%nn_] # same
 					}
 					
@@ -140,9 +143,11 @@
 						d=d[which((d$sp=='pesa' & 0.75<(d$n/1440))| (d$sp!='pesa' & 0.75<(d$n/17280))),]
 						d=ddply(d,.(act_ID,type), transform, start_j=day_j-min(day_j)+1)
 						h=h[which((h$sp=='pesa' & 0.75<(h$n/60))| (h$sp!='pesa' & 0.75<(h$n/720))),]
+					}
+					{# add day in incubation period (julian) 
 						h=ddply(h,.(act_ID,type), transform, start_j=day_j-min(day_j)+1)
 						h$hour=as.numeric(h$hour)
-					}
+					}		
 					{# add species # PERHAPS ADD THIS ALWAYS AGAIN WHEN IT IS NEEDED
 						sp_ =read.csv(paste(wd,'species.csv', sep=""), stringsAsFactors=FALSE)
 						sp_$order=-sp_$order
@@ -155,11 +160,20 @@
 						h$order=as.factor(sp_$order[match(h$sp,sp_$sp)])
 
 						}	
+					{# add lat long of the nest
+						 n2 =read.csv(paste(wd,'nests.csv', sep=""), stringsAsFactors=FALSE)
+						 n2=n2[!n2$circumstances=='temporal',]
+						 d$lat=n2$lat[match(d$act_ID,n$act_ID)]
+						 h$lat=n2$lat[match(h$act_ID,n$act_ID)]
+						 d$lon=n2$lon[match(d$act_ID,n$act_ID)]
+						 h$lon=n2$lon[match(h$act_ID,n$act_ID)]
+			 
+					}
 		}
 	}
 }
 	
-{# INTRODUCTION - Table 1/2
+{# INTRODUCTION - Table 1
 	{# number of nests with uniparental incubation in biparental species	
 		nrow(n_)# number of cases
 		length(unique(n_$act_ID)) # overall number of nests
@@ -168,7 +182,14 @@
 		ddply(dd,.(sp), summarise,nn=sum(nn)) # numer of nests per species
 		
 		dd=ddply(n_,.(sp,nest,sex), summarise,nn=1)
-		ddply(dd,.(sp,sex), summarise,nn=sum(nn)) # numer of nests per species and sex
+		ddply(dd[dd$sex=='m',],.(sp), summarise,nn=sum(nn)) # numer of nests incubated by male
+		#ddply(dd,.(sp,sex), summarise,nn=sum(nn)) # numer of nests per species and sex
+		
+		# % of nests incubated by male
+		m=round(100*ddply(dd[dd$sex=='m',],.(sp), summarise,nn=sum(nn))$nn/ddply(dd,.(sp), summarise,nn=sum(nn))$nn) 
+		names(m)=ddply(dd,.(sp), summarise,nn=sum(nn))$sp
+			m
+		
 		
 	 } 
 	{# number of successful nests
@@ -177,12 +198,12 @@
 				g$success_bin=ifelse(g$state%in%c('s','l','h'),1,0)
 				g$n=1
 				ddply(g,.(sp), summarise,nn=sum(n)) # nests with known outcome
-				ddply(g,.(sp), summarise,nn=sum(success_bin)) # numer of nests per species
-				ddply(g,.(sp), summarise,nn=sum(success_bin)/sum(n)) # % of successful from nests with known outcome
+				ddply(g,.(sp), summarise,nn=sum(success_bin)) # numer of successful nests per species
+				ddply(g,.(sp), summarise,nn=round(100*(sum(success_bin)/sum(n)))) # % of successful from nests with known outcome
+				
 	}
-
-
 }
+
 {# METHODS - Extraction of incubation behaviour - sample size
 	
 		{# number of cases and nests with uniparental incubation
@@ -190,90 +211,25 @@
 				length(unique(n_$act_ID)) # numbero of nests
 		}
 		{# number of cases of daily and hourly nest attendance
-				{# run first
-					load(paste(wd,'for_analyses.RData',sep="")) 
-					dd=d[-which(d$sys=='uniparental'),]
-					length(unique(dd$act_ID))
-					dn=unique(dd$act_ID)
-					
-					length(unique(n_$act_ID))
-					nn_=unique(n_$act_ID)
-					
-					nn_[!nn_%in%dn] # not in attandance: biparental_48 s704 (dislocated temperature), biparental_61 s815 (one egg), shall also show s310 (one egg)
-					
-					dn[!dn%in%nn_] # same
-					
-					
-					# limit to periods with at least 75% of uniparental or biparental incubation
-						d=d[which((d$sp=='pesa' & 0.75<(d$n/1440))| (d$sp!='pesa' & 0.75<(d$n/17280))),]
-						d=ddply(d,.(act_ID,type), transform, start_j=day_j-min(day_j)+1)
-						h=h[which((h$sp=='pesa' & 0.75<(h$n/60))| (h$sp!='pesa' & 0.75<(h$n/720))),]
-						h=ddply(h,.(act_ID,type), transform, start_j=day_j-min(day_j)+1)
-						h$hour=as.numeric(h$hour)
-				
-					{# species
-						sp_ =read.csv(paste(wd,'species.csv', sep=""), stringsAsFactors=FALSE)
-						sp_$order=-sp_$order
-						sp_=sp_[order(sp_$order),]
-				
-						d$species=sp_$species[match(d$sp,sp_$sp)]
-						d$order=as.factor(sp_$order[match(d$sp,sp_$sp)])
-						
-						h$species=sp_$species[match(h$sp,sp_$sp)]
-						h$order=as.factor(sp_$order[match(h$sp,sp_$sp)])
-
-						}	
-				}
-		
 			nrow(d) # cases of daily nest attendance
+			nrow(h) # cases of hourly nest attendance
+			
 			length(unique(d$act_ID)) # number of nests
+			length(unique(h$act_ID)) # number of nests
+			
+			length(unique(d$sp)) # number of species
+			length(unique(h$sp)) # number of species
+			
 			length(unique(d$act_ID[d$sys=='biparental'])) # number of biparental nests
 			length(unique(d$act_ID[d$sys=='uniparental'])) # number of biparental nests
-			length(unique(d$act_ID[d$sp=='pesa'])) # number of pectoral sandpiper nests
-			length(unique(d$act_ID[d$sp=='rnph'])) # number of red-necked phalarope nests
-			length(unique(d$sp)) # number of species
-			
-			nrow(h) # cases of hourly nest attendance
-			length(unique(h$act_ID)) # number of nests
-			length(unique(h$sp)) # number of species
-		
+				length(unique(d$act_ID[d$sp=='pesa'])) # number of pectoral sandpiper nests
+				length(unique(d$act_ID[d$sp=='rnph'])) # number of red-necked phalarope nests
 		}
 		
-
 }
 
 {# RESULTS & Supplementary
   {# Abundance of uniparental incubation
-	{# run first
-		    n =read.csv(paste(wd,'nests.csv', sep=""), stringsAsFactors=FALSE)
-				n$end=as.POSIXct(n$end)
-				n$start=as.POSIXct(n$start)
-				n=n[!n$sp%in%c('pesa','rnph'),]
-					p=read.csv(paste(wd,'populations.csv', sep=""), stringsAsFactors=FALSE)
-				n$bout=p$bout[match(paste(n$site,n$sp), paste(p$site_abbreviation, p$sp))]
-				
-				n$start=n$start+n$bout*60*60
-				n$end=as.POSIXct(ifelse(n$state=='s', as.character(n$end-6*60*60), ifelse(n$state%in%c('l','h'), as.character(n$end-24*60*60), as.character(n$end))))
-					s=read.csv(paste(wd,'inc_start.csv', sep=""), stringsAsFactors=FALSE)
-					s$inc_start=as.POSIXct(s$inc_start,tz='UTC')
-				n$inc_start=s$inc_start[match(paste(n$year,n$nest),paste(s$year,s$nest))]
-				n$day_s = as.Date(trunc(n$start, "day"))
-				n$day_j=as.numeric(format(n$day_s ,"%j")) - as.numeric(format(as.Date(trunc(n$inc_start, "day")),"%j"))+1
-						ip=read.csv(paste(wd,'inc_period.csv', sep=""), stringsAsFactors=FALSE)
-				n$inc_per_sp=ip$inc_period[match(n$sp,ip$sp)]
-				n$prop_ip=n$day_j/n$inc_per_sp
-				n$uni_last=as.numeric(difftime(n$end, n$start, units='hours'))
-				n_=n[n$act_ID=='biparental_59'| n$uni_last>2*n$bout,] # act_ID biparental_59 (nest s807) we lack data for when the uniparental incubation started (incubation monitoring system was taken of), but we know from visits to the nest that the nest was uniparental before we brought the incubation monitoring system back
-				n_$sex=as.factor(n_$sex)
-				n_$sexsp=interaction(n_$sp,n_$sex)
-				n_$uni_last=n_$uni_last/24
-				
-				{# species
-				sp =read.csv(paste(wd,'species.csv', sep=""), stringsAsFactors=FALSE)
-				}
-		}	
-	
-
 	{# number of species with uniparental incubation from number of species studied
 		# uniparental found in 
 				length(unique(n_$sp))
@@ -282,54 +238,59 @@
 				nn=read.csv(paste(wd,'populations.csv', sep=""), stringsAsFactors=FALSE)
 				nn=nn[!nn$sp%in%c('rnph','pesa'),]
 				length(unique(nn$sp))
+				
+		# % of uniparental - distribution 
+			x=data.frame(n=c(21,18,13,23,183,9,44,37), p=c(48,44,31,26,20,11,5,4), stringsAsFactors=FALSE)
+			weightedMedian(x$p, x$n)
+			summary(x$p)
+			
 	}
-	{# number of uniparental nests per species	
+	{# cases with female uniparental incubation
+		summary(factor(n_$sex)) # uniparental females and males
 		nrow(n_)# number of cases
 		length(unique(n_$act_ID)) # overall number of nests
-		summary(factor(n_$sex)) # uniparental females and males
-		dd=ddply(n_,.(sp,nest), summarise,nn=1)
-		ddply(dd,.(sp), summarise,nn=sum(nn)) # numer of nests per species
-		
-		dd=ddply(n_,.(sp,nest,sex), summarise,nn=1)
-		ddply(dd,.(sp,sex), summarise,nn=sum(nn)) # numer of nests per species and sex
-		
-	 } 
-	{# day in incubation period when the uniparental incubation started and for how long it lasted
-		{# started
-			summary(n_$prop_ip) # distribution of start of uniparental incubation
-			nrow(n_) # number of cases
-			length(unique(n_$nest)) # number of nests
+		}
+	
+	{# day in incubation period when uniparental incubation started
+			ns_=n_[-which(n_$nest=='s807'),] # exclude because we do not know when the uniparental incubation started
+			summary(100*ns_$prop_ip) # distribution of start of uniparental incubation
+			ns_[100*ns_$prop_ip>100,]
+			nrow(ns_) # number of cases
+			length(unique(ns_$nest)) # number of nests
 			
-			densityplot(~n_$prop_ip*100)
+			densityplot(~ns_$prop_ip*100)
 			
 			# limited to those before the eggs were supposed to hatch
-			summary(n_$prop_ip[n_$prop_ip<1])
-			densityplot(~n_$prop_ip[n_$prop_ip<1]*100)
-			length(unique(n_$nest[n_$prop_ip<1])) # number of nests
-			length(n_$prop_ip[n_$prop_ip<1]) # number of cases
+			summary(ns_$prop_ip[ns_$prop_ip<1])
+			densityplot(~ns_$prop_ip[ns_$prop_ip<1]*100)
+			length(unique(ns_$nest[ns_$prop_ip<1])) # number of nests
+			length(ns_$prop_ip[ns_$prop_ip<1]) # number of cases
+			length(unique(ns_$sp)) # number of species
 			
-			# sex specific?
-				# overall
+			# sex specific
 
-				m=lmer(prop_ip~sex+(1|sp),n_)
+				m=lmer(prop_ip~sex+(1|sp),ns_)
 								nsim <- 5000
 								bsim <- sim(m, n.sim=nsim)  
-								apply(bsim@fixef, 2, quantile, prob=c(0.5, 0.025,0.975))/0.7035061 # output is in %
+								apply(bsim@fixef, 2, quantile, prob=c(0.5, 0.025,0.975))*100/0.7035061 # output is in %
 								
 								l=data.frame(summary(m)$varcor)
 								l=l[is.na(l$var2),]
 								ri=data.frame(model='1', type='random (var)',effect=l$grp, estimate_r=round(l$vcov*100/sum(l$vcov),1), lwr_r=NA, upr_r=NA)
+								ri
 					
 				plot(allEffects(m))
 				summary(m)
-				ggplot(n_, aes(x=sp, y=prop_ip, col=sex))+geom_point()+geom_boxplot()
+				ggplot(ns_, aes(x=sp, y=prop_ip, col=sex))+geom_point()+geom_boxplot()
 										
 		}
-		{# lasted
-			n_[n_$uni_last>10,]
-			densityplot(~n_$uni_last)
+	{# for how long the uniparental incubation lasted
+			ns_=n_[-which(n_$nest=='s807'),] # exclude because we do not know when the uniparental incubation started
+			summary(ns_$uni_last)
+			ns_[ns_$uni_last>10,]
+			densityplot(~ns_$uni_last)
 			
-			m=lmer(uni_last~sex+(1|sp),n_)
+			m=lmer(uni_last~sex+(1|sp),ns_)
 								nsim <- 5000
 								bsim <- sim(m, n.sim=nsim)  
 								apply(bsim@fixef, 2, quantile, prob=c(0.5, 0.025,0.975)) # output is in %
@@ -337,26 +298,27 @@
 								l=data.frame(summary(m)$varcor)
 								l=l[is.na(l$var2),]
 								ri=data.frame(model='1', type='random (var)',effect=l$grp, estimate_r=round(l$vcov*100/sum(l$vcov),1), lwr_r=NA, upr_r=NA)
-					
+								ri
+								
 				plot(allEffects(m))
 				summary(m)
-				ggplot(n_, aes(x=sp, y=uni_last, col=sex))+geom_point()+geom_boxplot()
+				ggplot(ns_, aes(x=sp, y=uni_last, col=sex))+geom_point()+geom_boxplot()
 		}
 		{# nests left because field work ended = 10
 			length(n_$nest[n_$state=='w'])+ length(n_$nest[n_$state=='u'])-3+1 # 3 nests with uncertainty was about hatching, desertion or depredation
 																			   # 1 nest with thee system taken off for over 10 days and then placed back again
 		}
-	}	 
 	
 	{# Figure 1a
+		ns_=n_[-which(n_$nest=='s807'),] # exclude because we do not know when the uniparental incubation started
 		sp_=sp[!sp$sp%in%c('pesa','rnph'),]
 		sp_$order=-sp_$order
 		sp_=sp_[order(sp_$order),]
 		
-		n_$species=sp_$species[match(n_$sp,sp_$sp)]
-		n_$order=sp_$order[match(n_$sp,sp_$sp)]
-		n_$sex=factor(n_$sex, levels=c('m','f'))
-		counts=table(n_$sex,n_$order)
+		ns_$species=sp_$species[match(ns_$sp,sp_$sp)]
+		ns_$order=sp_$order[match(ns_$sp,sp_$sp)]
+		ns_$sex=factor(ns_$sex, levels=c('m','f'))
+		counts=table(ns_$sex,ns_$order)
 		
 		# par(mfrow=c(1,3),mar=c(0.0,0,0,0.4),oma = c(1.8, 1.8, 0.2, 0.5),ps=12, mgp=c(1.2,0.35,0), las=1, cex=1, col.axis="grey30",font.main = 1, col.lab="grey30", col.main="grey30", fg="grey70") # 0.6 makes font 7pt, 0.7 8pt
 		 #dev.new(width=3.5*0.75,height=1.85)
@@ -385,40 +347,41 @@
 		}
 	{# Figure 1bc
 		 {# run first	
-			n_$uni_last=as.numeric(difftime(n_$end, n_$start, units='days'))
+			ns_=n_[-which(n_$nest=='s807'),] # exclude because we do not know when the uniparental incubation started
+			ns_$uni_last=as.numeric(difftime(ns_$end, ns_$start, units='days'))
 			# create dummy values for species missing nests for one sex
-				n1=n_[n_$sp=='blgo',][1,]
+				n1=ns_[ns_$sp=='blgo',][1,]
 				n1$sex='f'
 				n1$prop_ip=-50
 				n1$uni_last=-2
-				n2=n_[n_$sp=='dunl',][1,]
+				n2=ns_[ns_$sp=='dunl',][1,]
 				n2$sex='f'
 				n2$prop_ip=-50
 				n2$uni_last=-2
-				n3=n_[n_$sp=='lbdo',][1,]
+				n3=ns_[ns_$sp=='lbdo',][1,]
 				n3$sex='f'
 				n3$prop_ip=-50
 				n3$uni_last=-2
-				n4=n_[n_$sp=='reds',][1,]
+				n4=ns_[ns_$sp=='reds',][1,]
 				n4$sex='f'
 				n4$prop_ip=-50
 				n4$uni_last=-2
-				n_=rbind(n_,n1,n2,n3,n4)
+				ns_=rbind(ns_,n1,n2,n3,n4)
 				
 		sp_=sp[!is.na(sp$order),]
 		sp_$order=-sp_$order
 		sp_=sp_[order(sp_$order),]
 		
-		n_$species=sp_$species[match(n_$sp,sp_$sp)]
-		n_$order=sp_$order[match(n_$sp,sp_$sp)]
-		n_$sex=factor(n_$sex, levels=c('m','f'))
-			n_$order=ifelse(n_$sex=='m', 2*n_$order-0.4, 2*n_$order+0.4)
-			unique(n_$order)[order(unique(n_$order))]
-			n_$prop_ip_=n_$prop_ip*100
-		n_$col_=ifelse(n_$sex=='f',female_col,male_col)
-		table(n_$sex,n_$sp)
+		ns_$species=sp_$species[match(ns_$sp,sp_$sp)]
+		ns_$order=sp_$order[match(ns_$sp,sp_$sp)]
+		ns_$sex=factor(ns_$sex, levels=c('m','f'))
+			ns_$order=ifelse(ns_$sex=='m', 2*ns_$order-0.4, 2*ns_$order+0.4)
+			unique(ns_$order)[order(unique(ns_$order))]
+			ns_$prop_ip_=ns_$prop_ip*100
+		ns_$col_=ifelse(ns_$sex=='f',female_col,male_col)
+		table(ns_$sex,ns_$sp)
 		
-		n_$order=jitter(n_$order)
+		ns_$order=jitter(ns_$order)
 		
 		
 					
@@ -428,12 +391,12 @@
 		   #dev.new(width=3.5*0.75,height=1.85)
 		    png(paste(out_,"Figure_1b+est.png", sep=""), width=3.5*0.75,height=1.85,units="in",res=600)
 			par(mar=c(0.0,0,0,0.4),oma = c(2.1, 0.5, 0.2, 5),ps=12, mgp=c(1.2,0.35,0), las=1, cex=1, col.axis="grey30",font.main = 1, col.lab="grey30", col.main="grey30", fg="grey70", cex.lab=0.6,cex.main=0.7, cex.axis=0.5, tcl=-0.1,bty="n",xpd=TRUE)
-			#ggplot(n_,aes(x=species, y=prop_ip*100, fill=sex))+geom_boxplot() +coord_flip()+coord_cartesian(ylim = c(0, 160))
-			#ggplot(n_,aes(x=species, y=prop_ip*100, col=sex))+geom_point(position = position_jitter(w = 0.3, h = 0.3)) +coord_flip()+coord_cartesian(ylim = c(0, 160))
-			plot(n_$order~n_$prop_ip_,xlim=c(0,160), ylim=c(-16.5,-1), 
+			#ggplot(ns_,aes(x=species, y=prop_ip*100, fill=sex))+geom_boxplot() +coord_flip()+coord_cartesian(ylim = c(0, 160))
+			#ggplot(ns_,aes(x=species, y=prop_ip*100, col=sex))+geom_point(position = positions_jitter(w = 0.3, h = 0.3)) +coord_flip()+coord_cartesian(ylim = c(0, 160))
+			plot(ns_$order~ns_$prop_ip_,xlim=c(0,160), ylim=c(-16.5,-1), 
 						xaxt='n',yaxt='n',type='n',
 						#xlab="Cases of uniparental incubation [count]", 
-						pch = 21,cex=0.5, col="gray63",bg=adjustcolor(n_$col_, alpha.f = 0.6)
+						pch = 21,cex=0.5, col="gray63",bg=adjustcolor(ns_$col_, alpha.f = 0.6)
 							)
 									
 					axis(1, at=seq(0,160,by=20),labels=c(0,"",40,"",80,"",120,"",160),cex.axis=0.5,mgp=c(0,-0.2,0))
@@ -441,18 +404,18 @@
 					
 					#axis(2, at=seq(-16,-2,2), labels=FALSE)
 					abline(h=seq(-16,-2,2), par(xpd=FALSE), col="grey90")
-					points(jitter(n_$order)~n_$prop_ip_,pch = 21,cex=0.5, col="gray63",bg=adjustcolor(n_$col_, alpha.f = 0.6))
+					points(jitter(ns_$order)~ns_$prop_ip_,pch = 21,cex=0.5, col="gray63",bg=adjustcolor(ns_$col_, alpha.f = 0.6))
 					#mtext('Nest attendance',side=2,line=1, cex=0.6, las=3, col='grey30')
 					#text(y=23,x=28, labels='\u2640', col='#FCB42C', cex=0.6)
 					#text(y=23.5,x=30, labels='\u2642', col='#535F7C', cex=0.6)
 					mtext(expression(bold("b")),side=3,line=-.35, cex=0.6,  col='grey30', outer=TRUE, adj=0.95)
 					# add species specific estimates for sex differences
-								n__=n_
-								n__$sex=factor(n__$sex, levels=c('f','m'))
+								ns__=ns_
+								ns__$sex=factor(ns__$sex, levels=c('f','m'))
 								xx=data.frame(li=c(-2, -10,-14,-16), sp=c('amgp','basa','wesa','sesa'), stringsAsFactors=FALSE)
 								for(i in 1:nrow(xx)){
 									xi=xx[i,]
-									m=lm(prop_ip~sex,n__[n__$sp==xi$sp,])
+									m=lm(prop_ip~sex,ns__[ns__$sp==xi$sp,])
 										nsim <- 5000
 										bsim <- sim(m, n.sim=nsim)  
 										pp=data.frame(round(100*apply(bsim@coef, 2, quantile, prob=c(0.5, 0.025,0.975))/apply(bsim@coef, 2, quantile, prob=c(0.5, 0.025,0.975))[1,1]))# output is in %
@@ -467,12 +430,12 @@
 		   #dev.new(width=3.5*0.75,height=1.85)
 		    png(paste(out_,"Figure_1c+est.png", sep=""), width=3.5*0.75,height=1.85,units="in",res=600)
 			par(mar=c(0.0,0,0,0.4),oma = c(2.1, 0.5, 0.2, 5),ps=12, mgp=c(1.2,0.35,0), las=1, cex=1, col.axis="grey30",font.main = 1, col.lab="grey30", col.main="grey30", fg="grey70", cex.lab=0.6,cex.main=0.7, cex.axis=0.5, tcl=-0.1,bty="n",xpd=TRUE)
-			#ggplot(n_,aes(x=species, y=prop_ip*100, fill=sex))+geom_boxplot() +coord_flip()+coord_cartesian(ylim = c(0, 160))
-			#ggplot(n_,aes(x=species, y=prop_ip*100, col=sex))+geom_point(position = position_jitter(w = 0.3, h = 0.3)) +coord_flip()+coord_cartesian(ylim = c(0, 160))
-			plot(n_$order~n_$uni_last,xlim=c(0,20), ylim=c(-16.5,-1), 
+			#ggplot(ns_,aes(x=species, y=prop_ip*100, fill=sex))+geom_boxplot() +coord_flip()+coord_cartesian(ylim = c(0, 160))
+			#ggplot(ns_,aes(x=species, y=prop_ip*100, col=sex))+geom_point(position = positions_jitter(w = 0.3, h = 0.3)) +coord_flip()+coord_cartesian(ylim = c(0, 160))
+			plot(ns_$order~ns_$uni_last,xlim=c(0,20), ylim=c(-16.5,-1), 
 						xaxt='n',yaxt='n',type='n',
 						#xlab="Cases of uniparental incubation [count]", 
-						pch = 21,cex=0.5, col="gray63",bg=adjustcolor(n_$col_, alpha.f = 0.6)
+						pch = 21,cex=0.5, col="gray63",bg=adjustcolor(ns_$col_, alpha.f = 0.6)
 							)
 									
 						axis(1, at=seq(0,20,by=5),labels=seq(0,20,by=5),cex.axis=0.5,mgp=c(0,-0.2,0))
@@ -480,43 +443,43 @@
 					
 					#axis(2, at=seq(-16,-2,2), labels=FALSE)
 					abline(h=seq(-16,-2,2), par(xpd=FALSE), col="grey90")
-					points(jitter(n_$order)~n_$uni_last,pch = 21,cex=0.5, col="gray63",bg=adjustcolor(n_$col_, alpha.f = 0.6))
+					points(jitter(ns_$order)~ns_$uni_last,pch = 21,cex=0.5, col="gray63",bg=adjustcolor(ns_$col_, alpha.f = 0.6))
 						#mtext('Nest attendance',side=2,line=1, cex=0.6, las=3, col='grey30')
 					#text(y=23,x=28, labels='\u2640', col='#FCB42C', cex=0.6)
 					#text(y=23.5,x=30, labels='\u2642', col='#535F7C', cex=0.6)
 					mtext(expression(bold("c")),side=3,line=-.35, cex=0.6,  col='grey30', outer=TRUE, adj=0.95)	
-								n__=n_
-								n__$sex=factor(n__$sex, levels=c('f','m'))
+								ns__=ns_
+								ns__$sex=factor(ns__$sex, levels=c('f','m'))
 								xx=data.frame(li=c(-2, -10,-14,-16), sp=c('amgp','basa','wesa','sesa'), stringsAsFactors=FALSE)
 								for(i in 1:nrow(xx)){
 									xi=xx[i,]
-									m=lm(uni_last~sex,n__[n__$sp==xi$sp,])
+									m=lm(uni_last~sex,ns__[ns__$sp==xi$sp,])
 										nsim <- 5000
 										bsim <- sim(m, n.sim=nsim)  
 										pp=data.frame(round(apply(bsim@coef, 2, quantile, prob=c(0.5, 0.025,0.975)),1))# output is in %
 										text(y=xi$li+0.5,x=20.9, labels=paste(pp$sexm[1]," (",pp$sexm[2],"-",pp$sexm[3],")", sep=""), col='grey30', cex=0.4, pos=2, offset=0)
 									}
-					arrows(y0=n_$order[round(n_$uni_last,2)==round(18.669045,2)], x0= 18.669045+1.5,x1=18.669045+0.5, length = 0.02, angle = 15, col="#5eab2b", lwd=1.5)
-					arrows(y0=n_$order[round(n_$uni_last,2)==round(15.373264,2)],x0=15.373264+1.5,  x1=15.373264+0.5, length = 0.02, angle = 15, col="#5eab2b", lwd=1.5)
+					arrows(y0=ns_$order[round(ns_$uni_last,2)==round(18.669045,2)], x0= 18.669045+1.5,x1=18.669045+0.5, length = 0.02, angle = 15, col="#5eab2b", lwd=1.5)
+					arrows(y0=ns_$order[round(ns_$uni_last,2)==round(15.373264,2)],x0=15.373264+1.5,  x1=15.373264+0.5, length = 0.02, angle = 15, col="#5eab2b", lwd=1.5)
       
 		 dev.off()				
 		}
 			{# not used Figure 1b points and boxplot
 				
-		n_$species=sp_$species[match(n_$sp,sp_$sp)]
-		n_$order=sp_$order[match(n_$sp,sp_$sp)]
-		n_$sex=factor(n_$sex, levels=c('m','f'))
-		n_$col_=ifelse(n_$sex=='f',female_col,male_col)
-		table(n_$sex,n_$sp)
+		ns_$species=sp_$species[match(ns_$sp,sp_$sp)]
+		ns_$order=sp_$order[match(ns_$sp,sp_$sp)]
+		ns_$sex=factor(ns_$sex, levels=c('m','f'))
+		ns_$col_=ifelse(ns_$sex=='f',female_col,male_col)
+		table(ns_$sex,ns_$sp)
 					
 		 #dev.new(width=3.5*0.75,height=1.85)
 		 png(paste(out_,"Figure_1b_boxplot.png", sep=""), width=3.5*0.75,height=1.85,units="in",res=600)
 		 par(mar=c(0.0,0,0,0.4),oma = c(2.1, 0.5, 0.2, 5),ps=12, mgp=c(1.2,0.35,0), las=1, cex=1, col.axis="grey30",font.main = 1, col.lab="grey30", col.main="grey30", fg="grey70", cex.lab=0.6,cex.main=0.7, cex.axis=0.5, tcl=-0.1,bty="n",xpd=TRUE)
 			at_=c(seq(1,15,by=2)+0.15, seq(2,16,2)-0.15)
 			at_=at_[order(at_)]
-			#ggplot(n_,aes(x=species, y=prop_ip*100, fill=sex))+geom_boxplot() +coord_flip()+coord_cartesian(ylim = c(0, 160))
-			#ggplot(n_,aes(x=species, y=prop_ip*100, col=sex))+geom_point(position = position_jitter(w = 0.3, h = 0.3)) +coord_flip()+coord_cartesian(ylim = c(0, 160))
-			boxplot(n_$prop_ip*100~n_$sex*n_$order, horizontal=TRUE,
+			#ggplot(ns_,aes(x=species, y=prop_ip*100, fill=sex))+geom_boxplot() +coord_flip()+coord_cartesian(ylim = c(0, 160))
+			#ggplot(ns_,aes(x=species, y=prop_ip*100, col=sex))+geom_point(position = positions_jitter(w = 0.3, h = 0.3)) +coord_flip()+coord_cartesian(ylim = c(0, 160))
+			boxplot(ns_$prop_ip*100~ns_$sex*ns_$order, horizontal=TRUE,
 						ylim=c(0,160),
 						xaxt='n',yaxt='n',
 						#xlab="Cases of uniparental incubation [count]", 
@@ -529,7 +492,7 @@
 								
 						#legend = rownames(counts),args.legend = list(bty='n', legend=c('\u2642','\u2640')),
 							)
-			stripchart(n_$prop_ip*100~n_$sex*n_$order, vertical = FALSE, method = "jitter",jitter=0.05, add = TRUE, 
+			stripchart(ns_$prop_ip*100~ns_$sex*ns_$order, vertical = FALSE, method = "jitter",jitter=0.05, add = TRUE, 
 										at=at_,
 										pch = 21,cex=0.5, 
 										col="gray63",
@@ -538,7 +501,7 @@
 										bg=adjustcolor("gray63", alpha.f = 0.4)
 										)
 										
-			boxplot(n_$prop_ip*100~n_$sex*n_$order,horizontal=TRUE,
+			boxplot(ns_$prop_ip*100~ns_$sex*ns_$order,horizontal=TRUE,
 										#ylab = NULL,
 										xaxt='n', yaxt='n',
 										ylim=c(0,160),
@@ -567,24 +530,7 @@
   }
 
   {# Change in nest attendance
-		{# run first
-			load(paste(wd,'for_analyses.RData',sep="")) 
-			 n =read.csv(paste(wd,'nests.csv', sep=""), stringsAsFactors=FALSE)
-			 n=n[!n$circumstances=='temporal',]
-			 d$lat=n$lat[match(d$act_ID,n$act_ID)]
-			 h$lat=n$lat[match(h$act_ID,n$act_ID)]
-			 d$lon=n$lon[match(d$act_ID,n$act_ID)]
-			 h$lon=n$lon[match(h$act_ID,n$act_ID)]
-			 
-			# limit to periods with at least 75% of uniparental or biparental incubation
-				d=d[which((d$sp=='pesa' & 0.75<(d$n/1440))| (d$sp!='pesa' & 0.75<(d$n/17280))),]
-				d=ddply(d,.(act_ID,type), transform, start_j=day_j-min(day_j)+1)
-				h=h[which((h$sp=='pesa' & 0.75<(h$n/60))| (h$sp!='pesa' & 0.75<(h$n/720))),]
-				h=ddply(h,.(act_ID,type), transform, start_j=day_j-min(day_j)+1)
-				h$hour=as.numeric(h$hour)
-				
-			{# species
-				sp_ =read.csv(paste(wd,'species.csv', sep=""), stringsAsFactors=FALSE)
+		{# run first DELETE
 				sp_$order=-sp_$order
 				sp_=sp_[order(sp_$order),]
 		
@@ -592,9 +538,7 @@
 				d$order=as.factor(sp_$order[match(d$sp,sp_$sp)])
 				
 				h$species=sp_$species[match(h$sp,sp_$sp)]
-				h$order=as.factor(sp_$order[match(h$sp,sp_$sp)])
-
-				}	
+				h$order=as.factor(sp_$order[match(h$sp,sp_$sp)])	
 		}
 		
 		{# Figure 2a
@@ -886,7 +830,7 @@
 				dev.off()
 			}	
 			
-			{# Supplementary Data Table 1
+			{# Supplementary Table 1
 				m=lmer(att~scale(prop_ip)*types+(prop_ip|actID_type)+(prop_ip|sp_type),d, REML=FALSE)	
 			 
 				pred=c('Intercept (bip_bip)','Incubation period', 'Type (bip_uni)','Type (uni)', 'Incubation period x bip_sp_uni', 'Incubation period x uni')
@@ -905,7 +849,7 @@
 				# Random effects var*100
 					l=data.frame(summary(m)$varcor)
 					l=l[is.na(l$var2),]
-						ri=data.frame(model='1', type='random (var)',effect=l$grp, estimate_r=round(l$vcov*100,2), lwr_r=NA, upr_r=NA)
+						ri=data.frame(model='1', type='random (var)',effect=l$grp, estimate_r=round(100*l$vcov/sum(l$vcov)), lwr_r=NA, upr_r=NA)
 					o1=rbind(oii,ri)
 				# create xlsx		
 						sname = tempfile(fileext='.xls')
@@ -1037,7 +981,7 @@
 							mtext(expression(bold("a")),side=3,line=-.7/2, cex=0.6,  col='grey30', outer=TRUE, adj=0.48*2)
 							#lines(c(0,0),c(0,16.5), lty=3, col="red")							
 						# data
-							points(dd$att~dd$prop_ip, col=adjustcolor(dd$cols, alpha.f = 0.3), pch=20, cex=0.2)	
+							points(dd$att~dd$prop_ip, col=adjustcolor(dd$cols, alpha.f = 0.3), pch=20, cex=0.3)	
 							#points(inc$inc_eff~inc$bout_start_j_c, col=inc$col_,bg=adjustcolor(inc$col_, alpha.f = 0.4), pch=21, cex=0.5)	
 						
 						
@@ -1078,7 +1022,7 @@
 				# Random effects var*100
 					l=data.frame(summary(m)$varcor)
 					l=l[is.na(l$var2),]
-						ri=data.frame(model='1', type='random (var)',effect=l$grp, estimate_r=round(l$vcov*100,2), lwr_r=NA, upr_r=NA)
+						ri=data.frame(model='1', type='random (var)',effect=l$grp, estimate_r=round(100*l$vcov/sum(l$vcov)), lwr_r=NA, upr_r=NA)
 					o1=rbind(oii,ri)
 				# create xlsx		
 						sname = tempfile(fileext='.xls')
@@ -1284,7 +1228,7 @@
 				# Random effects var*100
 					l=data.frame(summary(m)$varcor)
 					l=l[is.na(l$var2),]
-						ri=data.frame(model='1', type='random (var)',effect=l$grp, estimate_r=round(l$vcov*100,2), lwr_r=NA, upr_r=NA)
+						ri=data.frame(model='1', type='random (var)',effect=l$grp, estimate_r=round(100*l$vcov/sum(l$vcov)), lwr_r=NA, upr_r=NA)
 					o1=rbind(oii,ri)
 				# create xlsx		
 						sname = tempfile(fileext='.xls')
@@ -1356,7 +1300,7 @@
 			{# run first - prepare data	
 				# limited to species with uniparental data for both sexes	
 				hh=h[h$sys=='biparental' & h$type=='uni' & h$sp%in%c('amgp','basa','sesa','wesa'),]
-					nrow(hh) # N
+					nrow(hh) # N 5784
 					length(unique(hh$act_ID)) # N nests
 					length(unique(hh$sp)) # N species
 				{# add sex
@@ -1375,8 +1319,8 @@
 				# min value for y-axis
 					k=-0.05	
 			}	
-			{# run first - prepare predictions
-							m=lmer(att~sin_*sex+cos_*sex+(sin_+cos_|act_ID)+(sin_+cos_|sp),data=hh, REML=FALSE)
+			{# run first - prepare predictions 
+							m=lmer(att~sin_*sex+cos_*sex+(sin_+cos_|act_ID)+(sin_+cos_|sp),data=hh, REML=FALSE) # no worries about convergence as the same model below runs well and gives same results
 							#m=lmer(att~sin(rad)+cos(rad) + sex +sin(rad)*sex+cos(rad)*sex+(sin(rad)+cos(rad)|act_ID)+(sin(rad)+cos(rad)|sp),data=hh, REML=FALSE)	
 							#summary(m)
 							#plot(allEffects(m))
@@ -1419,7 +1363,7 @@
 			{# Supplementary Figure 2b-c
 					#dev.new(width=3.5*0.5,height=1.85)
 					{# (b) raw data
-						png(paste(out_,"Supplementary_Figure_2b.png", sep=""), width=3.5*0.5,height=1.85,units="in",res=600)
+						png(paste(out_,"Supplementary_Figure_2b_loes.png", sep=""), width=3.5*0.5,height=1.85,units="in",res=600)
 						
 						par(mar=c(0.0,0.2,0,0.2),oma = c(2.1, 2.1, 0.2, 0.2),ps=12, mgp=c(1.2,0.35,0), las=1, cex=1, col.axis="grey30",font.main = 1, col.lab="grey30", col.main="grey30", fg="grey70", cex.lab=0.6,cex.main=0.7, cex.axis=0.5, tcl=-0.1,bty="n",xpd=TRUE) #
 						
@@ -1447,10 +1391,21 @@
 														#points(h$att~h$hour, col=adjustcolor(h$cols, alpha.f = 0.3), pch=20, cex=0.2)	
 							#points(inc$inc_eff~inc$bout_start_j_c, col=inc$col_,bg=adjustcolor(inc$col_, alpha.f = 0.4), pch=21, cex=0.5)	
 							
+								s= data.frame(sp=rep(c("amgp", "basa" ,"sesa", "wesa"),2), sex=c(rep('f',4), rep('m',4)), col_=rep(c("purple", "pink" ,"deepskyblue", "deepblue"),2), lwd_=c(rep(0.5,4), rep(1.5,4)))
+								
+								for( i in 1:nrow(s)){	
+													ha=hh[hh$sp==s$sp[i] & hh$sex==s$sex[i],]
+													xx=loess(att~hour,ha)
+													j=order(ha$hour)
+													lines(ha$hour[j], xx$fitted[j], col=s$col_[i], lwd=s$lwd_[i])
+												}	
+							
 								text(x=-2+k, y=0.105, pos=4, expression(italic('N')*' cases:'),cex=0.5,las=1,col='grey30') 
 								symbols(c(10,15,20),c(0.105,0.105,0.105)+k,circles=sqrt(c(10,100,150)/pi),inches=0.14/1.75,bg=col_pb, fg=col_p,add=TRUE, xpd=TRUE) #bg=alpha(col_p,0.1)
 								#symbols(c(23,23,23),c(0.77,0.65,0.5),circles=sqrt(c(10,100,300)/pi),inches=0.14/1.75,bg=col_pb, fg=col_p,add=TRUE, xpd=TRUE) #bg=alpha(col_p,0.1)
 								text(c(10,15,20),c(0.007,0.007,0.007)+k,labels=c(10,100,150), xpd=TRUE, cex=0.5,col='grey30') 
+								
+								
 						dev.off()															
 						
 						}
@@ -1499,7 +1454,7 @@
 				# Random effects var*100
 					l=data.frame(summary(m)$varcor)
 					l=l[is.na(l$var2),]
-						ri=data.frame(model='1', type='random (var)',effect=l$grp, estimate_r=round(l$vcov*100,2), lwr_r=NA, upr_r=NA)
+						ri=data.frame(model='1', type='random (var)',effect=l$grp, estimate_r=round(100*l$vcov/sum(l$vcov)), lwr_r=NA, upr_r=NA)
 					o1=rbind(oii,ri)
 				# create xlsx		
 						sname = tempfile(fileext='.xls')
@@ -1895,41 +1850,15 @@
 	  
   {# Nest success	
 		{# run first
-		    n =read.csv(paste(wd,'nests.csv', sep=""), stringsAsFactors=FALSE)
-				n$end=as.POSIXct(n$end)
-				n$start=as.POSIXct(n$start)
-				n=n[!n$sp%in%c('pesa','rnph'),]
-					p=read.csv(paste(wd,'populations.csv', sep=""))
-				n$bout=p$bout[match(paste(n$site,n$sp), paste(p$site_abbreviation, p$sp))]
-				
-				n$start=n$start+n$bout*60*60
-				n$end=as.POSIXct(ifelse(n$state=='s', as.character(n$end-6*60*60), ifelse(n$state%in%c('l','h'), as.character(n$end-24*60*60), as.character(n$end))))
-					s=read.csv(paste(wd,'inc_start.csv', sep=""), stringsAsFactors=FALSE)
-					s$inc_start=as.POSIXct(s$inc_start,tz='UTC')
-				n$inc_start=s$inc_start[match(paste(n$year,n$nest),paste(s$year,s$nest))]
-				n$day_s = as.Date(trunc(n$start, "day"))
-				n$day_j=as.numeric(format(n$day_s ,"%j")) - as.numeric(format(as.Date(trunc(n$inc_start, "day")),"%j"))+1
-						ip=read.csv(paste(wd,'inc_period.csv', sep=""), stringsAsFactors=FALSE)
-				n$inc_per_sp=ip$inc_period[match(n$sp,ip$sp)]
-				n$prop_ip=n$day_j/n$inc_per_sp
-				n$uni_last=as.numeric(difftime(n$end, n$start, units='days'))
-				n$prop_day_end=(n$day_j+n$uni_last)/n$inc_per_sp
-				n_=n[n$uni_last>=2*n$bout/24,]
 				g=n_[!n_$state%in%c('r','u','w'),]
 				g$success=ifelse(g$state%in%c('s','l','h'),'yes','no')
 				g$success_bin=ifelse(g$state%in%c('s','l','h'),1,0)
 				g$prop_ip=g$prop_ip*100
-				{# species
-				sp =read.csv(paste(wd,'species.csv', sep=""), stringsAsFactors=FALSE)
-				}
 				{# add median daily nest attendance - CHECK WHETHER HERE AND IN OTHER DATASETS WE USE THE RIGHT BIRDS
-						load(paste(wd,'for_analyses.RData',sep="")) 
-							# limit to periods with at least 75% of uniparental or biparental incubation
-								d=d[which((d$sp=='pesa' & 0.75<(d$n/1440))| (d$sp!='pesa' & 0.75<(d$n/17280))),]
-								d=d[which(d$type=='uni'),]
-								d_=ddply(d,.(act_ID), summarise, att_med=median(att, na.rm=TRUE))							
+								dd=d[which(d$type=='uni'),]
+								d_=ddply(dd,.(act_ID), summarise, att_med=median(att, na.rm=TRUE))							
 								g$att_med=d_$att_med[match(g$act_ID,d_$act_ID)]
-								g=g[-which(is.na(g$att_med)),]# biparental_24  48 - dislocated temperature probe; 61 - one egg nest
+								g2=g[-which(is.na(g$att_med)),]# biparental_24  48 - dislocated temperature probe; 61 - one egg nest
 				
 				}
 		
@@ -1937,12 +1866,16 @@
 		
 		{# number of nests with given state and distribution of success/failure across day and durantion of uniparental
 			nrow(g) # number of nests
-			summary(factor(g$state)) # distribution of end states
-			summary(g)
-			summary(g[g$sp=='sesa',])
+			mean(g$success_bin) # proportion of successful nests
+			nrow(g[g$success_bin==1,]) # number of successful nests
+			length(unique(g$sp[g$success_bin==1]))
+			
+			summary(factor(g$state)) # distribution of end states	
 			
 			table(g$sp,g$success)  # distribution of successful nests
-			
+			g$n=1
+			ddply(g,.(sp), summarise,nn=round(100*(sum(success_bin)/sum(n)))) # % of successful from nests with known outcome
+
 			unique(n_$state)
 				
 				# distribution of incubation start
@@ -2329,7 +2262,7 @@
 					oii=oi[c('model','type',"effect", "estimate_r","lwr_r",'upr_r')]	
 				# Random effects
 					l=data.frame(summary(m)$varcor)
-						ri=data.frame(model='1', type='random (var)',effect=l$grp, estimate_r=round(l$vcov,2), lwr_r=NA, upr_r=NA)
+						ri=data.frame(model='1', type='random (var)',effect=l$grp, estimate_r=round(100*l$vcov/sum(l$vcov)), lwr_r=NA, upr_r=NA)
 					o1=rbind(oii,ri)
 				# create xlsx		
 						sname = tempfile(fileext='.xls')
