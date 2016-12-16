@@ -2214,12 +2214,12 @@
 									# prepare points for plotting
 										g3$prop_cut=as.character(cut(g3$prop_ip, 10))
 										g3$n=1
-										gg=ddply(g,.(prop_cut), summarise,mean_=mean(success_bin),se_=sd(success_bin)/sqrt(length(success_bin)), prop_cut_m=median(prop_ip), n=sum(n))
+										gg=ddply(g3,.(prop_cut), summarise,mean_=mean(success_bin),se_=sd(success_bin)/sqrt(length(success_bin)), prop_cut_m=median(prop_ip), n=sum(n))
 											# add fake point to match sizes in (a) and (b)
 													gg_=gg[1,]
 													gg_$mean_=-1
 													gg_$se_=0
-													gg_$n=24
+													gg_$n=21
 													gg=rbind(gg,gg_)
 								
 								#arrows(x0=gg3$prop_cut_m, y0=gg3$mean_-gg3$se_,x1=gg3$prop_cut_m,y1=gg3$mean_+gg3$se_,code = 0, col =col_p , angle = 90, length = .025, lwd=1, lty=1)
@@ -2243,7 +2243,7 @@
 									# prepare points for plotting
 										g3$prop_cut=as.character(cut(g3$uni_last, 10))
 										g3$n=1
-										gg=ddply(g,.(prop_cut), summarise,mean_=mean(success_bin),se_=sd(success_bin)/sqrt(length(success_bin)), prop_cut_m=median(uni_last), n=sum(n))
+										gg=ddply(g3,.(prop_cut), summarise,mean_=mean(success_bin),se_=sd(success_bin)/sqrt(length(success_bin)), prop_cut_m=median(uni_last), n=sum(n))
 								
 								#arrows(x0=gg3$prop_cut_m, y0=gg3$mean_-gg3$se_,x1=gg3$prop_cut_m,y1=gg3$mean_+gg3$se_,code = 0, col =col_p , angle = 90, length = .025, lwd=1, lty=1)
 								symbols(gg$prop_cut_m,gg$mean_, circles=sqrt(gg$n/pi),inches=0.14/1.75,bg='white', add=TRUE) 
@@ -2266,8 +2266,12 @@
 									# prepare points for plotting
 										g3$prop_cut=as.character(cut(g3$att_med, 10))
 										g3$n=1
-										gg=ddply(g,.(prop_cut), summarise,mean_=mean(success_bin),se_=sd(success_bin)/sqrt(length(success_bin)), prop_cut_m=median(att_med), n=sum(n))
-								
+										gg=ddply(g3,.(prop_cut), summarise,mean_=mean(success_bin),se_=sd(success_bin)/sqrt(length(success_bin)), prop_cut_m=median(att_med), n=sum(n))
+													gg_=gg[1,]
+													gg_$mean_=-1
+													gg_$se_=0
+													gg_$n=21
+													gg=rbind(gg,gg_)
 								#arrows(x0=gg3$prop_cut_m, y0=gg3$mean_-gg3$se_,x1=gg3$prop_cut_m,y1=gg3$mean_+gg3$se_,code = 0, col =col_p , angle = 90, length = .025, lwd=1, lty=1)
 								symbols(gg$prop_cut_m,gg$mean_, circles=sqrt(gg$n/pi),inches=0.14/1.75,bg='white', add=TRUE) 
 								symbols(gg$prop_cut_m,gg$mean_, circles=sqrt(gg$n/pi),inches=0.14/1.75,bg=col_pb, fg=col_p,add=TRUE) #bg=alpha(col_p,0.1)
@@ -2283,9 +2287,9 @@
 				}
 			}
 			{# Supplementary Table 5
-				m=glmer(success_bin~poly(prop_ip,2)+uni_last+(1|sp),data=g,family='binomial')
+				m=glmer(success_bin~scale(prop_ip)+scale(uni_last)+scale(att_med)+(1|sp),data=g3,family='binomial')
 			 
-				pred=c('Intercept','Incubation period 1', 'Incubation period 2', 'Duration')
+				pred=c('Intercept','Incubation period', 'Duration', 'Attendance')
 						nsim <- 5000
 						bsim <- sim(m, n.sim=nsim)  
 				# Fixed effects
@@ -2300,7 +2304,7 @@
 					oii=oi[c('model','type',"effect", "estimate_r","lwr_r",'upr_r')]	
 				# Random effects
 					l=data.frame(summary(m)$varcor)
-						ri=data.frame(model='1', type='random (var)',effect=l$grp, estimate_r=round(100*l$vcov/sum(l$vcov)), lwr_r=NA, upr_r=NA)
+						ri=data.frame(model='1', type='random (var)',effect=l$grp, estimate_r=l$vcov, lwr_r=NA, upr_r=NA)
 					o1=rbind(oii,ri)
 				# create xlsx		
 						sname = tempfile(fileext='.xls')
