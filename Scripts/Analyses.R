@@ -1362,11 +1362,22 @@
 				}			
 			
 			{# Supplementary Figure 2b-c
+			
+			gg_color_hue <- function(n) {
+				  hues = seq(15, 375, length = n + 1)
+				  hcl(h = hues, l = 65, c = 100)[1:n]
+					}
+			n = 10
+			cols = gg_color_hue(n)[c(1,5,7,9)]
+			
+			dev.new(width = 4, height = 4)
+			plot(1:length(cols), pch = 16, cex = 2, col = cols)		
+			
 					#dev.new(width=3.5*0.5,height=1.85)
 					{# (b) raw data
-						png(paste(out_,"Supplementary_Figure_2b_loes.png", sep=""), width=3.5*0.5,height=1.85,units="in",res=600)
+						png(paste(out_,"Supplementary_Figure_2b_loess.png", sep=""), width=3.5*0.5,height=1.85,units="in",res=600)
 						
-						par(mar=c(0.0,0.2,0,0.2),oma = c(2.1, 2.1, 0.2, 0.2),ps=12, mgp=c(1.2,0.35,0), las=1, cex=1, col.axis="grey30",font.main = 1, col.lab="grey30", col.main="grey30", fg="grey70", cex.lab=0.6,cex.main=0.7, cex.axis=0.5, tcl=-0.1,bty="n",xpd=TRUE) #
+						par(mar=c(0.0,0.4,0,0),oma = c(2.1, 2.3, 0.2, 0),ps=12, mgp=c(1.2,0.35,0), las=1, cex=1, col.axis="grey30",font.main = 1, col.lab="grey30", col.main="grey30", fg="grey70", cex.lab=0.6,cex.main=0.7, cex.axis=0.5, tcl=-0.1,bty="n",xpd=TRUE) #
 						
 						plot(NA,pch=19,xlim=c(0,24), ylim=c(k,1), xlab=NA, ylab=NA, yaxt='n',xaxt='n', type='n')
 											
@@ -1392,7 +1403,9 @@
 														#points(h$att~h$hour, col=adjustcolor(h$cols, alpha.f = 0.3), pch=20, cex=0.2)	
 							#points(inc$inc_eff~inc$bout_start_j_c, col=inc$col_,bg=adjustcolor(inc$col_, alpha.f = 0.4), pch=21, cex=0.5)	
 							
-								s= data.frame(sp=rep(c("amgp", "basa" ,"sesa", "wesa"),2), sex=c(rep('f',4), rep('m',4)), col_=rep(c("purple", "pink" ,"deepskyblue", "deepblue"),2), lwd_=c(rep(0.5,4), rep(1.5,4)))
+								s= data.frame(sp=rep(c("amgp", "basa" ,"sesa", "wesa"),2), sex=c(rep('f',4), rep('m',4)), 
+											  col_=rep(cols,2), #rep(c("purple", "pink" ,"deepskyblue", "deepblue"),2), 
+											  lwd_=c(rep(1,4), rep(2,4)), stringsAsFactors=FALSE)
 								
 								for( i in 1:nrow(s)){	
 													ha=hh[hh$sp==s$sp[i] & hh$sex==s$sex[i],]
@@ -1401,11 +1414,25 @@
 													lines(ha$hour[j], xx$fitted[j], col=s$col_[i], lwd=s$lwd_[i])
 												}	
 							
-								text(x=-2+k, y=0.105, pos=4, expression(italic('N')*' cases:'),cex=0.5,las=1,col='grey30') 
+								text(x=-2+k, y=0.05, pos=4, expression(italic('N')*' cases:'),cex=0.5,las=1,col='grey30') 
+								
 								symbols(c(10,15,20),c(0.105,0.105,0.105)+k,circles=sqrt(c(10,100,150)/pi),inches=0.14/1.75,bg=col_pb, fg=col_p,add=TRUE, xpd=TRUE) #bg=alpha(col_p,0.1)
 								#symbols(c(23,23,23),c(0.77,0.65,0.5),circles=sqrt(c(10,100,300)/pi),inches=0.14/1.75,bg=col_pb, fg=col_p,add=TRUE, xpd=TRUE) #bg=alpha(col_p,0.1)
 								text(c(10,15,20),c(0.007,0.007,0.007)+k,labels=c(10,100,150), xpd=TRUE, cex=0.5,col='grey30') 
 								
+								mtext(side=2, 'American\ngolden\nplover',cex=0.4,las=1,col=cols[1], line=0.3,at=0.9) 
+								mtext(side=2, "Baird's\nsandpiper",cex=0.4,las=1,col=cols[2], line=0.3,at=0.7) 
+								mtext(side=2, "Western\nsandpiper",cex=0.4,las=1,col=cols[3], line=0.3,at=0.54) 
+								mtext(side=2, "Semipalmated\nsandpiper",cex=0.4,las=1,col=cols[4], line=0.3,at=0.36) 
+								
+								lines(x=c(-10,-6)+3.5, y=c(0.15,0.15)+k, xpd=NA,lwd=2,col=col_p)
+								lines(x=c(-10,-6)+3.5, y=c(0.07,0.07)+k, xpd=NA,lwd=1,col=col_p)
+								symbols(x=c(-8,-8)+3.5,c(0.15,0.07)+k,circles=c(0.1,0.1),bg="white", fg=col_p,add=TRUE, xpd=NA, inches=0.03) 
+								symbols(x=c(-8,-8)+3.5,c(0.15,0.07)+k,circles=c(0.1,0.1),bg=c("#535F7C33", "#FCB42C33"), fg=col_p,add=TRUE, xpd=NA, inches=0.03) 
+								text(x=c(-7.9,-8), y=c(0.17,0.07)+k, labels=c('\u2642','\u2640'),xpd=NA,cex=0.6,col=c('#535F7C','#FCB42C'))
+								
+								
+								#text(c(-2,-2,-2,-2),c(1,0.6,0.4,0.2),labels=c('American\ngolden\nplover',"Baird's\nsandpiper", "Western\nsandpiper","Semipalmated\nsandpiper"),xpd=TRUE, cex=0.4,col=cols, pos=3, outer=TRUE) 
 								
 						dev.off()															
 						
