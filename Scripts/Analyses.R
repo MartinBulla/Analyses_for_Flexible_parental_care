@@ -261,6 +261,9 @@
 			
 			densityplot(~ns_$prop_ip*100)
 			
+			# % of nests that started before estimated hatching
+			nrow(ns_[which(ns_$prop_ip<1),])/nrow(ns_)
+			
 			# limited to those before the eggs were supposed to hatch
 			summary(ns_$prop_ip[ns_$prop_ip<1])
 			densityplot(~ns_$prop_ip[ns_$prop_ip<1]*100)
@@ -310,6 +313,232 @@
 																			   # 1 nest with thee system taken off for over 10 days and then placed back again
 		}
 	
+	{# Figure 1a - lines
+		ns_=n_[-which(n_$nest=='s807'),] # exclude because we do not know when the uniparental incubation started
+		sp_=sp[!sp$sp%in%c('pesa','rnph'),]
+		sp_$order=-sp_$order
+		sp_=sp_[order(sp_$order),]
+		
+		ns_$species=sp_$species[match(ns_$sp,sp_$sp)]
+		ns_$order=sp_$order[match(ns_$sp,sp_$sp)]
+		ns_$sex=factor(ns_$sex, levels=c('m','f'))
+		counts=table(ns_$sex,ns_$order)
+		
+		# par(mfrow=c(1,3),mar=c(0.0,0,0,0.4),oma = c(1.8, 1.8, 0.2, 0.5),ps=12, mgp=c(1.2,0.35,0), las=1, cex=1, col.axis="grey30",font.main = 1, col.lab="grey30", col.main="grey30", fg="grey70") # 0.6 makes font 7pt, 0.7 8pt
+		 #dev.new(width=3.5*0.75,height=1.85)
+		 png(paste(out_,"Figure_1a_lines.png", sep=""), width=3.5*0.75,height=1.85,units="in",res=600)
+		 par(mar=c(0.0,0,0,0.4),oma = c(2.1, 5, 0.2, 0.5),ps=12, mgp=c(1.2,0.35,0), las=1, cex=1, col.axis="grey30",font.main = 1, col.lab="grey30", col.main="grey30", fg="grey70",
+		 cex.lab=0.6,cex.main=0.7, cex.axis=0.5, tcl=-0.1,bty="n",xpd=TRUE) # 0.6 makes font 7pt, 0.7 8pt
+				#par(ps=12,	cex.lab=0.6,cex.main=0.7, cex.axis=0.5, tcl=-0.15,bty="n",xpd=TRUE)
+				
+		 barplot(counts, beside=TRUE, horiz=TRUE,
+						names.arg=sp_$species,
+						xlab="Cases of uniparental incubation [count]", 
+						col=c(male_col,female_col), 
+						#legend = rownames(counts),args.legend = list(bty='n', legend=c('\u2642','\u2640')),
+						xaxt='n'
+						)
+											
+					axis(1, at=seq(0,30,by=5),labels=c(0,'',10,'',20,"",30),cex.axis=0.5,mgp=c(0,-0.2,0))
+						mtext('Cases of uniparental incubation\n[count]',side=1,line=1, cex=0.6, las=1, col='grey30')
+						
+					text(y=22.5,x=28, labels='\u2640', col='#FCB42C', cex=0.6)
+					text(y=23,x=30, labels='\u2642', col='#535F7C', cex=0.6)
+					
+						#axis(2, at=seq(0,1,by=0.25), labels=c('0.0','','0.5','','1.0'))
+					mtext(expression(bold("a")),side=3,line=-.35, cex=0.6,  col='grey30', outer=TRUE, adj=0.95)
+					
+					lines(x=c(0,30), y=c(3.5,3.5), col="grey90")
+					lines(x=c(0,30), y=c(3.5,3.5)+3, col="grey90")
+					lines(x=c(0,30), y=c(3.5,3.5)+3*2, col="grey90")
+					lines(x=c(0,30), y=c(3.5,3.5)+3*3, col="grey90")
+					lines(x=c(0,30), y=c(3.5,3.5)+3*4, col="grey90")
+					lines(x=c(0,30), y=c(3.5,3.5)+3*5, col="grey90")
+					lines(x=c(0,30), y=c(3.5,3.5)+3*6, col="grey90")
+		 dev.off()				
+		}
+	{# Figure 1bc - lines
+		 {# run first	
+			ns_=n_[-which(n_$nest=='s807'),] # exclude because we do not know when the uniparental incubation started
+			ns_$uni_last=as.numeric(difftime(ns_$end, ns_$start, units='days'))
+			# create dummy values for species missing nests for one sex
+				n1=ns_[ns_$sp=='blgo',][1,]
+				n1$sex='f'
+				n1$prop_ip=-50
+				n1$uni_last=-2
+				n2=ns_[ns_$sp=='dunl',][1,]
+				n2$sex='f'
+				n2$prop_ip=-50
+				n2$uni_last=-2
+				n3=ns_[ns_$sp=='lbdo',][1,]
+				n3$sex='f'
+				n3$prop_ip=-50
+				n3$uni_last=-2
+				n4=ns_[ns_$sp=='reds',][1,]
+				n4$sex='f'
+				n4$prop_ip=-50
+				n4$uni_last=-2
+				ns_=rbind(ns_,n1,n2,n3,n4)
+				
+		sp_=sp[!is.na(sp$order),]
+		sp_$order=-sp_$order
+		sp_=sp_[order(sp_$order),]
+		
+		ns_$species=sp_$species[match(ns_$sp,sp_$sp)]
+		ns_$order=sp_$order[match(ns_$sp,sp_$sp)]
+		ns_$sex=factor(ns_$sex, levels=c('m','f'))
+			ns_$order=ifelse(ns_$sex=='m', 2*ns_$order-0.4, 2*ns_$order+0.4)
+			unique(ns_$order)[order(unique(ns_$order))]
+			ns_$prop_ip_=ns_$prop_ip*100
+		ns_$col_=ifelse(ns_$sex=='f',female_col,male_col)
+		table(ns_$sex,ns_$sp)
+		
+		ns_$order=jitter(ns_$order)
+		
+		
+					
+		
+			}
+		 {# Figure 1b points	
+		   #dev.new(width=3.5*0.75,height=1.85)
+		    png(paste(out_,"Figure_1b+est_lines.png", sep=""), width=3.5*0.75,height=1.85,units="in",res=600)
+			par(mar=c(0.0,0,0,0.4),oma = c(2.1, 0.5, 0.2, 5),ps=12, mgp=c(1.2,0.35,0), las=1, cex=1, col.axis="grey30",font.main = 1, col.lab="grey30", col.main="grey30", fg="grey70", cex.lab=0.6,cex.main=0.7, cex.axis=0.5, tcl=-0.1,bty="n",xpd=TRUE)
+			#ggplot(ns_,aes(x=species, y=prop_ip*100, fill=sex))+geom_boxplot() +coord_flip()+coord_cartesian(ylim = c(0, 160))
+			#ggplot(ns_,aes(x=species, y=prop_ip*100, col=sex))+geom_point(position = positions_jitter(w = 0.3, h = 0.3)) +coord_flip()+coord_cartesian(ylim = c(0, 160))
+			plot(ns_$order~ns_$prop_ip_,xlim=c(0,160), ylim=c(-16.5,-1.4), 
+						xaxt='n',yaxt='n',type='n',
+						#xlab="Cases of uniparental incubation [count]", 
+						pch = 21,cex=0.5, col="gray63",bg=adjustcolor(ns_$col_, alpha.f = 0.6)
+							)
+									
+					axis(1, at=seq(0,160,by=20),labels=c(0,"",40,"",80,"",120,"",160),cex.axis=0.5,mgp=c(0,-0.2,0))
+						mtext("Start of uniparental incubation\n[% of species' incubation period]",side=1,line=1, cex=0.6, las=1, col='grey30')
+					
+					#axis(2, at=seq(-16,-2,2), labels=FALSE)
+					abline(h=seq(-16,-4,2)+1, par(xpd=FALSE), col="grey90")
+					points(jitter(ns_$order)~ns_$prop_ip_,pch = 21,cex=0.5, col="gray63",bg=adjustcolor(ns_$col_, alpha.f = 0.6))
+					#mtext('Nest attendance',side=2,line=1, cex=0.6, las=3, col='grey30')
+					#text(y=23,x=28, labels='\u2640', col='#FCB42C', cex=0.6)
+					#text(y=23.5,x=30, labels='\u2642', col='#535F7C', cex=0.6)
+					mtext(expression(bold("b")),side=3,line=-.35, cex=0.6,  col='grey30', outer=TRUE, adj=0.95)
+					# add species specific estimates for sex differences
+								ns__=ns_
+								ns__$sex=factor(ns__$sex, levels=c('f','m'))
+								xx=data.frame(li=c(-2, -10,-14,-16), sp=c('amgp','basa','wesa','sesa'), stringsAsFactors=FALSE)
+								for(i in 1:nrow(xx)){
+									xi=xx[i,]
+									m=lm(prop_ip~sex,ns__[ns__$sp==xi$sp,])
+										nsim <- 5000
+										bsim <- sim(m, n.sim=nsim)  
+										pp=data.frame(round(100*apply(bsim@coef, 2, quantile, prob=c(0.5, 0.025,0.975))/apply(bsim@coef, 2, quantile, prob=c(0.5, 0.025,0.975))[1,1]))# output is in %
+										if(i==1){
+										text(y=xi$li+0.3,x=167, labels=paste(pp$sexm[1]," (",pp$sexm[2],"-",pp$sexm[3],")", sep=""), col='grey30', cex=0.4, pos=2, offset=0)}else{
+										text(y=xi$li+0.3,x=167, labels=paste(pp$sexm[1]," (",pp$sexm[2],"-",pp$sexm[3],")", sep=""), col='grey30', cex=0.4, pos=2, offset=0)}
+									}
+								
+					dev.off()				
+		}
+		 {# Figure 1c points	
+		   #dev.new(width=3.5*0.75,height=1.85)
+		    png(paste(out_,"Figure_1c+est_lines.png", sep=""), width=3.5*0.75,height=1.85,units="in",res=600)
+			par(mar=c(0.0,0,0,0.4),oma = c(2.1, 0.5, 0.2, 5),ps=12, mgp=c(1.2,0.35,0), las=1, cex=1, col.axis="grey30",font.main = 1, col.lab="grey30", col.main="grey30", fg="grey70", cex.lab=0.6,cex.main=0.7, cex.axis=0.5, tcl=-0.1,bty="n",xpd=TRUE)
+			#ggplot(ns_,aes(x=species, y=prop_ip*100, fill=sex))+geom_boxplot() +coord_flip()+coord_cartesian(ylim = c(0, 160))
+			#ggplot(ns_,aes(x=species, y=prop_ip*100, col=sex))+geom_point(position = positions_jitter(w = 0.3, h = 0.3)) +coord_flip()+coord_cartesian(ylim = c(0, 160))
+			plot(ns_$order~ns_$uni_last,xlim=c(0,20), ylim=c(-16.5,-1.4), 
+						xaxt='n',yaxt='n',type='n',
+						#xlab="Cases of uniparental incubation [count]", 
+						pch = 21,cex=0.5, col="gray63",bg=adjustcolor(ns_$col_, alpha.f = 0.6)
+							)
+									
+						axis(1, at=seq(0,20,by=5),labels=seq(0,20,by=5),cex.axis=0.5,mgp=c(0,-0.2,0))
+						mtext("Duration of uniparental incubation\n[days]",side=1,line=1, cex=0.6, las=1, col='grey30')
+					
+					#axis(2, at=seq(-16,-2,2), labels=FALSE)
+					abline(h=seq(-16,-4,2)+1, par(xpd=FALSE), col="grey90")
+					points(jitter(ns_$order)~ns_$uni_last,pch = 21,cex=0.5, col="gray63",bg=adjustcolor(ns_$col_, alpha.f = 0.6))
+						#mtext('Nest attendance',side=2,line=1, cex=0.6, las=3, col='grey30')
+					#text(y=23,x=28, labels='\u2640', col='#FCB42C', cex=0.6)
+					#text(y=23.5,x=30, labels='\u2642', col='#535F7C', cex=0.6)
+					mtext(expression(bold("c")),side=3,line=-.35, cex=0.6,  col='grey30', outer=TRUE, adj=0.95)	
+								ns__=ns_
+								ns__$sex=factor(ns__$sex, levels=c('f','m'))
+								xx=data.frame(li=c(-2, -10,-14,-16), sp=c('amgp','basa','wesa','sesa'), stringsAsFactors=FALSE)
+								for(i in 1:nrow(xx)){
+									xi=xx[i,]
+									m=lm(uni_last~sex,ns__[ns__$sp==xi$sp,])
+										nsim <- 5000
+										bsim <- sim(m, n.sim=nsim)  
+										pp=data.frame(round(apply(bsim@coef, 2, quantile, prob=c(0.5, 0.025,0.975)),1))# output is in %
+										text(y=xi$li+0.3,x=20.9, labels=paste(pp$sexm[1]," (",pp$sexm[2],"-",pp$sexm[3],")", sep=""), col='grey30', cex=0.4, pos=2, offset=0)
+									}
+					arrows(y0=ns_$order[round(ns_$uni_last,2)==round(18.669045,2)], x0= 18.669045+1.5,x1=18.669045+0.5, length = 0.02, angle = 15, col="#5eab2b", lwd=1.5)
+					arrows(y0=ns_$order[round(ns_$uni_last,2)==round(15.373264,2)],x0=15.373264+1.5,  x1=15.373264+0.5, length = 0.02, angle = 15, col="#5eab2b", lwd=1.5)
+      
+		 dev.off()				
+		}
+			{# not used Figure 1b points and boxplot
+				
+		ns_$species=sp_$species[match(ns_$sp,sp_$sp)]
+		ns_$order=sp_$order[match(ns_$sp,sp_$sp)]
+		ns_$sex=factor(ns_$sex, levels=c('m','f'))
+		ns_$col_=ifelse(ns_$sex=='f',female_col,male_col)
+		table(ns_$sex,ns_$sp)
+					
+		 #dev.new(width=3.5*0.75,height=1.85)
+		 png(paste(out_,"Figure_1b_boxplot.png", sep=""), width=3.5*0.75,height=1.85,units="in",res=600)
+		 par(mar=c(0.0,0,0,0.4),oma = c(2.1, 0.5, 0.2, 5),ps=12, mgp=c(1.2,0.35,0), las=1, cex=1, col.axis="grey30",font.main = 1, col.lab="grey30", col.main="grey30", fg="grey70", cex.lab=0.6,cex.main=0.7, cex.axis=0.5, tcl=-0.1,bty="n",xpd=TRUE)
+			at_=c(seq(1,15,by=2)+0.15, seq(2,16,2)-0.15)
+			at_=at_[order(at_)]
+			#ggplot(ns_,aes(x=species, y=prop_ip*100, fill=sex))+geom_boxplot() +coord_flip()+coord_cartesian(ylim = c(0, 160))
+			#ggplot(ns_,aes(x=species, y=prop_ip*100, col=sex))+geom_point(position = positions_jitter(w = 0.3, h = 0.3)) +coord_flip()+coord_cartesian(ylim = c(0, 160))
+			boxplot(ns_$prop_ip*100~ns_$sex*ns_$order, horizontal=TRUE,
+						ylim=c(0,160),
+						xaxt='n',yaxt='n',
+						#xlab="Cases of uniparental incubation [count]", 
+						at=at_,#seq(1,16,1),
+						outcex=0.5, outpch=20,boxwex=0.5,whisklty=1,staplelty=0,#medlwd=1, 
+						lwd = 0.25, 
+						#outcol="darkgrey",boxcol='darkgrey',whiskcol='darkgrey',staplecol='darkgrey',medcol='darkgrey',
+						#col=c(male_col,female_col)
+						outcol="white",boxcol='white',whiskcol='white',staplecol='white',medcol='white'
+								
+						#legend = rownames(counts),args.legend = list(bty='n', legend=c('\u2642','\u2640')),
+							)
+			stripchart(ns_$prop_ip*100~ns_$sex*ns_$order, vertical = FALSE, method = "jitter",jitter=0.05, add = TRUE, 
+										at=at_,
+										pch = 21,cex=0.5, 
+										col="gray63",
+										#bg=adjustcolor(c(male_col,female_col), alpha.f = 0.4)
+										#bg=c(male_col,female_col)
+										bg=adjustcolor("gray63", alpha.f = 0.4)
+										)
+										
+			boxplot(ns_$prop_ip*100~ns_$sex*ns_$order,horizontal=TRUE,
+										#ylab = NULL,
+										xaxt='n', yaxt='n',
+										ylim=c(0,160),
+										at=at_, 
+										outcex=0.5, outpch=20,boxwex=0.5,whisklty=1,staplelty=0,#
+										lwd = 0.5,
+										border=c(male_col,female_col),
+										col = adjustcolor("white", alpha.f = 0), # trick for PNGs, to show what is underneath the boxplot else can be taken out
+										#outcol="darkgrey",boxcol='darkgrey',whiskcol='darkgrey',staplecol='darkgrey',medcol='darkgrey', 
+										#par(bty='l'),
+										add=TRUE
+										)					
+					
+					
+											
+					axis(1, at=seq(0,160,by=20),labels=c(0,"",40,"",80,"",120,"",160),cex.axis=0.5,mgp=c(0,-0.2,0))
+						mtext("Start of uniparental incubation\n[% of species' incubation period]",side=1,line=1, cex=0.6, las=1, col='grey30')
+					
+					axis(2, at=seq(1.5,16,2), labels=FALSE)
+					mtext('b',side=3,line=-.35, cex=0.6,  col='grey30', outer=TRUE, adj=0.95)
+		 dev.off()				
+		}
+		
+	}
+	
 	{# Figure 1a
 		ns_=n_[-which(n_$nest=='s807'),] # exclude because we do not know when the uniparental incubation started
 		sp_=sp[!sp$sp%in%c('pesa','rnph'),]
@@ -344,6 +573,7 @@
 					
 						#axis(2, at=seq(0,1,by=0.25), labels=c('0.0','','0.5','','1.0'))
 					mtext(expression(bold("a")),side=3,line=-.35, cex=0.6,  col='grey30', outer=TRUE, adj=0.95)
+					
 		 dev.off()				
 		}
 	{# Figure 1bc
