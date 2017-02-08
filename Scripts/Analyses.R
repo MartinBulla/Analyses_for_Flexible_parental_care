@@ -1693,7 +1693,389 @@
 							dev.off()
 						}
 			}	
-			{# Supplementary Table 4
+			{# Supplementary Figure 2b-c - changed order
+			
+			gg_color_hue <- function(n) {
+				  hues = seq(15, 375, length = n + 1)
+				  hcl(h = hues, l = 65, c = 100)[1:n]
+					}
+			n = 10
+			cols = gg_color_hue(n)[c(1,5,7,9)]
+			
+			dev.new(width = 4, height = 4)
+			plot(1:length(cols), pch = 16, cex = 2, col = cols)		
+			
+					#dev.new(width=3.5*0.5,height=1.85)
+					{# (c) raw data
+						png(paste(out_,"Supplementary_Figure_2c_loess_left.png", sep=""), width=3.5*0.5,height=1.85,units="in",res=600)
+						
+						par(mar=c(0.0,0,0,0.4),oma = c(2.1, 0, 0.2, 2.3),ps=12, mgp=c(1.2,0.35,0), las=1, cex=1, col.axis="grey30",font.main = 1, col.lab="grey30", col.main="grey30", fg="grey70", cex.lab=0.6,cex.main=0.7, cex.axis=0.5, tcl=-0.1,bty="n",xpd=TRUE) #
+												
+						plot(NA,pch=19,xlim=c(0,24), ylim=c(k,1), xlab=NA, ylab=NA, yaxt='n',xaxt='n', type='n')
+											
+							axis(1, at=seq(0,24,by=6),labels=seq(0,24,by=6),cex.axis=0.5,mgp=c(0,-0.20,0))
+								mtext("Time of day [hours]",side=1,line=1/2, cex=0.6, las=1, col='grey30')
+							
+							#axis(2, at=seq(0,1,by=0.25), labels=TRUE)
+							#mtext("Nest attendance [proportion]",side=2,line=1.3, cex=0.6, las=3, col='grey30')
+							
+							mtext(expression(bold("c")),side=3,line=-.7/2, cex=0.6,  col='grey30', outer=TRUE, adj=0.48*2)
+							
+							lines(c(0,24),c(0.19,0.19)+k,, lty=3, col="grey80")							
+						# data
+							# aggregate per hour, species and type of incubation		
+								hh$nn=1
+								gg=ddply(hh,.(sp,cols, sex, hour), summarise,mean_=mean(att),se_=sd(att)/sqrt(length(att)),n=sum(nn))
+								gg=gg[order(gg$sex),]							
+							#arrows(x0=gg$hour, y0=gg$mean_-gg$se_,x1=gg$hour,y1=gg$mean_+gg$se_,code = 0, col =col_p , angle = 90, length = .025, lwd=1, lty=1)
+							#symbols(gg$hour,gg$mean_, circles=sqrt(gg$n/pi),inches=0.14/1.75,bg='white', add=TRUE) 
+							gf=gg[gg$sex=='f',]
+							symbols(gg$hour,gg$mean_, circles=sqrt(gg$n/pi),inches=0.14/1.75,bg=adjustcolor(gg$cols,alpha.f = 0.2),add=TRUE, fg=col_p) 
+							symbols(gf$hour,gf$mean_, circles=sqrt(gf$n/pi),inches=0.14/1.75,bg=adjustcolor(gf$cols,alpha.f = 0.2),add=TRUE, fg=col_p) #bg=alpha(col_p,0.1)
+							#symbols(gg$hour,gg$mean_, circles=sqrt(gg$n/pi),inches=0.14/1.75,fg=adjustcolor(gg$cols,alpha.f = 0.2),add=TRUE), fg=col_p) #bg=alpha(col_p,0.1)
+								
+														#points(h$att~h$hour, col=adjustcolor(h$cols, alpha.f = 0.3), pch=20, cex=0.2)	
+							#points(inc$inc_eff~inc$bout_start_j_c, col=inc$col_,bg=adjustcolor(inc$col_, alpha.f = 0.4), pch=21, cex=0.5)	
+							
+								s= data.frame(sp=rep(c("amgp", "basa" ,"sesa", "wesa"),2), sex=c(rep('f',4), rep('m',4)), 
+											  col_=rep(cols,2), #rep(c("purple", "pink" ,"deepskyblue", "deepblue"),2), 
+											  lwd_=c(rep(1,4), rep(2,4)), stringsAsFactors=FALSE)
+								
+								for( i in 1:nrow(s)){	
+													ha=hh[hh$sp==s$sp[i] & hh$sex==s$sex[i],]
+													xx=loess(att~hour,ha)
+													j=order(ha$hour)
+													lines(ha$hour[j], xx$fitted[j], col=s$col_[i], lwd=s$lwd_[i])
+												}	
+							
+								text(x=-2+k, y=0.05, pos=4, expression(italic('N')*' cases:'),cex=0.5,las=1,col='grey30') 
+								
+								symbols(c(10,15,20),c(0.105,0.105,0.105)+k,circles=sqrt(c(10,100,150)/pi),inches=0.14/1.75,bg=col_pb, fg=col_p,add=TRUE, xpd=TRUE) #bg=alpha(col_p,0.1)
+								#symbols(c(23,23,23),c(0.77,0.65,0.5),circles=sqrt(c(10,100,300)/pi),inches=0.14/1.75,bg=col_pb, fg=col_p,add=TRUE, xpd=TRUE) #bg=alpha(col_p,0.1)
+								text(c(10,15,20),c(0.007,0.007,0.007)+k,labels=c(10,100,150), xpd=TRUE, cex=0.5,col='grey30') 
+								
+								mtext(side=4, 'American\ngolden\nplover',cex=0.4,las=1,col=cols[1], line=0.3,at=0.9) 
+								mtext(side=4, "Baird's\nsandpiper",cex=0.4,las=1,col=cols[2], line=0.3,at=0.7) 
+								mtext(side=4, "Western\nsandpiper",cex=0.4,las=1,col=cols[3], line=0.3,at=0.54) 
+								mtext(side=4, "Semipalmated\nsandpiper",cex=0.4,las=1,col=cols[4], line=0.3,at=0.36) 
+								
+								lines(x=c(-10,-6)-3.5+40, y=c(0.15,0.15)+k, xpd=NA,lwd=2,col=col_p)
+								lines(x=c(-10,-6)-3.5+40, y=c(0.07,0.07)+k, xpd=NA,lwd=1,col=col_p)
+								symbols(x=c(-8,-8)-3.5+40,c(0.15,0.07)+k,circles=c(0.1,0.1),bg="white", fg=col_p,add=TRUE, xpd=NA, inches=0.03) 
+								symbols(x=c(-8,-8)-3.5+40,c(0.15,0.07)+k,circles=c(0.1,0.1),bg=c("#535F7C33", "#FCB42C33"), fg=col_p,add=TRUE, xpd=NA, inches=0.03) 
+								text(x=c(-7.9,-8)+40, y=c(0.17,0.07)+k, labels=c('\u2642','\u2640'),xpd=NA,cex=0.6,col=c('#535F7C','#FCB42C'))
+								
+								
+								#text(c(-2,-2,-2,-2),c(1,0.6,0.4,0.2),labels=c('American\ngolden\nplover',"Baird's\nsandpiper", "Western\nsandpiper","Semipalmated\nsandpiper"),xpd=TRUE, cex=0.4,col=cols, pos=3, outer=TRUE) 
+								
+						dev.off()															
+						
+						}
+					{# (cf) raw data
+						png(paste(out_,"Supplementary_Figure_2c_loess_left_female.png", sep=""), width=3.5*0.5,height=1.85,units="in",res=600)
+						
+						par(mar=c(0.0,0,0,0.4),oma = c(2.1, 0, 0.2, 2.3),ps=12, mgp=c(1.2,0.35,0), las=1, cex=1, col.axis="grey30",font.main = 1, col.lab="grey30", col.main="grey30", fg="grey70", cex.lab=0.6,cex.main=0.7, cex.axis=0.5, tcl=-0.1,bty="n",xpd=TRUE) #
+												
+						plot(NA,pch=19,xlim=c(0,24), ylim=c(k,1), xlab=NA, ylab=NA, yaxt='n',xaxt='n', type='n')
+											
+							axis(1, at=seq(0,24,by=6),labels=seq(0,24,by=6),cex.axis=0.5,mgp=c(0,-0.20,0))
+								mtext("Time of day [hours]",side=1,line=1/2, cex=0.6, las=1, col='grey30')
+							
+							#axis(2, at=seq(0,1,by=0.25), labels=TRUE)
+							#mtext("Nest attendance [proportion]",side=2,line=1.3, cex=0.6, las=3, col='grey30')
+							
+							mtext(expression(bold("c")),side=3,line=-.7/2, cex=0.6,  col='grey30', outer=TRUE, adj=0.48*2)
+							
+							lines(c(0,24),c(0.19,0.19)+k,, lty=3, col="grey80")							
+						# data
+							# aggregate per hour, species and type of incubation		
+								hh$nn=1
+								gg=ddply(hh,.(sp,cols, sex, hour), summarise,mean_=mean(att),se_=sd(att)/sqrt(length(att)),n=sum(nn))
+								gg=gg[order(gg$sex),]							
+							#arrows(x0=gg$hour, y0=gg$mean_-gg$se_,x1=gg$hour,y1=gg$mean_+gg$se_,code = 0, col =col_p , angle = 90, length = .025, lwd=1, lty=1)
+							#symbols(gg$hour,gg$mean_, circles=sqrt(gg$n/pi),inches=0.14/1.75,bg='white', add=TRUE) 
+							gf=gg[gg$sex=='f',]
+							gx=gg[gg$n==max(gg$n),]
+							gx$mean_=-1
+							gf=rbind(gf,gx)
+
+							symbols(gf$hour,gf$mean_, circles=sqrt(gf$n/pi),inches=0.14/1.75,bg=adjustcolor(gf$cols,alpha.f = 0.2),add=TRUE, fg=col_p) #bg=alpha(col_p,0.1)
+							#symbols(gg$hour,gg$mean_, circles=sqrt(gg$n/pi),inches=0.14/1.75,fg=adjustcolor(gg$cols,alpha.f = 0.2),add=TRUE), fg=col_p) #bg=alpha(col_p,0.1)
+								
+														#points(h$att~h$hour, col=adjustcolor(h$cols, alpha.f = 0.3), pch=20, cex=0.2)	
+							#points(inc$inc_eff~inc$bout_start_j_c, col=inc$col_,bg=adjustcolor(inc$col_, alpha.f = 0.4), pch=21, cex=0.5)	
+							
+								s= data.frame(sp=c("amgp", "basa" ,"sesa", "wesa"), sex=rep('f',4), 
+											  col_=cols, #rep(c("purple", "pink" ,"deepskyblue", "deepblue"),2), 
+											  lwd_=rep(1,4), stringsAsFactors=FALSE)
+								
+								hf=hh[hh$sex=='f',]
+								for( i in 1:nrow(s)){	
+													ha=hf[hf$sp==s$sp[i] & hf$sex==s$sex[i],]
+													xx=loess(att~hour,ha)
+													j=order(ha$hour)
+													lines(ha$hour[j], xx$fitted[j], col=s$col_[i], lwd=s$lwd_[i])
+												}	
+							
+								text(x=-2+k, y=0.05, pos=4, expression(italic('N')*' cases:'),cex=0.5,las=1,col='grey30') 
+								
+								symbols(c(10,15,20),c(0.105,0.105,0.105)+k,circles=sqrt(c(10,100,150)/pi),inches=0.14/1.75,bg=col_pb, fg=col_p,add=TRUE, xpd=TRUE) #bg=alpha(col_p,0.1)
+								#symbols(c(23,23,23),c(0.77,0.65,0.5),circles=sqrt(c(10,100,300)/pi),inches=0.14/1.75,bg=col_pb, fg=col_p,add=TRUE, xpd=TRUE) #bg=alpha(col_p,0.1)
+								text(c(10,15,20),c(0.007,0.007,0.007)+k,labels=c(10,100,150), xpd=TRUE, cex=0.5,col='grey30') 
+								
+								mtext(side=4, 'American\ngolden\nplover',cex=0.4,las=1,col=cols[1], line=0.3,at=0.9) 
+								mtext(side=4, "Baird's\nsandpiper",cex=0.4,las=1,col=cols[2], line=0.3,at=0.7) 
+								mtext(side=4, "Western\nsandpiper",cex=0.4,las=1,col=cols[3], line=0.3,at=0.54) 
+								mtext(side=4, "Semipalmated\nsandpiper",cex=0.4,las=1,col=cols[4], line=0.3,at=0.36) 
+								
+								lines(x=c(-10,-6)-3.5+40, y=c(0.15,0.15)+k, xpd=NA,lwd=2,col=col_p)
+								lines(x=c(-10,-6)-3.5+40, y=c(0.07,0.07)+k, xpd=NA,lwd=1,col=col_p)
+								symbols(x=c(-8,-8)-3.5+40,c(0.15,0.07)+k,circles=c(0.1,0.1),bg="white", fg=col_p,add=TRUE, xpd=NA, inches=0.03) 
+								symbols(x=c(-8,-8)-3.5+40,c(0.15,0.07)+k,circles=c(0.1,0.1),bg=c("#535F7C33", "#FCB42C33"), fg=col_p,add=TRUE, xpd=NA, inches=0.03) 
+								text(x=c(-7.9,-8)+40, y=c(0.17,0.07)+k, labels=c('\u2642','\u2640'),xpd=NA,cex=0.6,col=c('#535F7C','#FCB42C'))
+								
+								
+								#text(c(-2,-2,-2,-2),c(1,0.6,0.4,0.2),labels=c('American\ngolden\nplover',"Baird's\nsandpiper", "Western\nsandpiper","Semipalmated\nsandpiper"),xpd=TRUE, cex=0.4,col=cols, pos=3, outer=TRUE) 
+								
+						dev.off()															
+						
+						}
+					{# (dm) raw data
+						png(paste(out_,"Supplementary_Figure_2d_loess_left_male.png", sep=""), width=3.5*0.5,height=1.85,units="in",res=600)
+						
+						par(mar=c(0.0,0,0,0.4),oma = c(2.1, 0, 0.2, 2.3),ps=12, mgp=c(1.2,0.35,0), las=1, cex=1, col.axis="grey30",font.main = 1, col.lab="grey30", col.main="grey30", fg="grey70", cex.lab=0.6,cex.main=0.7, cex.axis=0.5, tcl=-0.1,bty="n",xpd=TRUE) #
+												
+						plot(NA,pch=19,xlim=c(0,24), ylim=c(k,1), xlab=NA, ylab=NA, yaxt='n',xaxt='n', type='n')
+											
+							axis(1, at=seq(0,24,by=6),labels=seq(0,24,by=6),cex.axis=0.5,mgp=c(0,-0.20,0))
+								mtext("Time of day [hours]",side=1,line=1/2, cex=0.6, las=1, col='grey30')
+							
+							#axis(2, at=seq(0,1,by=0.25), labels=TRUE)
+							#mtext("Nest attendance [proportion]",side=2,line=1.3, cex=0.6, las=3, col='grey30')
+							
+							mtext(expression(bold("d")),side=3,line=-.7/2, cex=0.6,  col='grey30', outer=TRUE, adj=0.48*2)
+							
+							lines(c(0,24),c(0.19,0.19)+k,, lty=3, col="grey80")							
+						# data
+							# aggregate per hour, species and type of incubation		
+								hh$nn=1
+								gg=ddply(hh,.(sp,cols, sex, hour), summarise,mean_=mean(att),se_=sd(att)/sqrt(length(att)),n=sum(nn))
+								gg=gg[order(gg$sex),]							
+							#arrows(x0=gg$hour, y0=gg$mean_-gg$se_,x1=gg$hour,y1=gg$mean_+gg$se_,code = 0, col =col_p , angle = 90, length = .025, lwd=1, lty=1)
+							#symbols(gg$hour,gg$mean_, circles=sqrt(gg$n/pi),inches=0.14/1.75,bg='white', add=TRUE) 
+							gf=gg[gg$sex=='m',]
+							
+							symbols(gf$hour,gf$mean_, circles=sqrt(gf$n/pi),inches=0.14/1.75,bg=adjustcolor(gf$cols,alpha.f = 0.2),add=TRUE, fg=col_p) #bg=alpha(col_p,0.1)
+							#symbols(gg$hour,gg$mean_, circles=sqrt(gg$n/pi),inches=0.14/1.75,fg=adjustcolor(gg$cols,alpha.f = 0.2),add=TRUE), fg=col_p) #bg=alpha(col_p,0.1)
+								
+														#points(h$att~h$hour, col=adjustcolor(h$cols, alpha.f = 0.3), pch=20, cex=0.2)	
+							#points(inc$inc_eff~inc$bout_start_j_c, col=inc$col_,bg=adjustcolor(inc$col_, alpha.f = 0.4), pch=21, cex=0.5)	
+							
+								s= data.frame(sp=c("amgp", "basa" ,"sesa", "wesa"), sex=rep('m',4), 
+											  col_=cols, #rep(c("purple", "pink" ,"deepskyblue", "deepblue"),2), 
+											  lwd_=rep(2,4), stringsAsFactors=FALSE)
+								
+								hf=hh[hh$sex=='m',]
+								for( i in 1:nrow(s)){	
+													ha=hf[hf$sp==s$sp[i] & hf$sex==s$sex[i],]
+													xx=loess(att~hour,ha)
+													j=order(ha$hour)
+													lines(ha$hour[j], xx$fitted[j], col=s$col_[i], lwd=s$lwd_[i])
+												}	
+							
+								text(x=-2+k, y=0.05, pos=4, expression(italic('N')*' cases:'),cex=0.5,las=1,col='grey30') 
+								
+								symbols(c(10,15,20),c(0.105,0.105,0.105)+k,circles=sqrt(c(10,100,150)/pi),inches=0.14/1.75,bg=col_pb, fg=col_p,add=TRUE, xpd=TRUE) #bg=alpha(col_p,0.1)
+								#symbols(c(23,23,23),c(0.77,0.65,0.5),circles=sqrt(c(10,100,300)/pi),inches=0.14/1.75,bg=col_pb, fg=col_p,add=TRUE, xpd=TRUE) #bg=alpha(col_p,0.1)
+								text(c(10,15,20),c(0.007,0.007,0.007)+k,labels=c(10,100,150), xpd=TRUE, cex=0.5,col='grey30') 
+								
+								mtext(side=4, 'American\ngolden\nplover',cex=0.4,las=1,col=cols[1], line=0.3,at=0.9) 
+								mtext(side=4, "Baird's\nsandpiper",cex=0.4,las=1,col=cols[2], line=0.3,at=0.7) 
+								mtext(side=4, "Western\nsandpiper",cex=0.4,las=1,col=cols[3], line=0.3,at=0.54) 
+								mtext(side=4, "Semipalmated\nsandpiper",cex=0.4,las=1,col=cols[4], line=0.3,at=0.36) 
+								
+								lines(x=c(-10,-6)-3.5+40, y=c(0.15,0.15)+k, xpd=NA,lwd=2,col=col_p)
+								lines(x=c(-10,-6)-3.5+40, y=c(0.07,0.07)+k, xpd=NA,lwd=1,col=col_p)
+								symbols(x=c(-8,-8)-3.5+40,c(0.15,0.07)+k,circles=c(0.1,0.1),bg="white", fg=col_p,add=TRUE, xpd=NA, inches=0.03) 
+								symbols(x=c(-8,-8)-3.5+40,c(0.15,0.07)+k,circles=c(0.1,0.1),bg=c("#535F7C33", "#FCB42C33"), fg=col_p,add=TRUE, xpd=NA, inches=0.03) 
+								text(x=c(-7.9,-8)+40, y=c(0.17,0.07)+k, labels=c('\u2642','\u2640'),xpd=NA,cex=0.6,col=c('#535F7C','#FCB42C'))
+								
+								
+								#text(c(-2,-2,-2,-2),c(1,0.6,0.4,0.2),labels=c('American\ngolden\nplover',"Baird's\nsandpiper", "Western\nsandpiper","Semipalmated\nsandpiper"),xpd=TRUE, cex=0.4,col=cols, pos=3, outer=TRUE) 
+								
+						dev.off()															
+						
+						}
+					{# (cf) raw data col
+						png(paste(out_,"Supplementary_Figure_2c_loess_left_female_col_.png", sep=""), width=3.5*0.5,height=1.85,units="in",res=600)
+						
+						par(mar=c(0.0,0,0,0.4),oma = c(2.1, 0, 0.2, 2.3),ps=12, mgp=c(1.2,0.35,0), las=1, cex=1, col.axis="grey30",font.main = 1, col.lab="grey30", col.main="grey30", fg="grey70", cex.lab=0.6,cex.main=0.7, cex.axis=0.5, tcl=-0.1,bty="n",xpd=TRUE) #
+												
+						plot(NA,pch=19,xlim=c(0,24), ylim=c(k,1), xlab=NA, ylab=NA, yaxt='n',xaxt='n', type='n')
+											
+							axis(1, at=seq(0,24,by=6),labels=seq(0,24,by=6),cex.axis=0.5,mgp=c(0,-0.20,0))
+								mtext("Time of day [hours]",side=1,line=1/2, cex=0.6, las=1, col='grey30')
+							
+							#axis(2, at=seq(0,1,by=0.25), labels=TRUE)
+							#mtext("Nest attendance [proportion]",side=2,line=1.3, cex=0.6, las=3, col='grey30')
+							
+							mtext(expression(bold("c")),side=3,line=-.7/2, cex=0.6,  col='grey30', outer=TRUE, adj=0.48*2)
+							mtext('\u2640',side=3,line=-.7/2, cex=0.6,  col='#FCB42C', outer=TRUE)
+							#lines(c(0,24),c(0.19,0.19)+k,, lty=3, col="grey80")							
+						# data
+							# aggregate per hour, species and type of incubation		
+								hh$nn=1
+								gg=ddply(hh,.(sp,cols, sex, hour), summarise,mean_=mean(att),se_=sd(att)/sqrt(length(att)),n=sum(nn))
+								gg=gg[order(gg$sex),]							
+							#arrows(x0=gg$hour, y0=gg$mean_-gg$se_,x1=gg$hour,y1=gg$mean_+gg$se_,code = 0, col =col_p , angle = 90, length = .025, lwd=1, lty=1)
+							#symbols(gg$hour,gg$mean_, circles=sqrt(gg$n/pi),inches=0.14/1.75,bg='white', add=TRUE) 
+							gf=gg[gg$sex=='f',]
+							gx=gg[gg$n==max(gg$n),]
+							gx$mean_=-1
+							gf=rbind(gf,gx)
+							
+							s= data.frame(sp=c("amgp", "basa" ,"sesa", "wesa"), sex=rep('f',4), 
+											  col_=cols, #rep(c("purple", "pink" ,"deepskyblue", "deepblue"),2), 
+											  lwd_=rep(1,4), stringsAsFactors=FALSE)
+							gf$cols=s$col_[match(gf$sp,s$sp)]				  
+
+							symbols(gf$hour,gf$mean_, circles=sqrt(gf$n/pi),inches=0.14/1.75,bg=adjustcolor(gf$cols,alpha.f = 0.2),add=TRUE, fg=gf$cols) #bg=alpha(col_p,0.1)
+							#symbols(gg$hour,gg$mean_, circles=sqrt(gg$n/pi),inches=0.14/1.75,fg=adjustcolor(gg$cols,alpha.f = 0.2),add=TRUE), fg=col_p) #bg=alpha(col_p,0.1)
+								
+														#points(h$att~h$hour, col=adjustcolor(h$cols, alpha.f = 0.3), pch=20, cex=0.2)	
+							#points(inc$inc_eff~inc$bout_start_j_c, col=inc$col_,bg=adjustcolor(inc$col_, alpha.f = 0.4), pch=21, cex=0.5)	
+							
+								s= data.frame(sp=c("amgp", "basa" ,"sesa", "wesa"), sex=rep('f',4), 
+											  col_=cols, #rep(c("purple", "pink" ,"deepskyblue", "deepblue"),2), 
+											  lwd_=rep(1,4), stringsAsFactors=FALSE)
+								
+								hf=hh[hh$sex=='f',]
+								for( i in 1:nrow(s)){	
+													ha=hf[hf$sp==s$sp[i] & hf$sex==s$sex[i],]
+													xx=loess(att~hour,ha)
+													j=order(ha$hour)
+													lines(ha$hour[j], xx$fitted[j], col=s$col_[i], lwd=s$lwd_[i])
+												}	
+							
+								#text(x=-2+k, y=0.05, pos=4, expression(italic('N')*' cases:'),cex=0.5,las=1,col='grey30') 
+								#symbols(c(10,15,20),c(0.105,0.105,0.105)+k,circles=sqrt(c(10,100,150)/pi),inches=0.14/1.75,bg=col_pb, fg=col_p,add=TRUE, xpd=TRUE) 
+								#text(c(10,15,20),c(0.007,0.007,0.007)+k,labels=c(10,100,150), xpd=TRUE, cex=0.5,col='grey30')
+								
+								#bg=alpha(col_p,0.1)
+								#symbols(c(23,23,23),c(0.77,0.65,0.5),circles=sqrt(c(10,100,300)/pi),inches=0.14/1.75,bg=col_pb, fg=col_p,add=TRUE, xpd=TRUE) #bg=alpha(col_p,0.1)
+								
+							 
+								
+								mtext(side=4, 'American\ngolden\nplover',cex=0.4,las=1,col=cols[1], line=0.3,at=0.9) 
+								mtext(side=4, "Baird's\nsandpiper",cex=0.4,las=1,col=cols[2], line=0.3,at=0.7) 
+								mtext(side=4, "Western\nsandpiper",cex=0.4,las=1,col=cols[3], line=0.3,at=0.54) 
+								mtext(side=4, "Semipalmated\nsandpiper",cex=0.4,las=1,col=cols[4], line=0.3,at=0.36) 
+								
+								lines(x=c(-10,-6)-3.5+40, y=c(0.15,0.15)+k, xpd=NA,lwd=2,col=col_p)
+								lines(x=c(-10,-6)-3.5+40, y=c(0.07,0.07)+k, xpd=NA,lwd=1,col=col_p)
+								symbols(x=c(-8,-8)-3.5+40,c(0.15,0.07)+k,circles=c(0.1,0.1),bg="white", fg=col_p,add=TRUE, xpd=NA, inches=0.03) 
+								symbols(x=c(-8,-8)-3.5+40,c(0.15,0.07)+k,circles=c(0.1,0.1),bg=c("#535F7C33", "#FCB42C33"), fg=col_p,add=TRUE, xpd=NA, inches=0.03) 
+								text(x=c(-7.9,-8)+40, y=c(0.17,0.07)+k, labels=c('\u2642','\u2640'),xpd=NA,cex=0.6,col=c('#535F7C','#FCB42C'))
+								
+								
+								#text(c(-2,-2,-2,-2),c(1,0.6,0.4,0.2),labels=c('American\ngolden\nplover',"Baird's\nsandpiper", "Western\nsandpiper","Semipalmated\nsandpiper"),xpd=TRUE, cex=0.4,col=cols, pos=3, outer=TRUE) 
+								
+						dev.off()															
+						
+						}
+					{# (dm) raw data col
+						png(paste(out_,"Supplementary_Figure_2d_loess_left_male_col.png", sep=""), width=3.5*0.5,height=1.85,units="in",res=600)
+						
+						par(mar=c(0.0,0,0,0.4),oma = c(2.1, 0, 0.2, 2.3),ps=12, mgp=c(1.2,0.35,0), las=1, cex=1, col.axis="grey30",font.main = 1, col.lab="grey30", col.main="grey30", fg="grey70", cex.lab=0.6,cex.main=0.7, cex.axis=0.5, tcl=-0.1,bty="n",xpd=TRUE) #
+												
+						plot(NA,pch=19,xlim=c(0,24), ylim=c(k,1), xlab=NA, ylab=NA, yaxt='n',xaxt='n', type='n')
+											
+							axis(1, at=seq(0,24,by=6),labels=seq(0,24,by=6),cex.axis=0.5,mgp=c(0,-0.20,0))
+								mtext("Time of day [hours]",side=1,line=1/2, cex=0.6, las=1, col='grey30')
+							
+							#axis(2, at=seq(0,1,by=0.25), labels=TRUE)
+							#mtext("Nest attendance [proportion]",side=2,line=1.3, cex=0.6, las=3, col='grey30')
+							
+							mtext(expression(bold("d")),side=3,line=-.7/2, cex=0.6,  col='grey30', outer=TRUE, adj=0.48*2)
+							mtext('\u2642',side=3,line=-.7/2, cex=0.6,  col='#535F7C', outer=TRUE)
+							
+							lines(c(0,24),c(0.19,0.19)+k,, lty=3, col="grey80")							
+						# data
+							# aggregate per hour, species and type of incubation		
+								hh$nn=1
+								gg=ddply(hh,.(sp,cols, sex, hour), summarise,mean_=mean(att),se_=sd(att)/sqrt(length(att)),n=sum(nn))
+								gg=gg[order(gg$sex),]							
+							#arrows(x0=gg$hour, y0=gg$mean_-gg$se_,x1=gg$hour,y1=gg$mean_+gg$se_,code = 0, col =col_p , angle = 90, length = .025, lwd=1, lty=1)
+							#symbols(gg$hour,gg$mean_, circles=sqrt(gg$n/pi),inches=0.14/1.75,bg='white', add=TRUE) 
+							gf=gg[gg$sex=='m',]
+							s= data.frame(sp=c("amgp", "basa" ,"sesa", "wesa"), sex=rep('m',4), 
+											  col_=cols, #rep(c("purple", "pink" ,"deepskyblue", "deepblue"),2), 
+											  lwd_=rep(2,4), stringsAsFactors=FALSE)
+							gf$cols=s$col_[match(gf$sp,s$sp)]				  
+
+							symbols(gf$hour,gf$mean_, circles=sqrt(gf$n/pi),inches=0.14/1.75,bg=adjustcolor(gf$cols,alpha.f = 0.2),add=TRUE, fg=gf$cols) #bg=alpha(col_p,0.1)
+							
+								
+								
+								hf=hh[hh$sex=='m',]
+								for( i in 1:nrow(s)){	
+													ha=hf[hf$sp==s$sp[i] & hf$sex==s$sex[i],]
+													xx=loess(att~hour,ha)
+													j=order(ha$hour)
+													lines(ha$hour[j], xx$fitted[j], col=s$col_[i], lwd=s$lwd_[i])
+												}	
+							
+								text(x=-2+k, y=0.05, pos=4, expression(italic('N')*' cases:'),cex=0.5,las=1,col='grey30') 
+								
+								symbols(c(10,15,20),c(0.105,0.105,0.105)+k,circles=sqrt(c(10,100,150)/pi),inches=0.14/1.75,bg=col_pb, fg=col_p,add=TRUE, xpd=TRUE) #bg=alpha(col_p,0.1)
+								#symbols(c(23,23,23),c(0.77,0.65,0.5),circles=sqrt(c(10,100,300)/pi),inches=0.14/1.75,bg=col_pb, fg=col_p,add=TRUE, xpd=TRUE) #bg=alpha(col_p,0.1)
+								text(c(10,15,20),c(0.007,0.007,0.007)+k,labels=c(10,100,150), xpd=TRUE, cex=0.5,col='grey30') 
+								
+								mtext(side=4, 'American\ngolden\nplover',cex=0.4,las=1,col=cols[1], line=0.3,at=0.9) 
+								mtext(side=4, "Baird's\nsandpiper",cex=0.4,las=1,col=cols[2], line=0.3,at=0.7) 
+								mtext(side=4, "Western\nsandpiper",cex=0.4,las=1,col=cols[3], line=0.3,at=0.54) 
+								mtext(side=4, "Semipalmated\nsandpiper",cex=0.4,las=1,col=cols[4], line=0.3,at=0.36) 
+								
+								#lines(x=c(-10,-6)-3.5+40, y=c(0.15,0.15)+k, xpd=NA,lwd=2,col=col_p)
+								#lines(x=c(-10,-6)-3.5+40, y=c(0.07,0.07)+k, xpd=NA,lwd=1,col=col_p)
+								#symbols(x=c(-8,-8)-3.5+40,c(0.15,0.07)+k,circles=c(0.1,0.1),bg="white", fg=col_p,add=TRUE, xpd=NA, inches=0.03) 
+								#symbols(x=c(-8,-8)-3.5+40,c(0.15,0.07)+k,circles=c(0.1,0.1),bg=c("#535F7C33", "#FCB42C33"), fg=col_p,add=TRUE, xpd=NA, inches=0.03) 
+								#text(x=c(-7.9,-8)+40, y=c(0.17,0.07)+k, labels=c('\u2642','\u2640'),xpd=NA,cex=0.6,col=c('#535F7C','#FCB42C'))
+								
+								
+								#text(c(-2,-2,-2,-2),c(1,0.6,0.4,0.2),labels=c('American\ngolden\nplover',"Baird's\nsandpiper", "Western\nsandpiper","Semipalmated\nsandpiper"),xpd=TRUE, cex=0.4,col=cols, pos=3, outer=TRUE) 
+								
+						dev.off()															
+						
+						}
+					
+					{# (b) 
+						png(paste(out_,"Supplementary_Figure_2b_fit.png", sep=""), width=3.5*0.5,height=1.85,units="in",res=600)
+						par(mar=c(0.0,0,0,0.4),oma = c(2.1, 2.1, 0.2, 0.2),ps=12, mgp=c(1.2,0.35,0), las=1, cex=1, col.axis="grey30",font.main = 1, col.lab="grey30", col.main="grey30", fg="grey70", cex.lab=0.6,cex.main=0.7, cex.axis=0.5, tcl=-0.1,bty="n",xpd=TRUE) #
+						
+						plot(NA,pch=19,xlim=c(0,24), ylim=c(k,1), xlab=NA, ylab=NA, yaxt='n',xaxt='n', type='n')
+											
+							axis(1, at=seq(0,24,by=6),labels=seq(0,24,by=6),cex.axis=0.5,mgp=c(0,-0.20,0))
+								mtext("Time of day [hours]",side=1,line=1/2, cex=0.6, las=1, col='grey30')
+							mtext(expression(bold("b")),side=3,line=-.7/2, cex=0.6,  col='grey30', outer=TRUE, adj=0.48*2)
+							
+							#axis(2, at=seq(0,1,by=0.25), labels=TRUE)
+							#mtext("Nest attendance [proportion]",side=2,line=1.3, cex=0.6, las=3, col='grey30')
+						# predictions
+							# uniparental species
+							polygon(c(p_f$hour, rev(p_f$hour)), c(p_f$lwr, 
+								rev(p_f$upr)), border=NA, col=adjustcolor(uni_col ,alpha.f = 0.2)) #0,0,0 black 0.5 is transparents RED
+							lines(p_f$hour, p_f$pred, col=uni_col,lwd=1)
+							
+							# biparental species uniparental incubation
+							polygon(c(p_m$hour, rev(p_m$hour)), c(p_m$lwr, 
+								rev(p_m$upr)), border=NA, col=adjustcolor(bip_uni_col ,alpha.f = 0.2)) #0,0,0 black 0.5 is transparents RED
+							lines(p_m$hour, p_m$pred, col=bip_uni_col,lwd=1)
+							
+							dev.off()
+						}
+			}	
+						{# Supplementary Table 4
 				m=lmer(att~sin(rad)+cos(rad) + sex +sin(rad)*sex+cos(rad)*sex+(sin(rad)+cos(rad)|act_ID)+(sin(rad)+cos(rad)|sp),data=hh, REML=FALSE)	
 			 
 				pred=c('Intercept (female)','Sin', 'Cos','Sex (male)','Sin x sex(male)', 'Cos x sex(male)')
