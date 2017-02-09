@@ -2162,23 +2162,11 @@
 				nests_$bout=p$bout[match(paste(nests_$site,nests_$sp), paste(p$site_abbreviation, p$sp))]
 			}
 			{# incubation start
-				 s=readWorksheetFromFile(paste(wd,'nests.xls', sep=""), sheet='inc_start',colTypes = c(
-									 XLC$DATA_TYPE.STRING,
-									 XLC$DATA_TYPE.STRING,
-									 XLC$DATA_TYPE.STRING,
-									 XLC$DATA_TYPE.STRING,
-									 XLC$DATA_TYPE.STRING,
-									 XLC$DATA_TYPE.STRING,
-									 XLC$DATA_TYPE.STRING,
-									 XLC$DATA_TYPE.STRING))
-				s$inc_start=as.POSIXct(s$inc_start,tz='UTC')			
+				 s=read.csv(paste(wd,'inc_start.csv', sep=""), stringsAsFactors=FALSE)
+				 s$inc_start=as.POSIXct(s$inc_start,tz='UTC')			
 			}
 			{# incubation period
-				 ip=readWorksheetFromFile(paste(wd,'nests.xls', sep=""), sheet='incubation_period',colTypes = c(
-									 XLC$DATA_TYPE.STRING,
-									 XLC$DATA_TYPE.STRING,
-									 XLC$DATA_TYPE.STRING
-									))
+				 ip=read.csv(paste(wd,'inc_period.csv', sep=""), stringsAsFactors=FALSE)
 			}
 			{# species
 					sp =read.csv(paste(wd,'species.csv', sep=""), stringsAsFactors=FALSE)
@@ -2205,6 +2193,7 @@
 						dfr_=dfr_[which(!is.na(dfr_$datetime_)),]
 						dfr=dfr_
 						
+												
 								# define captions and nest location
 									figCap_=data.frame(sp=dfr$sp[1],scinam=sp$scinam[match(dfr$sp[1], sp$sp)], species=sp$species[match(dfr$sp[1], sp$sp)], year=dfr$year[1],nest=dfr$nest[1],site=dfr$site[1],stringsAsFactors=FALSE)
 									figCap=figCap_
@@ -2213,7 +2202,8 @@
 									latlon=latlon_
 								
 								# generate actograms
-									if(i=='biparental_70'){p1=Temperature_actogram(dfr=dfr_,day='TRUEcons')}else{p2=Temperature_actogram(dfr=dfr_,day='TRUEcons')}
+									if(i=='biparental_70'){p1=Temperature_actogram(dfr=dfr_,day='TRUEcons',sex=TRUE)}else{p2=Temperature_actogram(dfr=dfr_,day='TRUEcons', sex=TRUE)}
+									
 				}
 			}
 			{# paste the two actograms together	
@@ -2224,7 +2214,7 @@
 				grid.text(x=0.04,y=0.5,label=expression(bold("b")), gp=gpar(col="grey50", cex=0.6,fontsize=12, fontfamily="arie"))
 			}
 			  {# export to png	
-				png(paste(out_, "Figure_5.png",sep="_"), width = 3.5, height = 3*2, units = "in", res = 300)	
+				png(paste(out_, "Figure_5_sex.png",sep="_"), width = 3.5, height = 3*2, units = "in", res = 300)	
 					
 				grid.arrange(p1,p2)
 				grid.text(x=0.04,y=0.99,label=expression(bold("a")), gp=gpar(col="grey50", cex=0.6,fontsize=12, fontfamily="arie"))
