@@ -502,7 +502,7 @@
 									}}
 				}	
 		
-	  Temperature_actogram = function(dfr,figCap = figCap_, latlon = latlon_, inp = ip_, ins = inc_start,  min_=-3, max_=49, day='TRUEcons') {
+	  Temperature_actogram = function(dfr,figCap = figCap_, latlon = latlon_, inp = ip_, ins = inc_start,  min_=-3, max_=49, day='TRUEcons', sex=FALSE) {
 				# dfr - data frame
 				# figCap - figure captions
 				# latlon - latitude longitude
@@ -511,6 +511,40 @@
 				# inp = lenght of incubation period
 				# min_/max_ - limits of y-axis in the panel
 				
+			 if(sex==TRUE){
+						if(i=='biparental_70'){
+						#add sex to bouts
+						d=dfr[!is.na(dfr$tag),]
+						d=d[d$who%in%c('f','m'),]
+						d$prior_who=c(d$who[1],d$who[-nrow(d)])
+						d$after_who=c(d$who[-1],d$who[nrow(d)])
+							#nrow(d[d$prior_who!=d$who,])
+							#nrow(d[which(d$after_who!=d$who),])
+						
+						d$bout=ifelse(d$prior_who!=d$who,'s', ifelse(d$after_who!=d$who,'e',0))
+						dd=rbind(d[which(d$prior_who!=d$who),], d[which(d$after_who!=d$who),])
+						dd=dd[order(dd$datetime_),]
+						dd=dd[2:nrow(dd),]
+						dd_=dd[nrow(dd),]
+						dd_$bout='e'
+						dd_$datetime_="2013-07-12 16:13:34"
+						dd_$t_method=dd_$t_surface=dd$t_nest=NA
+						dd=rbind(dd,dd_)
+												
+						dd$datetime_on=dd$datetime_
+						dd$datetime_off=c(dd$datetime_[-1],dd$datetime_[nrow(dd)])
+						dd=dd[dd$bout=='s',]
+						dd=dd[,c('who','datetime_on','datetime_off')]
+						dd$datetime_on=as.POSIXct(dd$datetime_on)
+						dd$datetime_off=as.POSIXct(dd$datetime_off)
+						dfr$datetime_=as.POSIXct(dfr$datetime_)
+						dfr$sex=NA
+						for(ii in 1:nrow(dd)){
+									di=dd[ii,]
+									dfr$sex=ifelse(dfr$datetime_<di$datetime_on| dfr$datetime_>di$datetime_off, dfr$sex, di$who)
+									}
+						}else{dfr$sex='m'}
+						}
 			 dfr$datetime_=as.POSIXct(dfr$datetime_, tz="UTC")
 			 dfr$day = as.Date(trunc(dfr$datetime_, "day"))
 			 dfr$time = as.numeric(difftime(dfr$datetime_, trunc(dfr$datetime_,"day"), units = "hours"))
@@ -531,7 +565,14 @@
 			  clr = act_c
 				
 			  # color for temperature
-			 dfr$col_t_nest=ifelse(is.na(dfr$inc), NA, ifelse(dfr$inc==1,act_c$cols[act_c$who=='nest temperature incubation'],act_c$cols[act_c$who=='nest temperature no incubation']))
+			 if(sex==TRUE){dfr$col_t_nest=ifelse(is.na(dfr$inc), NA, 
+													ifelse(dfr$inc==1,
+															ifelse(is.na(dfr$sex),act_c$cols[act_c$who=='nest temperature incubation'],
+																ifelse(dfr$sex=='f', act_c$cols[act_c$who=='f'],act_c$cols[act_c$who=='m'])),
+																act_c$cols[act_c$who=='nest temperature no incubation']))
+																
+			 
+				}else{dfr$col_t_nest=ifelse(is.na(dfr$inc), NA, ifelse(dfr$inc==1,act_c$cols[act_c$who=='nest temperature incubation'],act_c$cols[act_c$who=='nest temperature no incubation']))}
 			# dfr$col_cv_nest=ifelse(is.na(dfr$inc), NA, ifelse(dfr$inc==1,signal_inc,signal_no_inc))
 				#dfr$col_type=ifelse(dfr$type=='no',none_col, ifelse(dfr$type=='bip',bip_col, ifelse(dfr$type=='uni',uni_col, NA)))
 			}
