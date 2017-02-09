@@ -761,17 +761,6 @@
   }
 
   {# Change in nest attendance
-		{# run first DELETE
-				sp_$order=-sp_$order
-				sp_=sp_[order(sp_$order),]
-		
-				d$species=sp_$species[match(d$sp,sp_$sp)]
-				d$order=as.factor(sp_$order[match(d$sp,sp_$sp)])
-				
-				h$species=sp_$species[match(h$sp,sp_$sp)]
-				h$order=as.factor(sp_$order[match(h$sp,sp_$sp)])	
-		}
-		
 		{# Figure 2a
 			{# (a) 
 				{# run first - species and order variables
@@ -814,7 +803,7 @@
 											#add=TRUE
 											)					
 						axis(1, at=seq(0.2,1,by=0.2), ,mgp=c(0,-0.20,0))
-						mtext("Nest attendance\n[proportion]",side=1,line=1, cex=0.6, las=1, col='grey30')
+						mtext("Daily nest attendance\n[proportion]",side=1,line=1, cex=0.6, las=1, col='grey30')
 						
 						axis(2, at=sp_$at,cex.axis=0.5, labels=sp_$species)
 						
@@ -1936,7 +1925,7 @@
 							
 							s= data.frame(sp=c("amgp", "basa" ,"sesa", "wesa"), sex=rep('f',4), 
 											  col_=cols, #rep(c("purple", "pink" ,"deepskyblue", "deepblue"),2), 
-											  lwd_=rep(1,4), stringsAsFactors=FALSE)
+											  lwd_=rep(2,4), stringsAsFactors=FALSE)
 							gf$cols=s$col_[match(gf$sp,s$sp)]				  
 
 							symbols(gf$hour,gf$mean_, circles=sqrt(gf$n/pi),inches=0.14/1.75,bg=adjustcolor(gf$cols,alpha.f = 0.2),add=TRUE, fg=gf$cols) #bg=alpha(col_p,0.1)
@@ -1945,9 +1934,6 @@
 														#points(h$att~h$hour, col=adjustcolor(h$cols, alpha.f = 0.3), pch=20, cex=0.2)	
 							#points(inc$inc_eff~inc$bout_start_j_c, col=inc$col_,bg=adjustcolor(inc$col_, alpha.f = 0.4), pch=21, cex=0.5)	
 							
-								s= data.frame(sp=c("amgp", "basa" ,"sesa", "wesa"), sex=rep('f',4), 
-											  col_=cols, #rep(c("purple", "pink" ,"deepskyblue", "deepblue"),2), 
-											  lwd_=rep(1,4), stringsAsFactors=FALSE)
 								
 								hf=hh[hh$sex=='f',]
 								for( i in 1:nrow(s)){	
@@ -2166,36 +2152,13 @@
 		{# Figure 3 
 		  {# load metadata
 			{# nests to extract the data for
-				nests=readWorksheetFromFile(paste(wd,'nests.xls', sep=""), sheet='original',colTypes = c(
-									XLC$DATA_TYPE.STRING,									
-									XLC$DATA_TYPE.STRING,
-									XLC$DATA_TYPE.NUMERIC,
-									XLC$DATA_TYPE.STRING,
-									XLC$DATA_TYPE.STRING,
-									XLC$DATA_TYPE.STRING,
-									XLC$DATA_TYPE.NUMERIC,
-									XLC$DATA_TYPE.NUMERIC,
-									XLC$DATA_TYPE.NUMERIC,
-									XLC$DATA_TYPE.STRING,
-									XLC$DATA_TYPE.STRING,
-									XLC$DATA_TYPE.STRING,
-									XLC$DATA_TYPE.STRING,
-									XLC$DATA_TYPE.STRING,
-									XLC$DATA_TYPE.STRING,
-									XLC$DATA_TYPE.STRING,
-									XLC$DATA_TYPE.STRING,
-									XLC$DATA_TYPE.STRING,
-									XLC$DATA_TYPE.NUMERIC,
-									XLC$DATA_TYPE.STRING,
-									XLC$DATA_TYPE.STRING,
-									XLC$DATA_TYPE.STRING,
-									XLC$DATA_TYPE.STRING))
+				nests=read.csv(paste(wd,'nests.csv', sep=""), stringsAsFactors=FALSE)
 				nests$on=as.POSIXct(nests$on)
 				nests$off=as.POSIXct(nests$off)
 				nests$end=as.POSIXct(nests$end)
 				nests$start=as.POSIXct(nests$start)
 				nests_=nests[which(nests$circumstances!='temporal'),]
-				p=readWorksheetFromFile(paste(wd,'populations.xls', sep=""), sheet='populations')
+				p=read.csv(paste(wd,'populations.csv', sep=""), stringsAsFactors=FALSE)
 				nests_$bout=p$bout[match(paste(nests_$site,nests_$sp), paste(p$site_abbreviation, p$sp))]
 			}
 			{# incubation start
@@ -2573,6 +2536,9 @@
 					lines(dens_fail,col=male_col,xpd=FALSE)
 					points(y=jitter(points_$y),x=points_$x, pch = 21,cex=0.5, col="gray63",bg=adjustcolor(points_$col_, alpha.f = 0.6))
 					#points(y=jitter(points_$y),x=points_$x, col=points_$col_, pch=19, cex=0.5)
+					
+					text(y=2.8,x=1.60, pos=2, labels='Hatched', col='#FCB42C', cex=0.5)
+					text(y=2.5,x=1.60, pos=2, labels='Failed', col='#535F7C', cex=0.5)
 					
 					mtext(expression(bold("a")),side=3,line=-.35, cex=0.6,  col='grey30', outer=TRUE, adj=0.9)	
 				dev.off()
