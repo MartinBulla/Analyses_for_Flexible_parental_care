@@ -4,7 +4,7 @@
 			function(x) suppressPackageStartupMessages(require(x , character.only = TRUE, quietly = TRUE) ))
 	}
 	
-	{# define workingdirectory
+	{# define working directory
 	     wd="C:/Users/mbulla/Documents/Dropbox/Science/Projects/MS/Bip_to_uni/Analyses/Data/"	
 	}
 	
