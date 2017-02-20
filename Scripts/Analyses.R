@@ -253,7 +253,7 @@
 			x=data.frame(n=c(21,18,13,23,183,9,44,37), p=c(48,44,31,26,20,11,5,4), stringsAsFactors=FALSE)
 			weightedMedian(x$p, x$n)
 			summary(x$p)
-			
+					
 	}
 	{# cases with female uniparental incubation
 		summary(factor(n_$sex)) # uniparental females and males
@@ -2982,6 +2982,9 @@
 				g_=ddply(g,.(sp), summarise, fail=-sum(success_bin_[success_bin_==-1]),hatch=sum(success_bin_[success_bin_==1])) 
 				
 				g_$prop=g_$hatch/(g_$hatch+g_$fail)
+				# in relation to type of desertion (not in MS)
+				ggplot(g,aes(x=circumstances, y=success_bin))+geom_violin()+ geom_jitter(shape=16, position=position_jitter(height=0.2), col='black')
+				table(g$success, g$circumstances)
 		}		
 				{# compare models - not in the MS
 				m=glmer(success_bin~scale(prop_ip)+scale(uni_last)+(1|sp),data=g[g$prop_ip<100,],family='binomial')
@@ -3354,7 +3357,7 @@
 }
 
 
-{# nest success bip
+{# TEMP nest success bip
 	u =read.csv(paste("C:/Users/mbulla/Documents/Dropbox/Science/Projects/MS/Comparative/Submission/Supplementary/Data/",'Supplementary Data 4 - Nests metadata.csv', sep=""), stringsAsFactors=FALSE)
 	
 	
@@ -3379,3 +3382,4 @@
 		ggplot(uuu,aes(x=type,y=s, fill=type, col=type))+geom_violin()+ labs(x="Type of incubation\nin biparental species", y = "Successful nests per species [%]")+guides(fill=FALSE, col=FALSE)+ geom_jitter(shape=16, position=position_jitter(0.2), col='black')
 		dev.new()
 }
+table(n_$sex,n_$circumstances) # widdwed sex according to circumstances
