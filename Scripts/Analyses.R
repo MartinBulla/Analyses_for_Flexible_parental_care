@@ -201,15 +201,24 @@
 				ddply(g,.(sp), summarise,nn=sum(n)) # nests with known outcome
 				ddply(g,.(sp), summarise,nn=sum(success_bin)) # numer of successful nests per species
 				ddply(g,.(sp), summarise,nn=round(100*(sum(success_bin)/sum(n)))) # % of successful from nests with known outcome
+				summary(ddply(g,.(sp), summarise,nn=round(100*(sum(success_bin)/sum(n))))) # % of successful from nests with known outcome
 				
 	}
 }
 
 {# METHODS - Extraction of incubation behaviour - sample size
 	
+		{# number of cases according to desertion type
+			summary(factor(n_$circumstances))
+				length(n_$circumstances[n_$circumstances%in%c('bpd','unknown','temporal')])# parent naturally disappeared
+				length(n_$circumstances[n_$circumstances%in%c('catching')])# parent naturally disappeared
+				length(n_$circumstances[n_$circumstances=='removal'])# cases with experimental removal
+		
+		}
 		{# number of cases and nests with uniparental incubation
 				nrow(n_) # number of cases
-				length(unique(n_$act_ID)) # numbero of nests
+				length(unique(n_$act_ID)) # number of nests
+				
 		}
 		{# number of cases of daily and hourly nest attendance
 			nrow(d) # cases of daily nest attendance
@@ -3335,4 +3344,38 @@
 		}	
 		
 	
-	}
+	{# number and propotion of nests with uniparental incubation
+		sum(c(10,8,4,6,36,1,2,1))
+		sum(c(10,8,4,6,36,1,2,1))/398
+		
+	}	
+}
+
+}
+
+
+{# nest success bip
+	u =read.csv(paste("C:/Users/mbulla/Documents/Dropbox/Science/Projects/MS/Comparative/Submission/Supplementary/Data/",'Supplementary Data 4 - Nests metadata.csv', sep=""), stringsAsFactors=FALSE)
+	
+	
+	nrow(u[u$end_state%in%c('fl','h'),])/nrow(u[u$end_state%in%c('fl','h','d','p'),])
+	us=u[u$sp=='SESA',]
+	summary(factor(us$end_state))
+	nrow(us[us$end_state%in%c('fl','h'),])/nrow(us[us$end_state%in%c('fl','h','d','p'),])
+	
+	summary(ddply(u[u$end_state%in%c('fl','h','d','p'),],.(sp), summarise, s=length(end_state[end_state%in%c('fl','h')])/length(end_state[end_state%in%c('fl','h','d','p')])))
+	uu=ddply(u[u$end_state%in%c('fl','h','d','p'),],.(sp), summarise, s=length(end_state[end_state%in%c('fl','h')]),al=length(end_state[end_state%in%c('fl','h','d','p')]),n=length(end_state), type='bip')
+	uu$p=uu$s/uu$al
+	plot(p~n,uu)
+	
+		u1=ddply(u[u$end_state%in%c('fl','h','d','p'),],.(sp), summarise, s=100*length(end_state[end_state%in%c('fl','h')])/length(end_state[end_state%in%c('fl','h','d','p')]),n=length(end_state), type='bip')
+		u2=ddply(g,.(sp), summarise,s=round(100*(sum(success_bin)/sum(n))), n=sum(n),type='uni') #
+		uuu=rbind(u1,u2)
+		boxplot(s~type,uuu)
+		ggplot(uuu,aes(x=type,y=s, fill=type))+geom_violin(fill='white')+ geom_boxplot(width=0.1)
+		
+		ggplot(uuu,aes(x=type,y=s, fill=type, col=type))+geom_violin()+ geom_boxplot(width=0.1,fill='white', col='grey50')+labs(x="Type of incubation\nin biparental species", y = "Successful nests per species [%]")+guides(fill=FALSE, col=FALSE)
+		
+		ggplot(uuu,aes(x=type,y=s, fill=type, col=type))+geom_violin()+ labs(x="Type of incubation\nin biparental species", y = "Successful nests per species [%]")+guides(fill=FALSE, col=FALSE)+ geom_jitter(shape=16, position=position_jitter(0.2), col='black')
+		dev.new()
+}
