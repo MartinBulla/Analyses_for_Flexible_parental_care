@@ -886,82 +886,7 @@
 			ggplot(d[d$type=='uni',],aes(x=prop_ip,y=att,  col=act_ID))+geom_point(alpha=0.2)+stat_smooth(method='lm', se=FALSE)+theme_bw()
 			}
 		}	
-		{# Supplementary Figure 1
-				{# species
-				sp_ =read.csv(paste(wd,'species.csv', sep=""), stringsAsFactors=FALSE)
-				#sp_$order=-sp_$order
-				sp_=sp_[order(sp_$order),]
-		
-				d$species=sp_$species[match(d$sp,sp_$sp)]
-				d$order=as.factor(sp_$order[match(d$sp,sp_$sp)])
-				
-				h$species=sp_$species[match(h$sp,sp_$sp)]
-				h$order=as.factor(sp_$order[match(h$sp,sp_$sp)])
 
-				}	
-				{# add sex
-					n =read.csv(paste(wd,'nests.csv', sep=""), stringsAsFactors=FALSE)
-					n=n[!duplicated(n$act_ID),]
-					d$sex=NA
-					d$sex[d$type=='uni']=n$sex[match(d$act_ID[d$type=='uni'],n$act_ID)]
-					d$sex=factor(ifelse(is.na(d$sex),'biparental', ifelse(d$sex=='m', 'uniparental male', 'uniparental female')),levels=c('biparental','uniparental female', 'uniparental male'))#'uniparental \u2640', 'uniparental \u2642'))
-					}
-				{# create order for plotting
-					d=d[order(d$order, d$act_ID),]
-						xx=data.frame(act_ID=unique(d$act_ID))
-						xx$order_=1:nrow(xx)
-					d$order_all=xx$order_[match(d$act_ID,xx$act_ID)]	
-					
-					# create dummy value for one nest without >0.75 uni incubation in one day 
-					dd=d[d$type=='uni',]
-					d2=d[!d$act_ID%in%c(unique(dd$act_ID)),][1,]
-					d2$type='uni'
-					d2$sex='uniparental male'
-					d2$att=-1
-					dd=rbind(dd,d2)
-				}
-				
-				dev.new(width=7, height=6.5)
-				ggplot(dd,aes(x=prop_ip,y=att))+
-										geom_point(aes(fill=sex),shape=21,size=0.9,col='grey50')+#	#geom_point(aes(shape=sys),alpha=0.3,size=1)+
-										scale_fill_manual(name="Incubation",breaks=c('uniparental female', 'uniparental male'),values=alpha(c("#FCB42C","#535F7C"),0.6))+
-										stat_smooth(aes(col=order),method='lm', se=FALSE, lwd=1)+
-										scale_colour_discrete(name="Species", labels=sp_$species[order(sp_$order)])+
-										scale_x_continuous(limits=c(0,1.6),breaks=seq(0,1.5,by=0.5), labels=c('0','50','100','150'))+	
-										scale_y_continuous(limits=c(-0.05,1.05),breaks=seq(0,1,by=0.25), labels=c('0.0','','0.5','','1.0'))+										
-										facet_wrap(~order_all, ncol=8)+#, scales="free_x")+
-										guides(fill = guide_legend(order = 1), colour = guide_legend(order = 2))+
-										xlab("Species' incubation period [%]")+
-										ylab("Nest attendance [proportion]")+
-										theme_light()+
-										theme(	
-												axis.line=element_line(colour="grey70", size=0.25),
-												panel.border=element_rect(colour="grey70", size=0.25),
-												panel.grid = element_blank(),
-								
-												axis.title=element_text(size=7, colour="grey30"),
-												axis.title.y = element_text(vjust=1.1),
-												axis.title.x = element_text(vjust=0.2),
-												axis.text=element_text(size=6),# margin=units(0.5,"mm")),
-												axis.ticks.length=unit(0.5,"mm"),
-												#axis.ticks.margin,
-												
-												strip.background = element_blank(),
-												strip.text.x = element_blank(),
-												#strip.background = element_blank(), 
-												#strip.text = element_blank(),
-												panel.margin = unit(1, "mm"),
-												#legend.position="none"
-												#legend.background=element_rect(colour="white"),
-												legend.key=element_blank(),
-												legend.key.size = unit(0.75, 'lines'),
-												legend.text=element_text(size=6, colour="grey30"),
-												legend.title=element_text(size=7, colour="grey30")
-													)
-		
-				ggsave(paste(out_,"Supplementary_Figure_1.png", sep=""),width=7, height=6.5, units='in',dpi=600)						
-				}
-		
 		{# Figure 2b and Supplementary Table 2
 			{# run first
 			d$actID_type=interaction(d$act_ID,d$type)
@@ -1140,7 +1065,7 @@
 				}
 			
 		}
-		{# Supplementary Figure 2a, Supplementary Table 3
+		{# Supplementary Figure 1a, Supplementary Table 3
 			{# run first - prepare data	
 				# limited to species with uniparental data for both sexes	
 					dd=d[d$sys=='biparental' & d$type=='uni' & d$sp%in%c('amgp','basa','sesa','wesa'),]
@@ -1196,7 +1121,7 @@
 						
 				}			
 			
-			{# Supplementary Figure 2a 
+			{# Supplementary Figure 1a 
 				 #dev.new(width=3.5*0.5,height=1.85)
 					png(paste(out_,"Supplementary_Figure_2a_sex.png", sep=""), width=3.5*0.5,height=1.85,units="in",res=600)
 						par(mar=c(0.0,0,0,0.4),oma = c(2.1, 2.1, 0.2, 0.2),ps=12, mgp=c(1.2,0.35,0), las=1, cex=1, col.axis="grey30",font.main = 1, col.lab="grey30", col.main="grey30", fg="grey70", cex.lab=0.6,cex.main=0.7, cex.axis=0.5, tcl=-0.1,bty="n",xpd=TRUE) #
@@ -1527,7 +1452,7 @@
 				}
 			
 		}
-		{# Supplementary Figure 2b-c, Supplementary Table 5
+		{# Supplementary Figure 1b-c, Supplementary Table 5
 			{# run first - prepare data	
 				# limited to species with uniparental data for both sexes	
 				hh=h[h$sys=='biparental' & h$type=='uni' & h$sp%in%c('amgp','basa','sesa','wesa'),]
@@ -1591,109 +1516,7 @@
 								p_m=p[p$sex=='m',]
 				}			
 			
-			{# Supplementary Figure 2b-c
-			
-			gg_color_hue <- function(n) {
-				  hues = seq(15, 375, length = n + 1)
-				  hcl(h = hues, l = 65, c = 100)[1:n]
-					}
-			n = 10
-			cols = gg_color_hue(n)[c(1,5,7,9)]
-			
-			dev.new(width = 4, height = 4)
-			plot(1:length(cols), pch = 16, cex = 2, col = cols)		
-			
-					#dev.new(width=3.5*0.5,height=1.85)
-					{# (b) raw data
-						png(paste(out_,"Supplementary_Figure_2b_loess.png", sep=""), width=3.5*0.5,height=1.85,units="in",res=600)
-						
-						par(mar=c(0.0,0.4,0,0),oma = c(2.1, 2.3, 0.2, 0),ps=12, mgp=c(1.2,0.35,0), las=1, cex=1, col.axis="grey30",font.main = 1, col.lab="grey30", col.main="grey30", fg="grey70", cex.lab=0.6,cex.main=0.7, cex.axis=0.5, tcl=-0.1,bty="n",xpd=TRUE) #
-						
-						plot(NA,pch=19,xlim=c(0,24), ylim=c(k,1), xlab=NA, ylab=NA, yaxt='n',xaxt='n', type='n')
-											
-							axis(1, at=seq(0,24,by=6),labels=seq(0,24,by=6),cex.axis=0.5,mgp=c(0,-0.20,0))
-								mtext("Time of day [hours]",side=1,line=1/2, cex=0.6, las=1, col='grey30')
-							
-							#axis(2, at=seq(0,1,by=0.25), labels=TRUE)
-							#mtext("Nest attendance [proportion]",side=2,line=1.3, cex=0.6, las=3, col='grey30')
-							
-							mtext(expression(bold("b")),side=3,line=-.7/2, cex=0.6,  col='grey30', outer=TRUE, adj=0.48*2)
-							
-							lines(c(0,24),c(0.19,0.19)+k,, lty=3, col="grey80")							
-						# data
-							# aggregate per hour, species and type of incubation		
-								hh$nn=1
-								gg=ddply(hh,.(sp,cols, sex, hour), summarise,mean_=mean(att),se_=sd(att)/sqrt(length(att)),n=sum(nn))
-								gg=gg[order(gg$sex),]							
-							#arrows(x0=gg$hour, y0=gg$mean_-gg$se_,x1=gg$hour,y1=gg$mean_+gg$se_,code = 0, col =col_p , angle = 90, length = .025, lwd=1, lty=1)
-							#symbols(gg$hour,gg$mean_, circles=sqrt(gg$n/pi),inches=0.14/1.75,bg='white', add=TRUE) 
-							symbols(gg$hour,gg$mean_, circles=sqrt(gg$n/pi),inches=0.14/1.75,bg=adjustcolor(gg$cols,alpha.f = 0.2),add=TRUE, fg=col_p) #bg=alpha(col_p,0.1)
-							#symbols(gg$hour,gg$mean_, circles=sqrt(gg$n/pi),inches=0.14/1.75,fg=adjustcolor(gg$cols,alpha.f = 0.2),add=TRUE), fg=col_p) #bg=alpha(col_p,0.1)
-								
-														#points(h$att~h$hour, col=adjustcolor(h$cols, alpha.f = 0.3), pch=20, cex=0.2)	
-							#points(inc$inc_eff~inc$bout_start_j_c, col=inc$col_,bg=adjustcolor(inc$col_, alpha.f = 0.4), pch=21, cex=0.5)	
-							
-								s= data.frame(sp=rep(c("amgp", "basa" ,"sesa", "wesa"),2), sex=c(rep('f',4), rep('m',4)), 
-											  col_=rep(cols,2), #rep(c("purple", "pink" ,"deepskyblue", "deepblue"),2), 
-											  lwd_=c(rep(1,4), rep(2,4)), stringsAsFactors=FALSE)
-								
-								for( i in 1:nrow(s)){	
-													ha=hh[hh$sp==s$sp[i] & hh$sex==s$sex[i],]
-													xx=loess(att~hour,ha)
-													j=order(ha$hour)
-													lines(ha$hour[j], xx$fitted[j], col=s$col_[i], lwd=s$lwd_[i])
-												}	
-							
-								text(x=-2+k, y=0.05, pos=4, expression(italic('N')*' cases:'),cex=0.5,las=1,col='grey30') 
-								
-								symbols(c(10,15,20),c(0.105,0.105,0.105)+k,circles=sqrt(c(10,100,150)/pi),inches=0.14/1.75,bg=col_pb, fg=col_p,add=TRUE, xpd=TRUE) #bg=alpha(col_p,0.1)
-								#symbols(c(23,23,23),c(0.77,0.65,0.5),circles=sqrt(c(10,100,300)/pi),inches=0.14/1.75,bg=col_pb, fg=col_p,add=TRUE, xpd=TRUE) #bg=alpha(col_p,0.1)
-								text(c(10,15,20),c(0.007,0.007,0.007)+k,labels=c(10,100,150), xpd=TRUE, cex=0.5,col='grey30') 
-								
-								mtext(side=2, 'American\ngolden\nplover',cex=0.4,las=1,col=cols[1], line=0.3,at=0.9) 
-								mtext(side=2, "Baird's\nsandpiper",cex=0.4,las=1,col=cols[2], line=0.3,at=0.7) 
-								mtext(side=2, "Western\nsandpiper",cex=0.4,las=1,col=cols[3], line=0.3,at=0.54) 
-								mtext(side=2, "Semipalmated\nsandpiper",cex=0.4,las=1,col=cols[4], line=0.3,at=0.36) 
-								
-								lines(x=c(-10,-6)+3.5, y=c(0.15,0.15)+k, xpd=NA,lwd=2,col=col_p)
-								lines(x=c(-10,-6)+3.5, y=c(0.07,0.07)+k, xpd=NA,lwd=1,col=col_p)
-								symbols(x=c(-8,-8)+3.5,c(0.15,0.07)+k,circles=c(0.1,0.1),bg="white", fg=col_p,add=TRUE, xpd=NA, inches=0.03) 
-								symbols(x=c(-8,-8)+3.5,c(0.15,0.07)+k,circles=c(0.1,0.1),bg=c("#535F7C33", "#FCB42C33"), fg=col_p,add=TRUE, xpd=NA, inches=0.03) 
-								text(x=c(-7.9,-8), y=c(0.17,0.07)+k, labels=c('\u2642','\u2640'),xpd=NA,cex=0.6,col=c('#535F7C','#FCB42C'))
-								
-								
-								#text(c(-2,-2,-2,-2),c(1,0.6,0.4,0.2),labels=c('American\ngolden\nplover',"Baird's\nsandpiper", "Western\nsandpiper","Semipalmated\nsandpiper"),xpd=TRUE, cex=0.4,col=cols, pos=3, outer=TRUE) 
-								
-						dev.off()															
-						
-						}
-					{# (c) 
-						png(paste(out_,"Supplementary_Figure_2c.png", sep=""), width=3.5*0.5,height=1.85,units="in",res=600)
-						par(mar=c(0.0,0,0,0.4),oma = c(2.1, 2.1, 0.2, 0.2),ps=12, mgp=c(1.2,0.35,0), las=1, cex=1, col.axis="grey30",font.main = 1, col.lab="grey30", col.main="grey30", fg="grey70", cex.lab=0.6,cex.main=0.7, cex.axis=0.5, tcl=-0.1,bty="n",xpd=TRUE) #
-						
-						plot(NA,pch=19,xlim=c(0,24), ylim=c(k,1), xlab=NA, ylab=NA, yaxt='n',xaxt='n', type='n')
-											
-							axis(1, at=seq(0,24,by=6),labels=seq(0,24,by=6),cex.axis=0.5,mgp=c(0,-0.20,0))
-								mtext("Time of day [hours]",side=1,line=1/2, cex=0.6, las=1, col='grey30')
-							mtext(expression(bold("c")),side=3,line=-.7/2, cex=0.6,  col='grey30', outer=TRUE, adj=0.48*2)
-							
-							#axis(2, at=seq(0,1,by=0.25), labels=TRUE)
-							#mtext("Nest attendance [proportion]",side=2,line=1.3, cex=0.6, las=3, col='grey30')
-						# predictions
-							# uniparental species
-							polygon(c(p_f$hour, rev(p_f$hour)), c(p_f$lwr, 
-								rev(p_f$upr)), border=NA, col=adjustcolor(uni_col ,alpha.f = 0.2)) #0,0,0 black 0.5 is transparents RED
-							lines(p_f$hour, p_f$pred, col=uni_col,lwd=1)
-							
-							# biparental species uniparental incubation
-							polygon(c(p_m$hour, rev(p_m$hour)), c(p_m$lwr, 
-								rev(p_m$upr)), border=NA, col=adjustcolor(bip_uni_col ,alpha.f = 0.2)) #0,0,0 black 0.5 is transparents RED
-							lines(p_m$hour, p_m$pred, col=bip_uni_col,lwd=1)
-							
-							dev.off()
-						}
-			}	
-			{# Supplementary Figure 2b-c - changed order
+			{# Supplementary Figure 1b-d - changed order
 			
 			gg_color_hue <- function(n) {
 				  hues = seq(15, 375, length = n + 1)
@@ -2158,7 +1981,188 @@
 					dev.off()
 				}
 			
+			
+			{# Supplementary Figure 2b-c
+			
+			gg_color_hue <- function(n) {
+				  hues = seq(15, 375, length = n + 1)
+				  hcl(h = hues, l = 65, c = 100)[1:n]
+					}
+			n = 10
+			cols = gg_color_hue(n)[c(1,5,7,9)]
+			
+			dev.new(width = 4, height = 4)
+			plot(1:length(cols), pch = 16, cex = 2, col = cols)		
+			
+					#dev.new(width=3.5*0.5,height=1.85)
+					{# (b) raw data
+						png(paste(out_,"Supplementary_Figure_2b_loess.png", sep=""), width=3.5*0.5,height=1.85,units="in",res=600)
+						
+						par(mar=c(0.0,0.4,0,0),oma = c(2.1, 2.3, 0.2, 0),ps=12, mgp=c(1.2,0.35,0), las=1, cex=1, col.axis="grey30",font.main = 1, col.lab="grey30", col.main="grey30", fg="grey70", cex.lab=0.6,cex.main=0.7, cex.axis=0.5, tcl=-0.1,bty="n",xpd=TRUE) #
+						
+						plot(NA,pch=19,xlim=c(0,24), ylim=c(k,1), xlab=NA, ylab=NA, yaxt='n',xaxt='n', type='n')
+											
+							axis(1, at=seq(0,24,by=6),labels=seq(0,24,by=6),cex.axis=0.5,mgp=c(0,-0.20,0))
+								mtext("Time of day [hours]",side=1,line=1/2, cex=0.6, las=1, col='grey30')
+							
+							#axis(2, at=seq(0,1,by=0.25), labels=TRUE)
+							#mtext("Nest attendance [proportion]",side=2,line=1.3, cex=0.6, las=3, col='grey30')
+							
+							mtext(expression(bold("b")),side=3,line=-.7/2, cex=0.6,  col='grey30', outer=TRUE, adj=0.48*2)
+							
+							lines(c(0,24),c(0.19,0.19)+k,, lty=3, col="grey80")							
+						# data
+							# aggregate per hour, species and type of incubation		
+								hh$nn=1
+								gg=ddply(hh,.(sp,cols, sex, hour), summarise,mean_=mean(att),se_=sd(att)/sqrt(length(att)),n=sum(nn))
+								gg=gg[order(gg$sex),]							
+							#arrows(x0=gg$hour, y0=gg$mean_-gg$se_,x1=gg$hour,y1=gg$mean_+gg$se_,code = 0, col =col_p , angle = 90, length = .025, lwd=1, lty=1)
+							#symbols(gg$hour,gg$mean_, circles=sqrt(gg$n/pi),inches=0.14/1.75,bg='white', add=TRUE) 
+							symbols(gg$hour,gg$mean_, circles=sqrt(gg$n/pi),inches=0.14/1.75,bg=adjustcolor(gg$cols,alpha.f = 0.2),add=TRUE, fg=col_p) #bg=alpha(col_p,0.1)
+							#symbols(gg$hour,gg$mean_, circles=sqrt(gg$n/pi),inches=0.14/1.75,fg=adjustcolor(gg$cols,alpha.f = 0.2),add=TRUE), fg=col_p) #bg=alpha(col_p,0.1)
+								
+														#points(h$att~h$hour, col=adjustcolor(h$cols, alpha.f = 0.3), pch=20, cex=0.2)	
+							#points(inc$inc_eff~inc$bout_start_j_c, col=inc$col_,bg=adjustcolor(inc$col_, alpha.f = 0.4), pch=21, cex=0.5)	
+							
+								s= data.frame(sp=rep(c("amgp", "basa" ,"sesa", "wesa"),2), sex=c(rep('f',4), rep('m',4)), 
+											  col_=rep(cols,2), #rep(c("purple", "pink" ,"deepskyblue", "deepblue"),2), 
+											  lwd_=c(rep(1,4), rep(2,4)), stringsAsFactors=FALSE)
+								
+								for( i in 1:nrow(s)){	
+													ha=hh[hh$sp==s$sp[i] & hh$sex==s$sex[i],]
+													xx=loess(att~hour,ha)
+													j=order(ha$hour)
+													lines(ha$hour[j], xx$fitted[j], col=s$col_[i], lwd=s$lwd_[i])
+												}	
+							
+								text(x=-2+k, y=0.05, pos=4, expression(italic('N')*' cases:'),cex=0.5,las=1,col='grey30') 
+								
+								symbols(c(10,15,20),c(0.105,0.105,0.105)+k,circles=sqrt(c(10,100,150)/pi),inches=0.14/1.75,bg=col_pb, fg=col_p,add=TRUE, xpd=TRUE) #bg=alpha(col_p,0.1)
+								#symbols(c(23,23,23),c(0.77,0.65,0.5),circles=sqrt(c(10,100,300)/pi),inches=0.14/1.75,bg=col_pb, fg=col_p,add=TRUE, xpd=TRUE) #bg=alpha(col_p,0.1)
+								text(c(10,15,20),c(0.007,0.007,0.007)+k,labels=c(10,100,150), xpd=TRUE, cex=0.5,col='grey30') 
+								
+								mtext(side=2, 'American\ngolden\nplover',cex=0.4,las=1,col=cols[1], line=0.3,at=0.9) 
+								mtext(side=2, "Baird's\nsandpiper",cex=0.4,las=1,col=cols[2], line=0.3,at=0.7) 
+								mtext(side=2, "Western\nsandpiper",cex=0.4,las=1,col=cols[3], line=0.3,at=0.54) 
+								mtext(side=2, "Semipalmated\nsandpiper",cex=0.4,las=1,col=cols[4], line=0.3,at=0.36) 
+								
+								lines(x=c(-10,-6)+3.5, y=c(0.15,0.15)+k, xpd=NA,lwd=2,col=col_p)
+								lines(x=c(-10,-6)+3.5, y=c(0.07,0.07)+k, xpd=NA,lwd=1,col=col_p)
+								symbols(x=c(-8,-8)+3.5,c(0.15,0.07)+k,circles=c(0.1,0.1),bg="white", fg=col_p,add=TRUE, xpd=NA, inches=0.03) 
+								symbols(x=c(-8,-8)+3.5,c(0.15,0.07)+k,circles=c(0.1,0.1),bg=c("#535F7C33", "#FCB42C33"), fg=col_p,add=TRUE, xpd=NA, inches=0.03) 
+								text(x=c(-7.9,-8), y=c(0.17,0.07)+k, labels=c('\u2642','\u2640'),xpd=NA,cex=0.6,col=c('#535F7C','#FCB42C'))
+								
+								
+								#text(c(-2,-2,-2,-2),c(1,0.6,0.4,0.2),labels=c('American\ngolden\nplover',"Baird's\nsandpiper", "Western\nsandpiper","Semipalmated\nsandpiper"),xpd=TRUE, cex=0.4,col=cols, pos=3, outer=TRUE) 
+								
+						dev.off()															
+						
+						}
+					{# (c) 
+						png(paste(out_,"Supplementary_Figure_2c.png", sep=""), width=3.5*0.5,height=1.85,units="in",res=600)
+						par(mar=c(0.0,0,0,0.4),oma = c(2.1, 2.1, 0.2, 0.2),ps=12, mgp=c(1.2,0.35,0), las=1, cex=1, col.axis="grey30",font.main = 1, col.lab="grey30", col.main="grey30", fg="grey70", cex.lab=0.6,cex.main=0.7, cex.axis=0.5, tcl=-0.1,bty="n",xpd=TRUE) #
+						
+						plot(NA,pch=19,xlim=c(0,24), ylim=c(k,1), xlab=NA, ylab=NA, yaxt='n',xaxt='n', type='n')
+											
+							axis(1, at=seq(0,24,by=6),labels=seq(0,24,by=6),cex.axis=0.5,mgp=c(0,-0.20,0))
+								mtext("Time of day [hours]",side=1,line=1/2, cex=0.6, las=1, col='grey30')
+							mtext(expression(bold("c")),side=3,line=-.7/2, cex=0.6,  col='grey30', outer=TRUE, adj=0.48*2)
+							
+							#axis(2, at=seq(0,1,by=0.25), labels=TRUE)
+							#mtext("Nest attendance [proportion]",side=2,line=1.3, cex=0.6, las=3, col='grey30')
+						# predictions
+							# uniparental species
+							polygon(c(p_f$hour, rev(p_f$hour)), c(p_f$lwr, 
+								rev(p_f$upr)), border=NA, col=adjustcolor(uni_col ,alpha.f = 0.2)) #0,0,0 black 0.5 is transparents RED
+							lines(p_f$hour, p_f$pred, col=uni_col,lwd=1)
+							
+							# biparental species uniparental incubation
+							polygon(c(p_m$hour, rev(p_m$hour)), c(p_m$lwr, 
+								rev(p_m$upr)), border=NA, col=adjustcolor(bip_uni_col ,alpha.f = 0.2)) #0,0,0 black 0.5 is transparents RED
+							lines(p_m$hour, p_m$pred, col=bip_uni_col,lwd=1)
+							
+							dev.off()
+						}
+			}	
+			
 		}
+		
+		
+				{# Supplementary Figure 2
+				{# species
+				sp_ =read.csv(paste(wd,'species.csv', sep=""), stringsAsFactors=FALSE)
+				#sp_$order=-sp_$order
+				sp_=sp_[order(sp_$order),]
+		
+				d$species=sp_$species[match(d$sp,sp_$sp)]
+				d$order=as.factor(sp_$order[match(d$sp,sp_$sp)])
+				
+				h$species=sp_$species[match(h$sp,sp_$sp)]
+				h$order=as.factor(sp_$order[match(h$sp,sp_$sp)])
+
+				}	
+				{# add sex
+					n =read.csv(paste(wd,'nests.csv', sep=""), stringsAsFactors=FALSE)
+					n=n[!duplicated(n$act_ID),]
+					d$sex=NA
+					d$sex[d$type=='uni']=n$sex[match(d$act_ID[d$type=='uni'],n$act_ID)]
+					d$sex=factor(ifelse(is.na(d$sex),'biparental', ifelse(d$sex=='m', 'uniparental male', 'uniparental female')),levels=c('biparental','uniparental female', 'uniparental male'))#'uniparental \u2640', 'uniparental \u2642'))
+					}
+				{# create order for plotting
+					d=d[order(d$order, d$act_ID),]
+						xx=data.frame(act_ID=unique(d$act_ID))
+						xx$order_=1:nrow(xx)
+					d$order_all=xx$order_[match(d$act_ID,xx$act_ID)]	
+					
+					# create dummy value for one nest without >0.75 uni incubation in one day 
+					dd=d[d$type=='uni',]
+					d2=d[!d$act_ID%in%c(unique(dd$act_ID)),][1,]
+					d2$type='uni'
+					d2$sex='uniparental male'
+					d2$att=-1
+					dd=rbind(dd,d2)
+				}
+				
+				dev.new(width=7, height=6.5)
+				ggplot(dd,aes(x=prop_ip,y=att))+
+										geom_point(aes(fill=sex),shape=21,size=0.9,col='grey50')+#	#geom_point(aes(shape=sys),alpha=0.3,size=1)+
+										scale_fill_manual(name="Incubation",breaks=c('uniparental female', 'uniparental male'),values=alpha(c("#FCB42C","#535F7C"),0.6))+
+										stat_smooth(aes(col=order),method='lm', se=FALSE, lwd=1)+
+										scale_colour_discrete(name="Species", labels=sp_$species[order(sp_$order)])+
+										scale_x_continuous(limits=c(0,1.6),breaks=seq(0,1.5,by=0.5), labels=c('0','50','100','150'))+	
+										scale_y_continuous(limits=c(-0.05,1.05),breaks=seq(0,1,by=0.25), labels=c('0.0','','0.5','','1.0'))+										
+										facet_wrap(~order_all, ncol=8)+#, scales="free_x")+
+										guides(fill = guide_legend(order = 1), colour = guide_legend(order = 2))+
+										xlab("Species' incubation period [%]")+
+										ylab("Nest attendance [proportion]")+
+										theme_light()+
+										theme(	
+												axis.line=element_line(colour="grey70", size=0.25),
+												panel.border=element_rect(colour="grey70", size=0.25),
+												panel.grid = element_blank(),
+								
+												axis.title=element_text(size=7, colour="grey30"),
+												axis.title.y = element_text(vjust=1.1),
+												axis.title.x = element_text(vjust=0.2),
+												axis.text=element_text(size=6),# margin=units(0.5,"mm")),
+												axis.ticks.length=unit(0.5,"mm"),
+												#axis.ticks.margin,
+												
+												strip.background = element_blank(),
+												strip.text.x = element_blank(),
+												#strip.background = element_blank(), 
+												#strip.text = element_blank(),
+												panel.margin = unit(1, "mm"),
+												#legend.position="none"
+												#legend.background=element_rect(colour="white"),
+												legend.key=element_blank(),
+												legend.key.size = unit(0.75, 'lines'),
+												legend.text=element_text(size=6, colour="grey30"),
+												legend.title=element_text(size=7, colour="grey30")
+													)
+		
+				ggsave(paste(out_,"Supplementary_Figure_1.png", sep=""),width=7, height=6.5, units='in',dpi=600)						
+				}
 		
 		{# Figure 3 
 		  {# load metadata
@@ -2674,36 +2678,77 @@
 			{# run first
 				u =read.csv(paste("C:/Users/mbulla/Documents/Dropbox/Science/Projects/MS/Comparative/Submission/Supplementary/Data/",'Supplementary Data 4 - Nests metadata.csv', sep=""), stringsAsFactors=FALSE)
 				u=u[which(paste(u$sp,u$breeding_site)%in%c('AMGP barr', 'BASA barr', 'BLGO isla','DUNL barr', 'LBDO barr', 'REDS neth', 'SESA barr', 'WESA barr')),]
+				#table(paste(u$sp,u$breeding_site))
 				
+				u=u[-which(paste(u$year,u$nest)%in%toupper(unique(paste(g$year,g$nest)))),]
 				u1=ddply(u[u$end_state%in%c('fl','h','d','p'),],.(sp), summarise, s=100*length(end_state[end_state%in%c('fl','h')])/length(end_state[end_state%in%c('fl','h','d','p')]),n=length(end_state), type='bip')
-
+			
 				
 				u2=ddply(g,.(sp=toupper(sp)), summarise,s=round(100*(sum(success_bin)/sum(n))), n=sum(n),type='uni') #
 				uuu_=rbind(u1,u2)
+				uuu_$type_=ifelse(uuu_$type=='bip', 2,6)
+				uuu_$pk=c(1:nrow(uuu_))
+				uuu_[order(uuu_$type, uuu_$s),]
+				x=data.frame(pk=c(5,13,4,12,1,9,11,3,14,6), type_j=c(1.7,5.5,2.3,6,2.6,6.3,5.9,5.5,2,6,2, ) 
+				uuu_$type_j=c(0.8,2.4,2.6,1.8,2,2.4,2.8,2,6.023327,6,5.7,5.3,4.8,6.441619,6.101912,5.925222)#uuu_$type_j=jitter(uuu_$type_) 
+				#uuu_$type_j=c(1.7,1.471228,2.094297,2,2,1.7,1.614268,1.503284,6.023327,6,5.7,5.5,5,6.441619,6.101912,5.925222)
+				 #uuu_$type_j=c(1.7,1.471228,2.094297,2,2,1.7,1.614268,1.503284,6.023327,6,5.7,5.5,5,6.441619,6.101912,5.925222)
+				
+				gg_color_hue <- function(n) {
+				  hues = seq(15, 375, length = n + 1)
+				  hcl(h = hues, l = 65, c = 100)[1:n]
+					}
+				n = 10
+					#cols = gg_color_hue(n)[c(1,2,3,4,6,8,9,10)]
+					#dev.new(width = 4, height = 4)
+					#plot(1:length(cols), pch = 16, cex = 2, col = cols)	
+
+				cols=data.frame(sp=c("AMGP","BASA","BLGO","DUNL","LBDO","REDS","SESA","WESA"), name=c('American golden plover',"Baird's sandpiper",'Black-tailed godwit','Dunlin','Long-billed dowithcer','Redshank',"Semipalmated sandpiper",'Western sandpiper'), cols = gg_color_hue(n)[c(1,2,3,4,6,8,9,10)], stringsAsFactors=FALSE)
+				uuu_$cols=cols$cols[match(uuu_$sp,cols$sp)]
+				
 			}
-			{# plot - ADD COLOR
-						png(paste(out_,"Bip_unip_success_size.png", sep=""), width=1.85,height=1.85,units="in",res=600)
-						#dev.new(width=1.85,height=1.85)
-						uuu_$type_=ifelse(uuu_$type=='bip', 2,6)
-						uuu_$type_j=jitter(uuu_$type_)						
-						par(mar=c(0.0,0,0,0.4),oma = c(2.1, 2.1, 0.2, 0),ps=12, mgp=c(1.2,0.35,0), las=1, cex=1, col.axis="grey30",font.main = 1, col.lab="grey30", col.main="grey30", fg="grey70", cex.lab=0.6,cex.main=0.7, cex.axis=0.5, tcl=-0.1,bty="n",xpd=TRUE) #
+			{# plot 
+						png(paste(out_,"Bip_unip_success_size_col_med.png", sep=""), width=1.85+0.6,height=1.85,units="in",res=600)
+						#dev.new(width=1.85+0.6,height=1.85)
+						
+						par(mar=c(0.0,0,0,1.2),oma = c(2.1, 1.8, 0.2, 2.8),ps=12, mgp=c(1.2,0.35,0), las=1, cex=1, col.axis="grey30",font.main = 1, col.lab="grey30", col.main="grey30", fg="grey70", cex.lab=0.6,cex.main=0.7, cex.axis=0.5, tcl=-0.1,bty="n",xpd=TRUE) #
 						
 						plot(uuu_$s~uuu_$type_, xlim=c(0,8), ylim=c(0,100),xaxt='n',  ylab = "Successful nests [%]",,xlab = NULL,type='n')
 						
 												
 						axis(1, at=c(2,6), label=c('Biparental', 'Uniparental'), mgp=c(0,-0.20,0))
-						mtext("Type of incubation\nin biparental species",side=1,line=1, cex=0.6, las=1, col='grey30')
+						mtext("Type of incubation\nin biparental species",side=1,line=1, cex=0.5, las=1, col='grey30')
 											
 						axis(2, at=seq(0,100,by=20))
 						mtext("Successful nests [%]",side=2,line=1, cex=0.6, las=3, col='grey30')
 						
-						for(i in 1:length(unique(toupper(uuu_$sp)))){
-									lines(uuu_$type_j[toupper(uuu_$sp)==unique(uuu_$sp)[i]], uuu_$s[toupper(uuu_$sp)==unique(uuu_$sp)[i]], col='grey80')
+						for(i in 1:length(unique(uuu_$sp))){
+									lines(uuu_$type_j[uuu_$sp==unique(uuu_$sp)[i]], uuu_$s[uuu_$sp==unique(uuu_$sp)[i]], col=cols$cols[i])
 									}
 						
 						symbols(uuu_$type_j, uuu_$s, circles=sqrt(uuu_$n/pi),inches=0.14/1.75,bg='white',add=TRUE, fg='white') #
-						symbols(uuu_$type_j, uuu_$s, circles=sqrt(uuu_$n/pi),inches=0.14/1.75,bg=adjustcolor(col_p,alpha.f = 0.2),add=TRUE, fg=col_p) #
+						symbols(uuu_$type_j, uuu_$s, circles=sqrt(uuu_$n/pi),inches=0.14/1.75,bg=adjustcolor(uuu_$cols,alpha.f = 0.2),add=TRUE, fg=uuu_$cols) #
 						
+						# add medians
+						
+						points(2, weightedMedian(u1$s, u1$n), pch=19, col='black')
+						points(6, weightedMedian(u2$s, u2$n), pch=19, col='black')
+												
+						#lines(c(1.5,2.5), c(median(u1$s), median(u1$s)), lwd=2, col='black')
+						#lines(c(5.5,6.5), c(median(u2$s), median(u2$s)), lwd=2, col='black')
+						{# legend
+									mtext(expression(italic('N')*' nests:'),side = 4,line=-0.3, padj=-9,cex=0.5,las=1,col='grey30', xpd=TRUE) # for printing into device use padj=-7.5
+									symbols(c(8.5,8.5,8.5),c(77,65,50)+10,circles=sqrt(c(5,15,30)/pi),inches=0.14/1.75,bg=col_pb, fg=col_p,add=TRUE, xpd=TRUE) #bg=alpha(col_p,0.1)
+									text(c(8.5,8.5,8.5)+1,c(77,66,50)+10,labels=c(5,15,30), xpd=TRUE, cex=0.5,col='grey30') 
+									for(i in 1:nrow(cols)){mtext(side=4, cols$name[i],cex=0.4,las=1,col=cols$cols[i], line=-.3,at=48-7*(i-1))}
+									
+									mtext('Weighted\nmedian',side = 4,line=3, cex=0.5,padj=-2.75,adj=0.5, las=1,col='grey30',xpd=TRUE)
+									points(12.5, 78, pch=19, col='black',xpd=NA)
+									# use if plotting within RData
+									#mtext('Weighted\nmedian',side = 4,line=3, cex=0.5,padj=-3.25,adj=0.5, las=1,col='grey30',xpd=TRUE)
+									#points(12.5, 85, pch=19, col='black',xpd=NA)
+						}
+								
 						dev.off()
 					
 			}
