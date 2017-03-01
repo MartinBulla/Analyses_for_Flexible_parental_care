@@ -766,7 +766,9 @@
 		}
 		
 	}
-	
+	{# Supplementary Table 1 - uniparental incubation according to sex and circumstances of disertion
+		table(n_$sex,n_$circumstances)
+	}
   }
 
   {# Change in nest attendance
@@ -960,7 +962,7 @@
 				ggsave(paste(out_,"Supplementary_Figure_1.png", sep=""),width=7, height=6.5, units='in',dpi=600)						
 				}
 		
-		{# Figure 2b and Supplementary Table 1
+		{# Figure 2b and Supplementary Table 2
 			{# run first
 			d$actID_type=interaction(d$act_ID,d$type)
 			d$sp_type=interaction(d$sp,d$type)
@@ -1138,7 +1140,7 @@
 				}
 			
 		}
-		{# Supplementary Figure 2a, Supplementary Table 2
+		{# Supplementary Figure 2a, Supplementary Table 3
 			{# run first - prepare data	
 				# limited to species with uniparental data for both sexes	
 					dd=d[d$sys=='biparental' & d$type=='uni' & d$sp%in%c('amgp','basa','sesa','wesa'),]
@@ -1313,7 +1315,7 @@
 			
 		}
 		
-		{# Figure 2c-d &  Supplementary Table 3
+		{# Figure 2c-d &  Supplementary Table 4
 		  {# run first	
 			h$actID_type=interaction(h$act_ID,h$type)
 			h$sp_type=interaction(h$sp,h$type)
@@ -1525,7 +1527,7 @@
 				}
 			
 		}
-		{# Supplementary Figure 2b-c, Supplementary Table 4
+		{# Supplementary Figure 2b-c, Supplementary Table 5
 			{# run first - prepare data	
 				# limited to species with uniparental data for both sexes	
 				hh=h[h$sys=='biparental' & h$type=='uni' & h$sp%in%c('amgp','basa','sesa','wesa'),]
@@ -2456,6 +2458,7 @@
 				g$success=ifelse(g$state%in%c('s','l','h'),'yes','no')
 				g$success_bin=ifelse(g$state%in%c('s','l','h'),1,0)
 				g$prop_ip=g$prop_ip*100
+				g$n=1
 				{# add median daily nest attendance - CHECK WHETHER HERE AND IN OTHER DATASETS WE USE THE RIGHT BIRDS
 								dd=d[which(d$type=='uni'),]
 								d_=ddply(dd,.(act_ID), summarise, att_med=median(att, na.rm=TRUE))							
@@ -2467,7 +2470,7 @@
 				
 		}	
 		
-		{# number of nests with given state and distribution of success/failure across day and durantion of uniparental
+		{# number of nests with given end state and distribution of success/failure across day and durantion of uniparental
 			nrow(g) # number of nests
 			mean(g$success_bin) # proportion of successful nests
 			nrow(g[g$success_bin==1,]) # number of successful nests
@@ -2496,7 +2499,11 @@
 				summary(g$prop_day_end[g$success=='yes'])
 				densityplot(~log(g$uni_last))
 		}
-		{# Figure 4
+		{# Supplementary Table 6 | Cases of uniparental incubation according to desertion circumstances and nest faith. 
+			table(g$success,g$circumstances)
+		}
+  
+		{# Supplementary Figure 3 | Distribution of descriptors of uniparental incubation from biparental species according to nest faith
 			{# run first
 				sp_=sp[!sp$sp%in%c('pesa','rnph'),]
 				sp_$order=-sp_$order
@@ -2509,7 +2516,7 @@
 				
 				g3=g[-which(g$nest=='s807'),] 
 			}	
-			{# Figure 4a densityplot across start
+			{# Supplementary Figure 3a densityplot across start
 				dens_suc <- density(g3$prop_ip[g3$success=='yes']/100)
 				dens_fail <- density(g3$prop_ip[g3$success=='no']/100)
 				range(dens_fail$y, dens_suc$y)
@@ -2542,7 +2549,7 @@
 					mtext(expression(bold("a")),side=3,line=-.35, cex=0.6,  col='grey30', outer=TRUE, adj=0.9)	
 				dev.off()
 		}
-			{# Figure 4b densityplot across duration
+			{# Supplementary Figure 3b densityplot across duration
 				dens_suc <- density(g3$uni_last[g3$success=='yes'])
 				dens_fail <- density(g3$uni_last[g3$success=='no'])
 				range(dens_fail$y, dens_suc$y)
@@ -2572,7 +2579,7 @@
 					mtext(expression(bold("b")),side=3,line=-.35, cex=0.6,  col='grey30', outer=TRUE, adj=0.9)	
 				dev.off()
 		}
-			{# Figure 4c densityplot across end
+			{# Supplementary Figure 3c densityplot across end
 				dens_suc <- density(g$prop_day_end[g$success=='yes']/100)
 				dens_fail <- density(g$prop_day_end[g$success=='no']/100)
 				range(dens_fail$y, dens_suc$y)
@@ -2601,7 +2608,7 @@
 				dev.off()
 			
 		}
-			{# Figure 4d densityplot median daily nest attendance
+			{# Supplementary Figure 3d densityplot median daily nest attendance
 				dens_suc <- density(g2$att_med[g2$success=='yes'])
 				dens_fail <- density(g2$att_med[g2$success=='no'])
 				range(dens_fail$y, dens_suc$y)
@@ -2632,7 +2639,7 @@
 			
 		}
 		
-			{# not used Figure 4a distribution across nests
+			{# not used Supplementary Figure 3a distribution across nests
 			
 			# par(mfrow=c(1,3),mar=c(0.0,0,0,0.4),oma = c(1.8, 1.8, 0.2, 0.5),ps=12, mgp=c(1.2,0.35,0), las=1, cex=1, col.axis="grey30",font.main = 1, col.lab="grey30", col.main="grey30", fg="grey70") # 0.6 makes font 7pt, 0.7 8pt
 			 #dev.new(width=3.5*0.75,height=1.85)
@@ -2663,7 +2670,118 @@
 			
 		
 		}
-		{# Figure 5 & Supplementary Table 5 - effect of day and length of uniparental incubation
+		{# Figure 4 | Nest success in nests of biparental species with biparental and uniparental incubation
+			{# run first
+				u =read.csv(paste("C:/Users/mbulla/Documents/Dropbox/Science/Projects/MS/Comparative/Submission/Supplementary/Data/",'Supplementary Data 4 - Nests metadata.csv', sep=""), stringsAsFactors=FALSE)
+				u=u[which(paste(u$sp,u$breeding_site)%in%c('AMGP barr', 'BASA barr', 'BLGO isla','DUNL barr', 'LBDO barr', 'REDS neth', 'SESA barr', 'WESA barr')),]
+				
+				u1=ddply(u[u$end_state%in%c('fl','h','d','p'),],.(sp), summarise, s=100*length(end_state[end_state%in%c('fl','h')])/length(end_state[end_state%in%c('fl','h','d','p')]),n=length(end_state), type='bip')
+
+				
+				u2=ddply(g,.(sp=toupper(sp)), summarise,s=round(100*(sum(success_bin)/sum(n))), n=sum(n),type='uni') #
+				uuu_=rbind(u1,u2)
+			}
+			{# plot - ADD COLOR
+						png(paste(out_,"Bip_unip_success_size.png", sep=""), width=1.85,height=1.85,units="in",res=600)
+						#dev.new(width=1.85,height=1.85)
+						uuu_$type_=ifelse(uuu_$type=='bip', 2,6)
+						uuu_$type_j=jitter(uuu_$type_)						
+						par(mar=c(0.0,0,0,0.4),oma = c(2.1, 2.1, 0.2, 0),ps=12, mgp=c(1.2,0.35,0), las=1, cex=1, col.axis="grey30",font.main = 1, col.lab="grey30", col.main="grey30", fg="grey70", cex.lab=0.6,cex.main=0.7, cex.axis=0.5, tcl=-0.1,bty="n",xpd=TRUE) #
+						
+						plot(uuu_$s~uuu_$type_, xlim=c(0,8), ylim=c(0,100),xaxt='n',  ylab = "Successful nests [%]",,xlab = NULL,type='n')
+						
+												
+						axis(1, at=c(2,6), label=c('Biparental', 'Uniparental'), mgp=c(0,-0.20,0))
+						mtext("Type of incubation\nin biparental species",side=1,line=1, cex=0.6, las=1, col='grey30')
+											
+						axis(2, at=seq(0,100,by=20))
+						mtext("Successful nests [%]",side=2,line=1, cex=0.6, las=3, col='grey30')
+						
+						for(i in 1:length(unique(toupper(uuu_$sp)))){
+									lines(uuu_$type_j[toupper(uuu_$sp)==unique(uuu_$sp)[i]], uuu_$s[toupper(uuu_$sp)==unique(uuu_$sp)[i]], col='grey80')
+									}
+						
+						symbols(uuu_$type_j, uuu_$s, circles=sqrt(uuu_$n/pi),inches=0.14/1.75,bg='white',add=TRUE, fg='white') #
+						symbols(uuu_$type_j, uuu_$s, circles=sqrt(uuu_$n/pi),inches=0.14/1.75,bg=adjustcolor(col_p,alpha.f = 0.2),add=TRUE, fg=col_p) #
+						
+						dev.off()
+					
+			}
+			
+			
+			
+			
+			# overall nest success
+			summary(ddply(u[u$end_state%in%c('fl','h','d','p'),],.(sp), summarise, s=length(end_state[end_state%in%c('fl','h')])/length(end_state[end_state%in%c('fl','h','d','p')])))
+			uu=ddply(u[u$end_state%in%c('fl','h','d','p'),],.(sp), summarise, s=length(end_state[end_state%in%c('fl','h')]),al=length(end_state[end_state%in%c('fl','h','d','p')]),n=length(end_state), type='bip')
+			uu$p=uu$s/uu$al
+			plot(p~n,uu)
+	
+			u1=ddply(u[u$end_state%in%c('fl','h','d','p'),],.(sp), summarise, s=100*length(end_state[end_state%in%c('fl','h')])/length(end_state[end_state%in%c('fl','h','d','p')]),n=length(end_state), type='bip')
+		
+		
+			u2=ddply(g,.(sp), summarise,s=round(100*(sum(success_bin)/sum(n))), n=sum(n),type='uni') #
+			uuu=rbind(u1,u2)
+			uuu_=rbind(u1[u1$sp%in%toupper(u2$sp),],u2)
+		
+			boxplot(s~type,uuu)
+			ggplot(uuu,aes(x=type,y=s, fill=type))+geom_violin(fill='white')+ geom_boxplot(width=0.1)
+		
+			ggplot(uuu,aes(x=type,y=s, fill=type, col=type))+geom_violin()+ geom_boxplot(width=0.1,fill='white', col='grey50')+labs(x="Type of incubation\nin biparental species", y = "Successful nests per species [%]")+guides(fill=FALSE, col=FALSE)
+		
+			ggplot(uuu,aes(x=type,y=s, fill=type, col=type))+geom_violin()+ labs(x="Type of incubation\nin biparental species", y = "Successful nests per species [%]")+guides(fill=FALSE, col=FALSE)+ geom_jitter(shape=16, position=position_jitter(0.2), col='black')
+		
+			ggplot(uuu_,aes(x=type,y=s, fill=type, col=type))+geom_violin()+ labs(x="Type of incubation\nin biparental species", y = "Successful nests per species [%]")+guides(fill=FALSE, col=FALSE)+ geom_jitter(shape=16, position=position_jitter(0.2), col='black')
+				dev.new()
+		
+						png(paste(out_,"Bip_unip_success_xy.png", sep=""), width=1.85,height=1.85,units="in",res=600)
+						#dev.new(width=1.85,height=1.85)
+												
+						par(mar=c(0.0,0,0,0.4),oma = c(2.1, 2.1, 0.2, 0),ps=12, mgp=c(1.2,0.35,0), las=1, cex=1, col.axis="grey30",font.main = 1, col.lab="grey30", col.main="grey30", fg="grey70", cex.lab=0.6,cex.main=0.7, cex.axis=0.5, tcl=-0.1,bty="n",xpd=TRUE) #
+						
+						plot(uuu_$s[uuu_$type=='uni']~uuu_$s[uuu_$type=='bip'], xlim=c(0,100), ylim=c(0,100), ylab=NULL, xlab = NULL,xaxt='n', type='n')
+						
+						axis(1, at=seq(0,100,by=20), ,mgp=c(0,-0.20,0))
+						mtext("Successful nests [%]\n biparental incubation",side=1,line=1, cex=0.6, las=1, col='grey30')
+											
+						axis(2, at=seq(0,100,by=20))
+						mtext("Successful nests [%]\n uniparental incubation",side=2,line=1, cex=0.6, las=3, col='grey30')
+						
+							lines(c(0,100),c(0,100), lty=3)
+							
+						points(	uuu_$s[uuu_$type=='uni']~uuu_$s[uuu_$type=='bip'], pch=19)
+						
+						dev.off()
+						
+						png(paste(out_,"Bip_unip_success_size.png", sep=""), width=1.85,height=1.85,units="in",res=600)
+						#dev.new(width=1.85,height=1.85)
+						uuu_$type_=ifelse(uuu_$type=='bip', 2,6)
+						uuu_$type_j=jitter(uuu_$type_)						
+						par(mar=c(0.0,0,0,0.4),oma = c(2.1, 2.1, 0.2, 0),ps=12, mgp=c(1.2,0.35,0), las=1, cex=1, col.axis="grey30",font.main = 1, col.lab="grey30", col.main="grey30", fg="grey70", cex.lab=0.6,cex.main=0.7, cex.axis=0.5, tcl=-0.1,bty="n",xpd=TRUE) #
+						
+						plot(uuu_$s~uuu_$type_, xlim=c(0,8), ylim=c(0,100),xaxt='n',  ylab = "Successful nests [%]",,xlab = NULL,type='n')
+						
+												
+						axis(1, at=c(2,6), label=c('Biparental', 'Uniparental'), mgp=c(0,-0.20,0))
+						mtext("Type of incubation\nin biparental species",side=1,line=1, cex=0.6, las=1, col='grey30')
+											
+						axis(2, at=seq(0,100,by=20))
+						mtext("Successful nests [%]",side=2,line=1, cex=0.6, las=3, col='grey30')
+						
+						for(i in 1:length(unique(toupper(uuu_$sp)))){
+									lines(uuu_$type_j[toupper(uuu_$sp)==unique(uuu_$sp)[i]], uuu_$s[toupper(uuu_$sp)==unique(uuu_$sp)[i]], col='grey80')
+									}
+						
+						symbols(uuu_$type_j, uuu_$s, circles=sqrt(uuu_$n/pi),inches=0.14/1.75,bg='white',add=TRUE, fg='white') #
+						symbols(uuu_$type_j, uuu_$s, circles=sqrt(uuu_$n/pi),inches=0.14/1.75,bg=adjustcolor(col_p,alpha.f = 0.2),add=TRUE, fg=col_p) #
+						
+						dev.off()
+						
+	
+}
+
+		
+		{# Figure 5 & Supplementary Table 7 | Effects of start and duration of uniparental incubation on the probability of hatching
 			{# correlation of predictors
 				cor(g3$uni_last,g3$prop_ip,method = c("pearson"))
 				cor(g3$uni_last,g3$prop_ip,method = c("spearman"))
@@ -2890,7 +3008,7 @@
 					dev.off()
 				}
 			}
-			{# Supplementary Table 5
+			{# Supplementary Table 7 | Effects of start and duration of uniparental incubation on the probability of hatching
 				m=glmer(success_bin~scale(prop_ip)+scale(uni_last)+scale(att_med)+(1|sp),data=g3,family='binomial')
 			 
 				pred=c('Intercept','Incubation period', 'Duration', 'Attendance')
@@ -2976,7 +3094,7 @@
 				}
 			
 		}		
-		{# hatching succes 	
+		{# hatching succes descriptive
 				sum(g$success_bin)/nrow(g) # overall
 				g$success_bin_=ifelse(g$state%in%c('s','l','h'),1,-1)
 				g_=ddply(g,.(sp), summarise, fail=-sum(success_bin_[success_bin_==-1]),hatch=sum(success_bin_[success_bin_==1])) 
@@ -3241,7 +3359,7 @@
 			
   }	
   
-  {# Supplementary ActogramsACTOGRAMS
+  {# Supplementary Actograms
 	{# load metadata
 		{# nests to extract the data for
 				nests =read.csv(paste(wd,'nests.csv', sep=""), stringsAsFactors=FALSE)
@@ -3357,84 +3475,4 @@
 }
 
 
-{# TEMP nest success bip
-	u =read.csv(paste("C:/Users/mbulla/Documents/Dropbox/Science/Projects/MS/Comparative/Submission/Supplementary/Data/",'Supplementary Data 4 - Nests metadata.csv', sep=""), stringsAsFactors=FALSE)
-	
-	
-	nrow(u[u$end_state%in%c('fl','h'),])/nrow(u[u$end_state%in%c('fl','h','d','p'),])
-	us=u[u$sp=='SESA',]
-	summary(factor(us$end_state))
-	nrow(us[us$end_state%in%c('fl','h'),])/nrow(us[us$end_state%in%c('fl','h','d','p'),])
-	
-	summary(ddply(u[u$end_state%in%c('fl','h','d','p'),],.(sp), summarise, s=length(end_state[end_state%in%c('fl','h')])/length(end_state[end_state%in%c('fl','h','d','p')])))
-	uu=ddply(u[u$end_state%in%c('fl','h','d','p'),],.(sp), summarise, s=length(end_state[end_state%in%c('fl','h')]),al=length(end_state[end_state%in%c('fl','h','d','p')]),n=length(end_state), type='bip')
-	uu$p=uu$s/uu$al
-	plot(p~n,uu)
-	
-		u1=ddply(u[u$end_state%in%c('fl','h','d','p'),],.(sp), summarise, s=100*length(end_state[end_state%in%c('fl','h')])/length(end_state[end_state%in%c('fl','h','d','p')]),n=length(end_state), type='bip')
-		
-		g=n_[!n_$state%in%c('r','u','w'),]
-				g$success=ifelse(g$state%in%c('s','l','h'),'yes','no')
-				g$success_bin=ifelse(g$state%in%c('s','l','h'),1,0)
-				g$n=1
-		
-		u2=ddply(g,.(sp), summarise,s=round(100*(sum(success_bin)/sum(n))), n=sum(n),type='uni') #
-		uuu=rbind(u1,u2)
-		uuu_=rbind(u1[u1$sp%in%toupper(u2$sp),],u2)
-		
-		boxplot(s~type,uuu)
-		ggplot(uuu,aes(x=type,y=s, fill=type))+geom_violin(fill='white')+ geom_boxplot(width=0.1)
-		
-		ggplot(uuu,aes(x=type,y=s, fill=type, col=type))+geom_violin()+ geom_boxplot(width=0.1,fill='white', col='grey50')+labs(x="Type of incubation\nin biparental species", y = "Successful nests per species [%]")+guides(fill=FALSE, col=FALSE)
-		
-		ggplot(uuu,aes(x=type,y=s, fill=type, col=type))+geom_violin()+ labs(x="Type of incubation\nin biparental species", y = "Successful nests per species [%]")+guides(fill=FALSE, col=FALSE)+ geom_jitter(shape=16, position=position_jitter(0.2), col='black')
-		
-		ggplot(uuu_,aes(x=type,y=s, fill=type, col=type))+geom_violin()+ labs(x="Type of incubation\nin biparental species", y = "Successful nests per species [%]")+guides(fill=FALSE, col=FALSE)+ geom_jitter(shape=16, position=position_jitter(0.2), col='black')
-		dev.new()
-		
-						png(paste(out_,"Bip_unip_success_xy.png", sep=""), width=1.85,height=1.85,units="in",res=600)
-						#dev.new(width=1.85,height=1.85)
-												
-						par(mar=c(0.0,0,0,0.4),oma = c(2.1, 2.1, 0.2, 0),ps=12, mgp=c(1.2,0.35,0), las=1, cex=1, col.axis="grey30",font.main = 1, col.lab="grey30", col.main="grey30", fg="grey70", cex.lab=0.6,cex.main=0.7, cex.axis=0.5, tcl=-0.1,bty="n",xpd=TRUE) #
-						
-						plot(uuu_$s[uuu_$type=='uni']~uuu_$s[uuu_$type=='bip'], xlim=c(0,100), ylim=c(0,100), ylab=NULL, xlab = NULL,xaxt='n', type='n')
-						
-						axis(1, at=seq(0,100,by=20), ,mgp=c(0,-0.20,0))
-						mtext("Successful nests [%]\n biparental incubation",side=1,line=1, cex=0.6, las=1, col='grey30')
-											
-						axis(2, at=seq(0,100,by=20))
-						mtext("Successful nests [%]\n uniparental incubation",side=2,line=1, cex=0.6, las=3, col='grey30')
-						
-							lines(c(0,100),c(0,100), lty=3)
-							
-						points(	uuu_$s[uuu_$type=='uni']~uuu_$s[uuu_$type=='bip'], pch=19)
-						
-						dev.off()
-						
-						png(paste(out_,"Bip_unip_success_size.png", sep=""), width=1.85,height=1.85,units="in",res=600)
-						#dev.new(width=1.85,height=1.85)
-						uuu_$type_=ifelse(uuu_$type=='bip', 2,6)
-						uuu_$type_j=jitter(uuu_$type_)						
-						par(mar=c(0.0,0,0,0.4),oma = c(2.1, 2.1, 0.2, 0),ps=12, mgp=c(1.2,0.35,0), las=1, cex=1, col.axis="grey30",font.main = 1, col.lab="grey30", col.main="grey30", fg="grey70", cex.lab=0.6,cex.main=0.7, cex.axis=0.5, tcl=-0.1,bty="n",xpd=TRUE) #
-						
-						plot(uuu_$s~uuu_$type_, xlim=c(0,8), ylim=c(0,100),xaxt='n',  ylab = "Successful nests [%]",,xlab = NULL,type='n')
-						
-												
-						axis(1, at=c(2,6), label=c('Biparental', 'Uniparental'), mgp=c(0,-0.20,0))
-						mtext("Type of incubation\nin biparental species",side=1,line=1, cex=0.6, las=1, col='grey30')
-											
-						axis(2, at=seq(0,100,by=20))
-						mtext("Successful nests [%]",side=2,line=1, cex=0.6, las=3, col='grey30')
-						
-						for(i in 1:length(unique(toupper(uuu_$sp)))){
-									lines(uuu_$type_j[toupper(uuu_$sp)==unique(uuu_$sp)[i]], uuu_$s[toupper(uuu_$sp)==unique(uuu_$sp)[i]], col='grey80')
-									}
-						
-						symbols(uuu_$type_j, uuu_$s, circles=sqrt(uuu_$n/pi),inches=0.14/1.75,bg='white',add=TRUE, fg='white') #
-						symbols(uuu_$type_j, uuu_$s, circles=sqrt(uuu_$n/pi),inches=0.14/1.75,bg=adjustcolor(col_p,alpha.f = 0.2),add=TRUE, fg=col_p) #
-						
-						dev.off()
-						
-	
-}
-table(n_$sex,n_$circumstances) # widdwed sex according to circumstances
+
