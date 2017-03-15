@@ -1,38 +1,3 @@
-{# INFO
- # data are in longitudinal time
- # data used in the analyses are from 2 hours after the equipment was placed on the nest, and 6 hours before the hatching start or 12 hours before the nest hatched
- # uniparental incubation, if one parent deserted, starts median bout length of the species after the bird has arrived to the nest
- 
- # NESTS
-	#BARRROW
-		#nests=c('a301','a302','b301','b501','s602') # deserted 2011
-		#nests=c('a303','a305','a403','a802','b303','b304','b402','b403','b404','b405','b601','d702','l301','l302','l401','s1003','s111','s201','s304','s305','s310','s313','s318','s325','s419','s420','s422','s502','s506','s509','s511','s609','s610','s704','s705','s706','s708','s711','s712','s716','s717','s720','s777','s804','s807','s812','s901','s902') # deserted 2012 (s712 right during hatching, it may even be no desertion); 's815' taken out as birds incubate one egg and its all weired
-		#nests=c('l501','l502','l801','l805','s409','s510','s516','s520','s627','w504','w505','w507','w508','w509','w511','w701','w702','w801','w802','w804') # deserted 2013 ('s707' not used as one parent keeps showing up
-	# OTHER
-		#2013	isla	blgo	ka1411_is2014
-		#2014	neth	reds	re117_nl2014
-		#2014	neth	reds	re133_nl2014
-		#2014	neth	reds	re213_nl2014
-
-# add the experimental ones
-# add script for lines for unip start and inc end
- 
- # ISSUES
-	# two nest temperatures
-		# a802 2012 
-		# w508 2013
-		# re133 should start 2014-06-03 20:31:38
-		
-	# no use for contancy:
-		# dislocated temperature probe
-		c('s704')
-		's804', 'w504' # part has poor temperature reading, but part is ok
-	# one egg incubation	
-		's310','s815'
-# considered, but have not met UNIPARENTAL definition
-	c('l301','l401','l501','s304','s902','w504')		
-}
-
 {# TOOLS
 	{# define time 
 	  Sys.setenv(TZ="UTC")	
@@ -178,12 +143,6 @@
 	}
 }
 
-{# DONE correctins - delete s310 - dislocated probe
-	load(paste(wd,'for_analyses.RData',sep="")) 
-	d=d[-which(d$act_ID=='biparental_29'),]
-	h=h[-which(h$act_ID=='biparental_29'),]
-	save(d,h,file=paste(wd,'for_analyses.RData',sep="")) # d - per day aggregates, h per hour aggregates, se - start and end of unip incubation
-}
 {# DONE CHECK whether number of 5s readings per day is not higher than it should be - 60*60*24/5
 		load(paste(wd,'for_analyses.RData',sep="")) # d - per day aggregates, h per hour aggregates
 		densityplot(~d$n)
