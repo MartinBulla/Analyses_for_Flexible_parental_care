@@ -759,6 +759,11 @@
 				bip_uni_col="#535F7C"
 				uni_col="#FCB42C"
 				
+				col_p="gray53"  # color of point's outline
+				col_pb="gray98"  # color of point's background
+				col_l="gray73"  # line color of prediction '#FCB42C'
+				col_lb="gray92"  # line color of prediction '#FCB42C'
+				
 			# writing color
 				wr_col="grey50"
 				ln_col="grey80"
