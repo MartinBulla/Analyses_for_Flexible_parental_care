@@ -208,5 +208,29 @@
 				}
 				
 }
-				
+
+{# sessionInfo()
+#R version 3.3.0 (2016-05-03)
+#Platform: x86_64-w64-mingw32/x64 (64-bit)
+#Running under: Windows 7 x64 (build 7601) Service Pack 1
+
+#locale:
+#[1] LC_COLLATE=English_United States.1252 
+#[2] LC_CTYPE=English_United States.1252   
+#[3] LC_MONETARY=English_United States.1252
+#[4] LC_NUMERIC=C                          
+#[5] LC_TIME=English_United States.1252    
+
+#attached base packages:
+#[1] stats     graphics  grDevices utils     datasets  methods   base     
+
+#other attached packages:
+# [1] zoo_1.7-13      RSQLite_1.0.0   DBI_0.4-1       rgdal_1.1-10   
+# [5] rgeos_0.3-19    raster_2.5-8    maptools_0.8-39 sp_1.2-3       
+# [9] magrittr_1.5    plyr_1.8.3     
+
+#loaded via a namespace (and not attached):
+#[1] foreign_0.8-66  Rcpp_0.12.5     grid_3.3.0      lattice_0.20-33
+
+}				
 				

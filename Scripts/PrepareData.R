@@ -1,3 +1,26 @@
+{# INFO
+# R Script used to generate the dataset used to recreate the statistical outputs from
+# Bulla, M. et al. (2017).  Flexible parental care: Uniparental incubation in biparentally incubating shorebirds'. bioRxive. 
+# --------------------------------------------------------------------------------------------------------
+# Questions can be directed to: Martin Bulla (bulla.mar@gmail.com)
+# --------------------------------------------------------------------------------------------------------
+# The script is optimezed for use with Notepad++ editor.
+# For better readability the subsections of the script can be collapsed  (Alt+0)
+# The script runs with 
+#	- R version 3.3.0; for details and package versions see the sessionInfo() at the end of the script
+#   - Functions_&_constants.R script available from https://osf.io/ug3h5/
+#	- bip_to_unip.sqlite databased available from https://osf.io/n52xw/
+#   - csv metadata files available from  https://osf.io/t9e2x/
+#--------------------------------------------------------------------------------------------------------
+
+#WHEN USING any of the Supporting information, PLEASE CITE both the original paper and the Supporting information
+#	Bulla, M. (2017).  Flexible parental care: Uniparental incubation in biparentally incubating shorebirds'. bioRxive. 
+#	Bulla, M. (2017).  Supporting information for 'Flexible parental care: Uniparental incubation in biparentally incubating shorebirds'. Open Science Framework,   	
+#	http://doi.org/10.17605/OSF.IO/3RSNY. ADD DATETIME.
+
+#For any publication making substantial use of the data, please contact Martin Bulla (bulla.mar@gmail.com), as the authors welcome the opportunity for collaboration and wish to #comment prior to publication.
+}
+
 {# TOOLS
 	{# define time 
 	  Sys.setenv(TZ="UTC")	
@@ -141,4 +164,26 @@
 		
 	save(d,h,se,file=paste(wd,'for_analyses.RData',sep="")) # d - per day aggregates, h per hour aggregates, se - start and end of unip incubation
 	}
+}
+
+{# sessionInfo
+#R version 3.3.0 (2016-05-03)
+#Platform: x86_64-w64-mingw32/x64 (64-bit)
+#Running under: Windows 7 x64 (build 7601) Service Pack 1
+
+#locale:
+#[1] LC_COLLATE=English_United States.1252 
+#[2] LC_CTYPE=English_United States.1252   
+#[3] LC_MONETARY=English_United States.1252
+#[4] LC_NUMERIC=C                          
+#[5] LC_TIME=English_United States.1252    
+
+#attached base packages:
+#[1] stats     graphics  grDevices utils     datasets  methods   base     
+
+#other attached packages:
+#[1] RSQLite_1.0.0   DBI_0.4-1       plyr_1.8.3      lattice_0.20-33
+
+#loaded via a namespace (and not attached):
+#[1] Rcpp_0.12.5 grid_3.3.0 
 }

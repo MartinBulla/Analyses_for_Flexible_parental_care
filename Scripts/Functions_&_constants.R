@@ -803,3 +803,26 @@
 					theme_map() + theme(plot.margin = grid::unit(c(0.5,0.5,0.5,0.5), "mm"))		
 			
 	}
+	{# sessionInfo()
+#R version 3.3.0 (2016-05-03)
+#Platform: x86_64-w64-mingw32/x64 (64-bit)
+#Running under: Windows 7 x64 (build 7601) Service Pack 1
+
+#locale:
+#[1] LC_COLLATE=English_United States.1252 
+#[2] LC_CTYPE=English_United States.1252   
+#[3] LC_MONETARY=English_United States.1252
+#[4] LC_NUMERIC=C                          
+#[5] LC_TIME=English_United States.1252    
+
+#attached base packages:
+#[1] stats     graphics  grDevices utils     datasets  methods   base     
+
+#other attached packages:
+#[1] raster_2.5-8   sp_1.2-3       ggthemes_3.0.3 ggplot2_2.1.0 
+
+#loaded via a namespace (and not attached):
+# [1] colorspace_1.2-6 scales_0.4.0     assertthat_0.1   plyr_1.8.3      
+# [5] rgdal_1.1-10     tools_3.3.0      gtable_0.2.0     Rcpp_0.12.5     
+# [9] grid_3.3.0       munsell_0.4.3    lattice_0.20-33 
+	}
