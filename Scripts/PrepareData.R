@@ -14,7 +14,7 @@
 #--------------------------------------------------------------------------------------------------------
 
 #WHEN USING any of the Supporting information, PLEASE CITE both the original paper and the Supporting information
-#	Bulla, M. (2017).  Flexible parental care: Uniparental incubation in biparentally incubating shorebirds'. bioRxive. 
+#	Bulla, M. at al. (2017).  Flexible parental care: Uniparental incubation in biparentally incubating shorebirds'. bioRxive. 
 #	Bulla, M. (2017).  Supporting information for 'Flexible parental care: Uniparental incubation in biparentally incubating shorebirds'. Open Science Framework,   	
 #	http://doi.org/10.17605/OSF.IO/3RSNY. ADD DATETIME.
 
