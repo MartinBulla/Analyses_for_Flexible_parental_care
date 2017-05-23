@@ -90,7 +90,7 @@
 				n$inc_per_sp=ip$inc_period[match(n$sp,ip$sp)]
 				n$prop_ip=n$day_j/n$inc_per_sp
 				n$uni_last=as.numeric(difftime(n$end, n$start, units='hours'))				
-				n_=n[n$act_ID=='biparental_59'| n$uni_last>2*n$bout,] # act_ID biparental_59 (nest s807) we lack data for when the uniparental incubation started (incubation monitoring system was taken of), but we know from visits to the nest that the nest was uniparental before we brought the incubation monitoring system back
+				n_=n[n$act_ID=='biparental_59'| n$uni_last>2*n$bout,] # we keep act_ID biparental_59 (nest s807) as we lack data for when the uniparental incubation started (incubation monitoring system was taken of), but we know from visits to the nest that the nest was uniparental long before we brought the incubation monitoring system back
 				n_$sex=as.factor(n_$sex)
 				n_$sexsp=interaction(n_$sp,n_$sex)
 				n_$uni_last=n_$uni_last/24
@@ -149,7 +149,7 @@
 		}
 	}
 }
-	
+
 {# INTRODUCTION - Table 1
 	{# number of nests with uniparental incubation in biparental species	
 		nrow(n_)# number of cases
@@ -181,7 +181,7 @@
 				
 	}
 }
-
+	
 {# METHODS - Extraction of incubation behaviour - sample size
 	{# number of cases according to desertion type
 			summary(factor(n_$circumstances))
@@ -210,10 +210,17 @@
 				length(unique(d$act_ID[d$sp=='pesa'])) # number of pectoral sandpiper nests
 				length(unique(d$act_ID[d$sp=='rnph'])) # number of red-necked phalarope nests
 		}
+	{# number of uniparental nests with cage
+		nc = n_[!duplicated(n_$act_ID),]
+		summary(factor(nc$cage))
+		table(nc$sp,nc$cage)
+		nc = n_[n_$cage=='yes',]
+		
+	}
 }
 
 {# RESULTS & Supplementary
-  {# Abundance of uniparental incubation
+ {# Abundance of uniparental incubation
 	{# number of species with uniparental incubation from number of species studied
 		# uniparental found in 
 				length(unique(n_$sp))
