@@ -220,7 +220,7 @@
 }
 
 {# RESULTS & Supplementary
- {# Abundance of uniparental incubation
+  {# Abundance of uniparental incubation
 	{# number of species with uniparental incubation from number of species studied
 		# uniparental found in 
 				length(unique(n_$sp))
@@ -373,9 +373,11 @@
 		sp_=sp[!is.na(sp$order),]
 		sp_$order=-sp_$order
 		sp_=sp_[order(sp_$order),]
-		
+		sp_$ip = ip$inc_period[match(sp_$sp, ip$sp)]
+		spp=sp_[!sp_$sp%in%c('rnph','pesa'),]
 		ns_$species=sp_$species[match(ns_$sp,sp_$sp)]
 		ns_$order=sp_$order[match(ns_$sp,sp_$sp)]
+		
 		ns_$sex=factor(ns_$sex, levels=c('m','f'))
 			ns_$order=ifelse(ns_$sex=='m', 2*ns_$order-0.4, 2*ns_$order+0.4)
 			unique(ns_$order)[order(unique(ns_$order))]
@@ -384,7 +386,8 @@
 		table(ns_$sex,ns_$sp)
 		
 		ns_$order=jitter(ns_$order)
-
+		
+		
 			}
 		 {# Figure 1b points	
 		   #dev.new(width=3.5*0.75,height=1.85)
@@ -427,7 +430,7 @@
 		}
 		 {# Figure 1c points	
 		   #dev.new(width=3.5*0.75,height=1.85)
-		    png(paste(out_,"Figure_1c+est_lines.png", sep=""), width=3.5*0.75,height=1.85,units="in",res=600)
+		    png(paste(out_,"Figure_1c+est_lines_period.png", sep=""), width=3.5*0.75,height=1.85,units="in",res=600)
 			par(mar=c(0.0,0,0,0.4),oma = c(2.1, 0.5, 0.2, 5),ps=12, mgp=c(1.2,0.35,0), las=1, cex=1, col.axis="grey30",font.main = 1, col.lab="grey30", col.main="grey30", fg="grey70", cex.lab=0.6,cex.main=0.7, cex.axis=0.5, tcl=-0.1,bty="n",xpd=TRUE)
 			#ggplot(ns_,aes(x=species, y=prop_ip*100, fill=sex))+geom_boxplot() +coord_flip()+coord_cartesian(ylim = c(0, 160))
 			#ggplot(ns_,aes(x=species, y=prop_ip*100, col=sex))+geom_point(position = positions_jitter(w = 0.3, h = 0.3)) +coord_flip()+coord_cartesian(ylim = c(0, 160))
@@ -458,9 +461,12 @@
 										pp=data.frame(round(apply(bsim@coef, 2, quantile, prob=c(0.5, 0.025,0.975)),1))# output is in %
 										text(y=xi$li+0.3,x=20.9, labels=paste(pp$sexm[1]," (",pp$sexm[2],"-",pp$sexm[3],")", sep=""), col='grey30', cex=0.4, pos=2, offset=0)
 									}
-					arrows(y0=ns_$order[round(ns_$uni_last,2)==round(18.669045,2)], x0= 18.669045+1.5,x1=18.669045+0.5, length = 0.02, angle = 15, col="#5eab2b", lwd=1.5)
-					arrows(y0=ns_$order[round(ns_$uni_last,2)==round(15.373264,2)],x0=15.373264+1.5,  x1=15.373264+0.5, length = 0.02, angle = 15, col="#5eab2b", lwd=1.5)
-      
+					#arrows(y0=ns_$order[round(ns_$uni_last,2)==round(18.669045,2)], x0= 18.669045+1.5,x1=18.669045+0.5, length = 0.02, angle = 15, col="#5eab2b", lwd=1.5)
+					#arrows(y0=ns_$order[round(ns_$uni_last,2)==round(15.373264,2)],x0=15.373264+1.5,  x1=15.373264+0.5, length = 0.02, angle = 15, col="#5eab2b", lwd=1.5)
+					# add species incubation period
+					#points(2*sp_$order~sp_$ip, pch = "|", cex = 1, col = 'red') 
+					text(23,2*spp$order, labels=spp$ip, cex=0.5, col='grey30', xpd=NA)
+					mtext("Species' incubation period\n[days]",side=4,line=1.4, cex=0.6, las=3, col='grey30')					
 		 dev.off()				
 		}
 			{# not used Figure 1b points and boxplot
