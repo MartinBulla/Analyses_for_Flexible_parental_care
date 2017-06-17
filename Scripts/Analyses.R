@@ -422,8 +422,8 @@
 										bsim <- sim(m, n.sim=nsim)  
 										pp=data.frame(round(100*apply(bsim@coef, 2, quantile, prob=c(0.5, 0.025,0.975))/apply(bsim@coef, 2, quantile, prob=c(0.5, 0.025,0.975))[1,1]))# output is in %
 										if(i==1){
-										text(y=xi$li+0.3,x=167, labels=paste(pp$sexm[1]," (",pp$sexm[2],"-",pp$sexm[3],")", sep=""), col='grey30', cex=0.4, pos=2, offset=0)}else{
-										text(y=xi$li+0.3,x=167, labels=paste(pp$sexm[1]," (",pp$sexm[2],"-",pp$sexm[3],")", sep=""), col='grey30', cex=0.4, pos=2, offset=0)}
+										text(y=xi$li+0.3,x=167, labels=paste(pp$sexm[1]," (",pp$sexm[2],"; ",pp$sexm[3],")", sep=""), col='grey30', cex=0.4, pos=2, offset=0)}else{
+										text(y=xi$li+0.3,x=167, labels=paste(pp$sexm[1]," (",pp$sexm[2],"; ",pp$sexm[3],")", sep=""), col='grey30', cex=0.4, pos=2, offset=0)}
 									}
 								
 					dev.off()				
@@ -449,7 +449,8 @@
 						#mtext('Nest attendance',side=2,line=1, cex=0.6, las=3, col='grey30')
 					#text(y=23,x=28, labels='\u2640', col='#FCB42C', cex=0.6)
 					#text(y=23.5,x=30, labels='\u2642', col='#535F7C', cex=0.6)
-					mtext(expression(bold("c")),side=3,line=-.35, cex=0.6,  col='grey30', outer=TRUE, adj=0.95)	
+					mtext(expression(bold("c")),side=3,line=-.35, cex=0.6,  col='grey30', outer=TRUE, adj=0.95)
+						
 								ns__=ns_
 								ns__$sex=factor(ns__$sex, levels=c('f','m'))
 								xx=data.frame(li=c(-2, -10,-14,-16), sp=c('amgp','basa','wesa','sesa'), stringsAsFactors=FALSE)
@@ -459,7 +460,7 @@
 										nsim <- 5000
 										bsim <- sim(m, n.sim=nsim)  
 										pp=data.frame(round(apply(bsim@coef, 2, quantile, prob=c(0.5, 0.025,0.975)),1))# output is in %
-										text(y=xi$li+0.3,x=20.9, labels=paste(pp$sexm[1]," (",pp$sexm[2],"-",pp$sexm[3],")", sep=""), col='grey30', cex=0.4, pos=2, offset=0)
+										text(y=xi$li+0.3,x=20*1.02783333, labels=paste(pp$sexm[1]," (",pp$sexm[2],"; ",pp$sexm[3],")", sep=""), col='grey30', cex=0.4, pos=2, offset=0)
 									}
 					#arrows(y0=ns_$order[round(ns_$uni_last,2)==round(18.669045,2)], x0= 18.669045+1.5,x1=18.669045+0.5, length = 0.02, angle = 15, col="#5eab2b", lwd=1.5)
 					#arrows(y0=ns_$order[round(ns_$uni_last,2)==round(15.373264,2)],x0=15.373264+1.5,  x1=15.373264+0.5, length = 0.02, angle = 15, col="#5eab2b", lwd=1.5)
